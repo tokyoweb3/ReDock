@@ -63,7 +63,10 @@ struct LayoutPreviewView: View {
             }
         }
         .frame(width: item.rect.width, height: item.rect.height)
-        .offset(x: item.rect.origin.x, y: item.rect.origin.y)
+        .position(
+            x: item.rect.midX,
+            y: item.rect.midY
+        )
     }
 
     private func staticWindowTile(window: WindowSnapshot, displayRect: CGRect) -> some View {
@@ -154,7 +157,10 @@ struct LayoutEditorPreview: View {
             }
         }
         .frame(width: item.rect.width, height: item.rect.height)
-        .offset(x: item.rect.origin.x, y: item.rect.origin.y)
+        .position(
+            x: item.rect.midX,
+            y: item.rect.midY
+        )
     }
 
     private func draggableWindowTile(window: WindowSnapshot, displayRect: CGRect) -> some View {
