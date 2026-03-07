@@ -46,6 +46,13 @@ final class LiveWindowQuerying: WindowQuerying {
                 ))
             }
         }
+
+        // Filter out Stage Manager strip/thumbnail windows when Stage Manager is active
+        if StageManagerDetector.isEnabled {
+            let primaryBounds = NSScreen.screens.first?.frame ?? .zero
+            return StageManagerDetector.filterWindows(results, screenBounds: primaryBounds)
+        }
+
         return results
     }
 

@@ -97,10 +97,14 @@ struct LayoutPreviewView: View {
 
 // MARK: - Interactive Editor Minimap
 
-/// Editable minimap where windows can be dragged to reposition.
+/// Editable minimap where windows can be dragged to reposition (supports cross-display moves).
 struct LayoutEditorPreview: View {
     @Binding var windows: [WindowSnapshot]
     @Binding var selectedWindowID: UUID?
+
+    @State private var dragStartFrame: RelativeFrame?
+    @State private var dragStartDisplayRect: CGRect?
+    @State private var dragStartArranged: [ArrangedDisplay]?
 
     private var displayGroups: [DisplayGroup] {
         buildDisplayGroups(from: windows)
@@ -119,10 +123,18 @@ struct LayoutEditorPreview: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             GeometryReader { geo in
-                let arranged = arrangeDisplays(displayGroups, in: geo.size)
+                let liveArranged = arrangeDisplays(displayGroups, in: geo.size)
+                let arranged = dragStartArranged ?? liveArranged
                 ZStack(alignment: .topLeading) {
+                    // Display backgrounds (stable during drag)
                     ForEach(Array(arranged.enumerated()), id: \.offset) { _, item in
-                        editableDisplayView(item: item, containerSize: geo.size)
+                        displayBackground(item: item)
+                    }
+
+                    // Window tiles in flat layer (stable identity during cross-display drag)
+                    ForEach(windows) { window in
+                        let dispRect = displayRect(for: window, in: arranged)
+                        draggableWindowTile(window: window, displayRect: dispRect, allArranged: arranged)
                     }
                 }
                 .frame(width: geo.size.width, height: geo.size.height)
@@ -134,7 +146,7 @@ struct LayoutEditorPreview: View {
         }
     }
 
-    private func editableDisplayView(item: ArrangedDisplay, containerSize: CGSize) -> some View {
+    private func displayBackground(item: ArrangedDisplay) -> some View {
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 4)
                 .fill(Color(nsColor: .controlBackgroundColor))
@@ -151,20 +163,20 @@ struct LayoutEditorPreview: View {
                 Spacer()
             }
             .frame(width: item.rect.width)
-
-            ForEach(item.group.windows) { window in
-                draggableWindowTile(window: window, displayRect: item.rect)
-            }
         }
         .frame(width: item.rect.width, height: item.rect.height)
-        .position(
-            x: item.rect.midX,
-            y: item.rect.midY
-        )
+        .position(x: item.rect.midX, y: item.rect.midY)
     }
 
-    private func draggableWindowTile(window: WindowSnapshot, displayRect: CGRect) -> some View {
+    private func displayRect(for window: WindowSnapshot, in arranged: [ArrangedDisplay]) -> CGRect {
+        arranged.first { $0.group.fingerprint == window.display }?.rect
+            ?? arranged.first?.rect ?? .zero
+    }
+
+    private func draggableWindowTile(window: WindowSnapshot, displayRect: CGRect, allArranged: [ArrangedDisplay]) -> some View {
         let tileRect = tileFrame(for: window.relativeFrame, in: displayRect)
+        let absX = displayRect.origin.x + tileRect.origin.x
+        let absY = displayRect.origin.y + tileRect.origin.y
         let color = windowColor(for: window)
         let isSelected = window.id == selectedWindowID
 
@@ -184,12 +196,22 @@ struct LayoutEditorPreview: View {
                 .padding(.top, 1)
         }
         .frame(width: tileRect.width, height: tileRect.height)
-        .offset(x: tileRect.origin.x, y: tileRect.origin.y)
+        .offset(x: absX, y: absY)
         .gesture(
             DragGesture()
                 .onChanged { value in
                     selectedWindowID = window.id
-                    updatePosition(windowID: window.id, translation: value.translation, displayRect: displayRect)
+                    if dragStartFrame == nil {
+                        dragStartFrame = window.relativeFrame
+                        dragStartDisplayRect = displayRect
+                        dragStartArranged = allArranged
+                    }
+                    updatePosition(windowID: window.id, translation: value.translation)
+                }
+                .onEnded { _ in
+                    dragStartFrame = nil
+                    dragStartDisplayRect = nil
+                    dragStartArranged = nil
                 }
         )
         .onTapGesture {
@@ -198,26 +220,46 @@ struct LayoutEditorPreview: View {
         .help("\(window.appName)\(window.title.map { " — \($0)" } ?? "")")
     }
 
-    private func updatePosition(windowID: UUID, translation: CGSize, displayRect: CGRect) {
-        guard let index = windows.firstIndex(where: { $0.id == windowID }) else { return }
+    private func updatePosition(windowID: UUID, translation: CGSize) {
+        guard let index = windows.firstIndex(where: { $0.id == windowID }),
+              let startFrame = dragStartFrame,
+              let startDisplayRect = dragStartDisplayRect,
+              let startArranged = dragStartArranged else { return }
+
+        // Absolute tile position at drag start
+        let startTile = tileFrame(for: startFrame, in: startDisplayRect)
+        let startAbsX = startDisplayRect.origin.x + startTile.origin.x
+        let startAbsY = startDisplayRect.origin.y + startTile.origin.y
+
+        // New absolute position from cumulative translation
+        let newAbsX = startAbsX + translation.width
+        let newAbsY = startAbsY + translation.height
+        let centerX = newAbsX + startTile.width / 2
+        let centerY = newAbsY + startTile.height / 2
+
+        // Hit-test: find which display the tile center is over
+        let targetArranged = startArranged.first { $0.rect.contains(CGPoint(x: centerX, y: centerY)) }
+            ?? startArranged.first { $0.group.fingerprint == windows[index].display }
+            ?? startArranged[0]
+
+        let targetRect = targetArranged.rect
         let inset: CGFloat = 2
-        let usableWidth = displayRect.width - inset * 2
-        let usableHeight = displayRect.height - 14 - inset
+        let usableWidth = targetRect.width - inset * 2
+        let usableHeight = targetRect.height - 14 - inset
         guard usableWidth > 0, usableHeight > 0 else { return }
 
-        let dx = translation.width / usableWidth
-        let dy = translation.height / usableHeight
+        // Convert absolute position to relative within target display
+        let relX = (newAbsX - targetRect.origin.x - inset) / usableWidth
+        let relY = (newAbsY - targetRect.origin.y - 14) / usableHeight
 
         var updated = windows[index]
-        let newX = max(0, min(1 - updated.relativeFrame.width, updated.relativeFrame.x + dx))
-        let newY = max(0, min(1 - updated.relativeFrame.height, updated.relativeFrame.y + dy))
-
         updated.relativeFrame = RelativeFrame(
-            x: newX,
-            y: newY,
-            width: updated.relativeFrame.width,
-            height: updated.relativeFrame.height
+            x: max(0, min(1 - startFrame.width, relX)),
+            y: max(0, min(1 - startFrame.height, relY)),
+            width: startFrame.width,
+            height: startFrame.height
         )
+        updated.display = targetArranged.group.fingerprint
         windows[index] = updated
     }
 }

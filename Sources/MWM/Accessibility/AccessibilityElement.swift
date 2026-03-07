@@ -98,7 +98,19 @@ final class AccessibilityElement {
     }
 
     var isWindow: Bool {
-        role == kAXWindowRole && (subrole == kAXStandardWindowSubrole || subrole == kAXDialogSubrole)
+        guard role == kAXWindowRole else { return false }
+        let validSubroles: Set<String?> = [kAXStandardWindowSubrole, kAXDialogSubrole]
+        if validSubroles.contains(subrole) { return true }
+        // Stage Manager may report windows with non-standard subroles;
+        // accept them if they have a valid frame and are not minimized.
+        if StageManagerDetector.isEnabled, frame != nil, !isMinimized {
+            // Exclude known non-window subroles
+            if let sr = subrole, StageManagerDetector.excludedSubroles.contains(sr) {
+                return false
+            }
+            return true
+        }
+        return false
     }
 
     // MARK: - Frame Manipulation
