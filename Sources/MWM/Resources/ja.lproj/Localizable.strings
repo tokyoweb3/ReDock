@@ -76,7 +76,6 @@
 "general.language" = "言語";
 
 /* Language Options */
-"language.system" = "システム";
 "language.english" = "English";
 "language.japanese" = "日本語";
 
@@ -106,6 +105,11 @@
 "saveLayout.save" = "保存";
 
 /* Layout Editor */
+"editor.save" = "保存";
+"editor.saveHelp" = "このレイアウトへの変更を保存";
+"editor.reset" = "リセット";
+"editor.resetHelp" = "変更を破棄して保存済みの状態に戻す";
+"editor.unsavedChanges" = "未保存の変更があります";
 "editor.noWindows" = "レイアウトにウィンドウがありません";
 "editor.addWindowsHint" = "下の＋ボタンでウィンドウを追加";
 "editor.display" = "ディスプレイ";

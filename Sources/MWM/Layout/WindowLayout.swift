@@ -10,7 +10,7 @@ enum LayoutMode: String, Codable, CaseIterable {
 }
 
 /// A saved window layout containing snapshots and optional auto-restore trigger.
-struct WindowLayout: Codable, Identifiable {
+struct WindowLayout: Codable, Identifiable, Equatable {
     static let currentSchemaVersion = 2
 
     var id: UUID

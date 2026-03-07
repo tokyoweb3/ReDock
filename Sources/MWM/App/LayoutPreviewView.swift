@@ -101,13 +101,14 @@ struct LayoutPreviewView: View {
 struct LayoutEditorPreview: View {
     @Binding var windows: [WindowSnapshot]
     @Binding var selectedWindowID: UUID?
+    var allDisplayFingerprints: [DisplayFingerprint] = []
 
     @State private var dragStartFrame: RelativeFrame?
     @State private var dragStartDisplayRect: CGRect?
     @State private var dragStartArranged: [ArrangedDisplay]?
 
     private var displayGroups: [DisplayGroup] {
-        buildDisplayGroups(from: windows)
+        buildDisplayGroups(from: windows, allFingerprints: allDisplayFingerprints)
     }
 
     var body: some View {
@@ -267,18 +268,33 @@ struct LayoutEditorPreview: View {
 // MARK: - Layout Detail / Editor Panel
 
 /// Editable detail panel: minimap editor, window list with delete, add window.
+/// Edits are local until explicitly saved; Reset reverts to the last-saved state.
 struct LayoutEditorView: View {
     @Binding var layout: WindowLayout
+    @State private var draft: WindowLayout
     @State private var selectedWindowID: UUID?
     @State private var showingAddWindow = false
     let onSave: () -> Void
+
+    init(layout: Binding<WindowLayout>, onSave: @escaping () -> Void) {
+        self._layout = layout
+        self._draft = State(initialValue: layout.wrappedValue)
+        self.onSave = onSave
+    }
+
+    private var hasChanges: Bool {
+        draft.name != layout.name
+            || draft.mode != layout.mode
+            || draft.windows != layout.windows
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Interactive minimap
             LayoutEditorPreview(
-                windows: $layout.windows,
-                selectedWindowID: $selectedWindowID
+                windows: $draft.windows,
+                selectedWindowID: $selectedWindowID,
+                allDisplayFingerprints: allDisplayFingerprints
             )
             .frame(height: 180)
             .background(Color(nsColor: .windowBackgroundColor))
@@ -293,47 +309,79 @@ struct LayoutEditorView: View {
                 presetButtons
             }
 
+            // Save / Reset buttons
+            HStack(spacing: 8) {
+                Button(action: { save() }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "square.and.arrow.down")
+                            .font(.system(size: 10))
+                        Text(L10n.string("editor.save"))
+                            .font(.system(size: 11))
+                    }
+                }
+                .controlSize(.small)
+                .disabled(!hasChanges)
+                .help(L10n.string("editor.saveHelp"))
+
+                Button(action: { reset() }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.uturn.backward")
+                            .font(.system(size: 10))
+                        Text(L10n.string("editor.reset"))
+                            .font(.system(size: 11))
+                    }
+                }
+                .controlSize(.small)
+                .disabled(!hasChanges)
+                .help(L10n.string("editor.resetHelp"))
+
+                if hasChanges {
+                    Text(L10n.string("editor.unsavedChanges"))
+                        .font(.system(size: 10))
+                        .foregroundStyle(.orange)
+                }
+
+                Spacer()
+            }
+
             // Layout name
             HStack {
                 Text(L10n.string("editor.name"))
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                     .frame(width: 60, alignment: .leading)
-                TextField(L10n.string("editor.layoutName"), text: $layout.name)
+                TextField(L10n.string("editor.layoutName"), text: $draft.name)
                     .textFieldStyle(.roundedBorder)
                     .font(.system(size: 12))
-                    .onSubmit { onSave() }
-                    .onChange(of: layout.name) { _, _ in onSave() }
             }
 
             // Metadata
             VStack(alignment: .leading, spacing: 4) {
-                metaRow(L10n.string("editor.windowsLabel"), value: "\(layout.windows.count)")
-                metaRow(L10n.string("editor.created"), value: formatted(layout.createdAt))
+                metaRow(L10n.string("editor.windowsLabel"), value: "\(draft.windows.count)")
+                metaRow(L10n.string("editor.created"), value: formatted(draft.createdAt))
 
                 HStack {
                     Text(L10n.string("editor.modeLabel"))
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                         .frame(width: 60, alignment: .leading)
-                    Picker("", selection: $layout.mode) {
+                    Picker("", selection: $draft.mode) {
                         Text(L10n.string("editor.appSpecific")).tag(LayoutMode.appSpecific)
                         Text(L10n.string("editor.templateLabel")).tag(LayoutMode.template)
                     }
                     .labelsHidden()
                     .pickerStyle(.segmented)
                     .frame(width: 180)
-                    .onChange(of: layout.mode) { _, _ in onSave() }
                 }
 
-                if layout.mode == .template {
+                if draft.mode == .template {
                     Text(L10n.string("editor.templateHint"))
                         .font(.system(size: 10))
                         .foregroundStyle(.tertiary)
                         .padding(.leading, 60)
                 }
 
-                if let trigger = layout.trigger {
+                if let trigger = draft.trigger {
                     metaRow(L10n.string("editor.trigger"), value: trigger.displayDescription)
                 }
             }
@@ -367,21 +415,55 @@ struct LayoutEditorView: View {
             // Editable window list
             ScrollView {
                 VStack(spacing: 1) {
-                    ForEach(layout.windows) { window in
+                    ForEach(draft.windows) { window in
                         editableWindowRow(window)
                     }
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 6))
             }
         }
+        .onChange(of: layout) { _, newValue in
+            draft = newValue
+            selectedWindowID = nil
+        }
         .sheet(isPresented: $showingAddWindow) {
             AddWindowSheet(
                 onAdd: { snapshot in
-                    layout.windows.append(snapshot)
-                    onSave()
+                    draft.windows.append(snapshot)
                 }
             )
         }
+    }
+
+    /// All unique display fingerprints from both draft and saved layout
+    private var allDisplayFingerprints: [DisplayFingerprint] {
+        var seen = Set<DisplayFingerprint>()
+        var result: [DisplayFingerprint] = []
+        for window in draft.windows {
+            if seen.insert(window.display).inserted {
+                result.append(window.display)
+            }
+        }
+        for window in layout.windows {
+            if seen.insert(window.display).inserted {
+                result.append(window.display)
+            }
+        }
+        return result.sorted {
+            ($0.bounds.origin.x, $0.bounds.origin.y) < ($1.bounds.origin.x, $1.bounds.origin.y)
+        }
+    }
+
+    // MARK: - Actions
+
+    private func save() {
+        layout = draft
+        onSave()
+    }
+
+    private func reset() {
+        draft = layout
+        selectedWindowID = nil
     }
 
     // MARK: - Preset Buttons
@@ -407,11 +489,10 @@ struct LayoutEditorView: View {
     private func presetButton(_ label: String, x: CGFloat, y: CGFloat, w: CGFloat, h: CGFloat) -> some View {
         Button(label) {
             guard let id = selectedWindowID,
-                  let index = layout.windows.firstIndex(where: { $0.id == id }) else { return }
-            var updated = layout.windows[index]
+                  let index = draft.windows.firstIndex(where: { $0.id == id }) else { return }
+            var updated = draft.windows[index]
             updated.relativeFrame = RelativeFrame(x: x, y: y, width: w, height: h)
-            layout.windows[index] = updated
-            onSave()
+            draft.windows[index] = updated
         }
         .controlSize(.mini)
         .font(.system(size: 9, weight: .medium, design: .monospaced))
@@ -464,17 +545,16 @@ struct LayoutEditorView: View {
     }
 
     private func removeWindow(id: UUID) {
-        layout.windows.removeAll { $0.id == id }
+        draft.windows.removeAll { $0.id == id }
         if selectedWindowID == id {
             selectedWindowID = nil
         }
-        onSave()
     }
 
     private func updateFromCurrent() {
         do {
-            let updated = try AppDelegate.services.layoutService.updateFromCurrent(layoutID: layout.id)
-            layout.windows = updated.windows
+            let updated = try AppDelegate.services.layoutService.updateFromCurrent(layoutID: draft.id)
+            draft.windows = updated.windows
         } catch {
             // Layout may not be saved yet; silently ignore
         }
@@ -706,12 +786,19 @@ private struct ArrangedDisplay {
 
 // MARK: - Shared Layout Helpers
 
-private func buildDisplayGroups(from windows: [WindowSnapshot]) -> [DisplayGroup] {
+private func buildDisplayGroups(from windows: [WindowSnapshot], allFingerprints: [DisplayFingerprint] = []) -> [DisplayGroup] {
     let grouped = Dictionary(grouping: windows, by: \.display)
-    return grouped.map { (fingerprint, wins) in
+    var groups = grouped.map { (fingerprint, wins) in
         DisplayGroup(fingerprint: fingerprint, windows: wins)
     }
-    .sorted { ($0.fingerprint.bounds.origin.x, $0.fingerprint.bounds.origin.y) < ($1.fingerprint.bounds.origin.x, $1.fingerprint.bounds.origin.y) }
+    // Include displays that have no windows (so they remain visible in the editor)
+    let existing = Set(groups.map(\.fingerprint))
+    for fp in allFingerprints where !existing.contains(fp) {
+        groups.append(DisplayGroup(fingerprint: fp, windows: []))
+    }
+    return groups.sorted {
+        ($0.fingerprint.bounds.origin.x, $0.fingerprint.bounds.origin.y) < ($1.fingerprint.bounds.origin.x, $1.fingerprint.bounds.origin.y)
+    }
 }
 
 private func arrangeDisplays(_ groups: [DisplayGroup], in size: CGSize) -> [ArrangedDisplay] {
