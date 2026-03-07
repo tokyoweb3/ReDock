@@ -19,7 +19,7 @@ struct SettingsView: View {
                     Label("General", systemImage: "gear")
                 }
         }
-        .frame(width: 680, height: 500)
+        .frame(width: 720, height: 540)
     }
 }
 
@@ -159,12 +159,15 @@ struct LayoutsSettingsView: View {
             }
             .frame(minWidth: 180, idealWidth: 220, maxWidth: 280)
 
-            // Right: detail/preview
+            // Right: editor/preview
             VStack {
-                if let layout = selectedLayout {
+                if let binding = selectedLayoutBinding {
                     ScrollView {
-                        LayoutDetailView(layout: layout)
-                            .padding(12)
+                        LayoutEditorView(
+                            layout: binding,
+                            onSave: { saveSelectedLayout() }
+                        )
+                        .padding(12)
                     }
 
                     // Bottom controls
@@ -172,7 +175,7 @@ struct LayoutsSettingsView: View {
                         Toggle("Auto-restore", isOn: autoRestoreBinding)
                         Spacer()
                         Button("Restore Now") {
-                            let result = services.layoutService.restoreLayout(layout)
+                            let result = services.layoutService.restoreLayout(binding.wrappedValue)
                             services.diagnosticsService.record(result: result, triggerSource: "settings")
                         }
                         .controlSize(.small)
@@ -184,7 +187,7 @@ struct LayoutsSettingsView: View {
                         Image(systemName: "rectangle.3.group")
                             .font(.system(size: 32))
                             .foregroundStyle(.quaternary)
-                        Text("Select a layout to preview")
+                        Text("Select a layout to edit")
                             .font(.callout)
                             .foregroundStyle(.secondary)
                     }
@@ -218,7 +221,21 @@ struct LayoutsSettingsView: View {
         }
     }
 
+    // MARK: - Bindings
+
+    private var selectedLayoutBinding: Binding<WindowLayout>? {
+        guard let id = selectedLayoutID,
+              let index = layouts.firstIndex(where: { $0.id == id }) else { return nil }
+        return $layouts[index]
+    }
+
     // MARK: - Actions
+
+    private func saveSelectedLayout() {
+        guard let id = selectedLayoutID,
+              let layout = layouts.first(where: { $0.id == id }) else { return }
+        try? services.layoutService.save(layout)
+    }
 
     private var autoRestoreBinding: Binding<Bool> {
         Binding(
