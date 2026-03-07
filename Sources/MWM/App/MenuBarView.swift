@@ -61,6 +61,7 @@ struct MenuBarView: View {
             NSApplication.shared.terminate(nil)
         }
         .keyboardShortcut("q")
+        .onAppear { refreshLayouts() }
     }
 
     private func promptSaveLayout() {

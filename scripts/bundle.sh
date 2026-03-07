@@ -7,6 +7,7 @@ APP_NAME="MWM"
 APP_BUNDLE="$PROJECT_DIR/build/$APP_NAME.app"
 CONTENTS="$APP_BUNDLE/Contents"
 MACOS="$CONTENTS/MacOS"
+RESOURCES="$CONTENTS/Resources"
 
 echo "Building..."
 cd "$PROJECT_DIR"
@@ -14,9 +15,18 @@ swift build -c debug
 
 echo "Creating .app bundle..."
 rm -rf "$APP_BUNDLE"
-mkdir -p "$MACOS"
+mkdir -p "$MACOS" "$RESOURCES"
 
 cp ".build/debug/$APP_NAME" "$MACOS/$APP_NAME"
+
+# Generate app icon
+ICNS="$RESOURCES/AppIcon.icns"
+if [ ! -f "$ICNS" ] || [ "$0" -nt "$ICNS" ]; then
+    echo "Generating app icon..."
+    swift "$PROJECT_DIR/scripts/generate_icon.swift" "$PROJECT_DIR"
+    iconutil -c icns "$PROJECT_DIR/build/MWM.iconset" -o "$ICNS"
+    rm -rf "$PROJECT_DIR/build/MWM.iconset"
+fi
 
 cat > "$CONTENTS/Info.plist" << 'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -37,6 +47,8 @@ cat > "$CONTENTS/Info.plist" << 'PLIST'
     <string>1.0</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>LSUIElement</key>
     <true/>
     <key>LSMinimumSystemVersion</key>

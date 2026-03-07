@@ -157,14 +157,33 @@ struct LayoutsSettingsView: View {
 // MARK: - General Tab
 
 struct GeneralSettingsView: View {
+    @State private var launchAtLogin = LaunchAtLogin.isEnabled
+
     var body: some View {
         Form {
             Section("Startup") {
-                Text("Launch at Login support will be added in a future update.")
-                    .foregroundStyle(.secondary)
+                Toggle("Launch at Login", isOn: $launchAtLogin)
+                    .onChange(of: launchAtLogin) { _, newValue in
+                        LaunchAtLogin.setEnabled(newValue)
+                    }
+            }
+
+            Section("About") {
+                LabeledContent("Version", value: Bundle.main.shortVersion)
+                LabeledContent("Build", value: Bundle.main.buildVersion)
             }
         }
         .formStyle(.grouped)
         .padding()
+    }
+}
+
+private extension Bundle {
+    var shortVersion: String {
+        infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+    }
+
+    var buildVersion: String {
+        infoDictionary?["CFBundleVersion"] as? String ?? "1"
     }
 }
