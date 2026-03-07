@@ -19,7 +19,7 @@ struct SettingsView: View {
                     Label("General", systemImage: "gear")
                 }
         }
-        .frame(width: 620, height: 480)
+        .frame(width: 680, height: 500)
     }
 }
 
@@ -118,52 +118,112 @@ struct LayoutsSettingsView: View {
 
     private var services: AppServices { AppDelegate.services }
 
+    private var selectedLayout: WindowLayout? {
+        guard let id = selectedLayoutID else { return nil }
+        return layouts.first { $0.id == id }
+    }
+
     var body: some View {
-        VStack(alignment: .leading) {
-            List(selection: $selectedLayoutID) {
-                ForEach(layouts) { layout in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text(layout.name)
-                                .font(.headline)
-                            Text("\(layout.windows.count) windows")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        if layout.autoRestore {
-                            Image(systemName: "arrow.clockwise")
-                                .foregroundStyle(.blue)
-                                .help("Auto-restore enabled")
-                        }
+        HSplitView {
+            // Left: layout list
+            VStack(spacing: 0) {
+                List(selection: $selectedLayoutID) {
+                    ForEach(layouts) { layout in
+                        layoutRow(layout)
+                            .tag(layout.id)
                     }
-                    .tag(layout.id)
                 }
-            }
-            .frame(minHeight: 200)
 
-            HStack {
-                Button("Delete") {
-                    deleteSelected()
-                }
-                .disabled(selectedLayoutID == nil)
-
-                Spacer()
-
-                Toggle("Auto-restore", isOn: autoRestoreBinding)
+                // Bottom toolbar
+                HStack(spacing: 4) {
+                    Button(action: { deleteSelected() }) {
+                        Image(systemName: "minus")
+                    }
                     .disabled(selectedLayoutID == nil)
+                    .help("Delete selected layout")
+
+                    Spacer()
+
+                    Button(action: { exportLayouts() }) {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                    .help("Export layouts")
+
+                    Button(action: { importLayouts() }) {
+                        Image(systemName: "square.and.arrow.down")
+                    }
+                    .help("Import layouts")
+                }
+                .padding(6)
+                .background(Color(nsColor: .windowBackgroundColor))
             }
-            .padding(.horizontal)
+            .frame(minWidth: 180, idealWidth: 220, maxWidth: 280)
+
+            // Right: detail/preview
+            VStack {
+                if let layout = selectedLayout {
+                    ScrollView {
+                        LayoutDetailView(layout: layout)
+                            .padding(12)
+                    }
+
+                    // Bottom controls
+                    HStack {
+                        Toggle("Auto-restore", isOn: autoRestoreBinding)
+                        Spacer()
+                        Button("Restore Now") {
+                            let result = services.layoutService.restoreLayout(layout)
+                            services.diagnosticsService.record(result: result, triggerSource: "settings")
+                        }
+                        .controlSize(.small)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 8)
+                } else {
+                    VStack(spacing: 8) {
+                        Image(systemName: "rectangle.3.group")
+                            .font(.system(size: 32))
+                            .foregroundStyle(.quaternary)
+                        Text("Select a layout to preview")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+            }
+            .frame(minWidth: 300)
         }
-        .padding()
         .onAppear { refresh() }
     }
+
+    // MARK: - Subviews
+
+    private func layoutRow(_ layout: WindowLayout) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(layout.name)
+                    .font(.system(size: 13, weight: .medium))
+                    .lineLimit(1)
+                Text("\(layout.windows.count) windows")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            if layout.autoRestore {
+                Image(systemName: "arrow.clockwise")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.blue)
+                    .help("Auto-restore enabled")
+            }
+        }
+    }
+
+    // MARK: - Actions
 
     private var autoRestoreBinding: Binding<Bool> {
         Binding(
             get: {
-                guard let id = selectedLayoutID else { return false }
-                return layouts.first { $0.id == id }?.autoRestore ?? false
+                selectedLayout?.autoRestore ?? false
             },
             set: { newValue in
                 guard let id = selectedLayoutID,
@@ -185,6 +245,41 @@ struct LayoutsSettingsView: View {
         try? services.layoutService.delete(id: id)
         selectedLayoutID = nil
         refresh()
+    }
+
+    private func exportLayouts() {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.json]
+        panel.nameFieldStringValue = "MWM-layouts.json"
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try services.importExportService.exportToFile(layouts, url: url)
+        } catch {
+            let alert = NSAlert(error: error)
+            alert.runModal()
+        }
+    }
+
+    private func importLayouts() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.json]
+        panel.allowsMultipleSelection = false
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            let validation = try services.importExportService.importFromFile(url: url)
+            refresh()
+            let alert = NSAlert()
+            alert.messageText = "Import Complete"
+            var message = "\(validation.validLayouts.count) layout(s) imported."
+            if !validation.warnings.isEmpty {
+                message += "\n\nWarnings:\n" + validation.warnings.joined(separator: "\n")
+            }
+            alert.informativeText = message
+            alert.runModal()
+        } catch {
+            let alert = NSAlert(error: error)
+            alert.runModal()
+        }
     }
 
     private func refresh() {
