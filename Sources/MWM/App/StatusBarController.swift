@@ -223,6 +223,18 @@ final class StatusBarController {
     }
 
     @objc func saveLayout() {
+        guard services.permissions.isGranted else {
+            let alert = NSAlert()
+            alert.messageText = "Accessibility Permission Required"
+            alert.informativeText = "MWM needs Accessibility permission to read window positions. Please grant it in System Settings, then try again.\n\nAfter rebuilding, you may need to toggle the permission off and on."
+            alert.addButton(withTitle: "Open System Settings")
+            alert.addButton(withTitle: "Cancel")
+            if alert.runModal() == .alertFirstButtonReturn {
+                services.permissions.openSystemSettings()
+            }
+            return
+        }
+
         let alert = NSAlert()
         alert.messageText = "Save Current Layout"
         alert.informativeText = "Enter a name for this layout:"
@@ -236,7 +248,17 @@ final class StatusBarController {
         if alert.runModal() == .alertFirstButtonReturn {
             let name = textField.stringValue.isEmpty ? "Untitled" : textField.stringValue
             do {
-                try _ = services.layoutService.saveCurrentLayout(name: name)
+                let layout = try services.layoutService.saveCurrentLayout(name: name)
+                if layout.windows.isEmpty {
+                    let warnAlert = NSAlert()
+                    warnAlert.messageText = "No Windows Found"
+                    warnAlert.informativeText = "Layout was saved but no windows were detected. This can happen if:\n\n• Accessibility permission was recently toggled — try toggling it off and on\n• No apps with standard windows are open"
+                    warnAlert.addButton(withTitle: "Open System Settings")
+                    warnAlert.addButton(withTitle: "OK")
+                    if warnAlert.runModal() == .alertFirstButtonReturn {
+                        services.permissions.openSystemSettings()
+                    }
+                }
             } catch {
                 let errorAlert = NSAlert(error: error)
                 errorAlert.runModal()
