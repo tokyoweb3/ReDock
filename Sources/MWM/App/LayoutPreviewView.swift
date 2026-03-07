@@ -251,6 +251,19 @@ struct LayoutEditorView: View {
                 presetButtons
             }
 
+            // Layout name
+            HStack {
+                Text("Name")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 60, alignment: .leading)
+                TextField("Layout name", text: $layout.name)
+                    .textFieldStyle(.roundedBorder)
+                    .font(.system(size: 12))
+                    .onSubmit { onSave() }
+                    .onChange(of: layout.name) { _, _ in onSave() }
+            }
+
             // Metadata
             VStack(alignment: .leading, spacing: 4) {
                 metaRow("Windows", value: "\(layout.windows.count)")
