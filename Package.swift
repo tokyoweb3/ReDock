@@ -4,6 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "MWM",
+    defaultLocalization: "en",
     platforms: [
         .macOS(.v14)
     ],
@@ -16,7 +17,10 @@ let package = Package(
             dependencies: [
                 "KeyboardShortcuts",
             ],
-            path: "Sources/MWM"
+            path: "Sources/MWM",
+            resources: [
+                .process("Resources"),
+            ]
         ),
         .testTarget(
             name: "MWMTests",

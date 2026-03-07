@@ -33,7 +33,7 @@ struct LayoutPreviewView: View {
             Image(systemName: "rectangle.dashed")
                 .font(.system(size: 28))
                 .foregroundStyle(.quaternary)
-            Text("No windows in layout")
+            Text(L10n.string("editor.noWindows"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -50,7 +50,7 @@ struct LayoutPreviewView: View {
                 )
 
             VStack {
-                Text(item.group.fingerprint.localizedName ?? "Display")
+                Text(item.group.fingerprint.localizedName ?? L10n.string("editor.display"))
                     .font(.system(size: 9, weight: .medium))
                     .foregroundStyle(.tertiary)
                     .padding(.top, 3)
@@ -116,7 +116,7 @@ struct LayoutEditorPreview: View {
                 Image(systemName: "plus.rectangle.on.rectangle")
                     .font(.system(size: 28))
                     .foregroundStyle(.quaternary)
-                Text("Add windows using the + button below")
+                Text(L10n.string("editor.addWindowsHint"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -156,7 +156,7 @@ struct LayoutEditorPreview: View {
                 )
 
             VStack {
-                Text(item.group.fingerprint.localizedName ?? "Display")
+                Text(item.group.fingerprint.localizedName ?? L10n.string("editor.display"))
                     .font(.system(size: 9, weight: .medium))
                     .foregroundStyle(.tertiary)
                     .padding(.top, 3)
@@ -295,11 +295,11 @@ struct LayoutEditorView: View {
 
             // Layout name
             HStack {
-                Text("Name")
+                Text(L10n.string("editor.name"))
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                     .frame(width: 60, alignment: .leading)
-                TextField("Layout name", text: $layout.name)
+                TextField(L10n.string("editor.layoutName"), text: $layout.name)
                     .textFieldStyle(.roundedBorder)
                     .font(.system(size: 12))
                     .onSubmit { onSave() }
@@ -308,17 +308,17 @@ struct LayoutEditorView: View {
 
             // Metadata
             VStack(alignment: .leading, spacing: 4) {
-                metaRow("Windows", value: "\(layout.windows.count)")
-                metaRow("Created", value: formatted(layout.createdAt))
+                metaRow(L10n.string("editor.windowsLabel"), value: "\(layout.windows.count)")
+                metaRow(L10n.string("editor.created"), value: formatted(layout.createdAt))
 
                 HStack {
-                    Text("Mode")
+                    Text(L10n.string("editor.modeLabel"))
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                         .frame(width: 60, alignment: .leading)
                     Picker("", selection: $layout.mode) {
-                        Text("App-Specific").tag(LayoutMode.appSpecific)
-                        Text("Template").tag(LayoutMode.template)
+                        Text(L10n.string("editor.appSpecific")).tag(LayoutMode.appSpecific)
+                        Text(L10n.string("editor.templateLabel")).tag(LayoutMode.template)
                     }
                     .labelsHidden()
                     .pickerStyle(.segmented)
@@ -327,14 +327,14 @@ struct LayoutEditorView: View {
                 }
 
                 if layout.mode == .template {
-                    Text("Applies to the most recently used windows, regardless of app.")
+                    Text(L10n.string("editor.templateHint"))
                         .font(.system(size: 10))
                         .foregroundStyle(.tertiary)
                         .padding(.leading, 60)
                 }
 
                 if let trigger = layout.trigger {
-                    metaRow("Trigger", value: trigger.displayDescription)
+                    metaRow(L10n.string("editor.trigger"), value: trigger.displayDescription)
                 }
             }
 
@@ -343,16 +343,16 @@ struct LayoutEditorView: View {
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.triangle.2.circlepath")
                         .font(.system(size: 10))
-                    Text("Update from Current Windows")
+                    Text(L10n.string("editor.updateFromCurrent"))
                         .font(.system(size: 11))
                 }
             }
             .controlSize(.small)
-            .help("Update positions from currently open windows")
+            .help(L10n.string("editor.updateFromCurrentHelp"))
 
             // Window list header
             HStack {
-                Text("Windows")
+                Text(L10n.string("editor.windowsLabel"))
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(.secondary)
                 Spacer()
@@ -361,7 +361,7 @@ struct LayoutEditorView: View {
                         .font(.system(size: 10))
                 }
                 .controlSize(.small)
-                .help("Add window from running apps")
+                .help(L10n.string("editor.addWindowHelp"))
             }
 
             // Editable window list
@@ -388,7 +388,7 @@ struct LayoutEditorView: View {
 
     private var presetButtons: some View {
         HStack(spacing: 4) {
-            Text("Snap:")
+            Text(L10n.string("editor.snap"))
                 .font(.system(size: 10))
                 .foregroundStyle(.secondary)
 
@@ -450,7 +450,7 @@ struct LayoutEditorView: View {
                     .foregroundStyle(.secondary)
             }
             .buttonStyle(.plain)
-            .help("Remove from layout")
+            .help(L10n.string("editor.removeFromLayout"))
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
@@ -521,7 +521,7 @@ struct AddWindowSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Add Window to Layout")
+            Text(L10n.string("addWindow.title"))
                 .font(.headline)
 
             // App list
@@ -546,7 +546,7 @@ struct AddWindowSheet: View {
 
             // Position preset
             HStack {
-                Text("Position:")
+                Text(L10n.string("addWindow.position"))
                     .font(.system(size: 12))
                 Picker("", selection: $selectedPreset) {
                     ForEach(PositionPreset.allCases, id: \.self) { preset in
@@ -562,9 +562,9 @@ struct AddWindowSheet: View {
 
             HStack {
                 Spacer()
-                Button("Cancel") { dismiss() }
+                Button(L10n.string("addWindow.cancel")) { dismiss() }
                     .keyboardShortcut(.cancelAction)
-                Button("Add") { addWindow() }
+                Button(L10n.string("addWindow.add")) { addWindow() }
                     .keyboardShortcut(.defaultAction)
                     .disabled(selectedBundleID == nil)
             }
@@ -665,16 +665,16 @@ enum PositionPreset: CaseIterable {
 
     var label: String {
         switch self {
-        case .leftHalf: return "Left Half"
-        case .rightHalf: return "Right Half"
-        case .topHalf: return "Top Half"
-        case .bottomHalf: return "Bottom Half"
-        case .topLeft: return "Top Left"
-        case .topRight: return "Top Right"
-        case .bottomLeft: return "Bottom Left"
-        case .bottomRight: return "Bottom Right"
-        case .maximize: return "Maximize"
-        case .center: return "Center (60%)"
+        case .leftHalf: return L10n.string("preset.leftHalf")
+        case .rightHalf: return L10n.string("preset.rightHalf")
+        case .topHalf: return L10n.string("preset.topHalf")
+        case .bottomHalf: return L10n.string("preset.bottomHalf")
+        case .topLeft: return L10n.string("preset.topLeft")
+        case .topRight: return L10n.string("preset.topRight")
+        case .bottomLeft: return L10n.string("preset.bottomLeft")
+        case .bottomRight: return L10n.string("preset.bottomRight")
+        case .maximize: return L10n.string("preset.maximize")
+        case .center: return L10n.string("preset.center")
         }
     }
 

@@ -1,0 +1,151 @@
+/* Menu - Window Halves */
+"menu.leftHalf" = "左半分";
+"menu.rightHalf" = "右半分";
+"menu.topHalf" = "上半分";
+"menu.bottomHalf" = "下半分";
+
+/* Menu - Quarters */
+"menu.topLeft" = "左上";
+"menu.topRight" = "右上";
+"menu.bottomLeft" = "左下";
+"menu.bottomRight" = "右下";
+
+/* Menu - Sizing */
+"menu.center" = "中央";
+"menu.maximize" = "最大化";
+"menu.fullScreen" = "フルスクリーン";
+"menu.makeLarger" = "拡大";
+"menu.makeSmaller" = "縮小";
+
+/* Menu - Display */
+"menu.nextDisplay" = "次のディスプレイ";
+"menu.previousDisplay" = "前のディスプレイ";
+
+/* Menu - Focus */
+"menu.focusMode" = "集中モード";
+"menu.exitFocusMode" = "集中モードを解除";
+
+/* Menu - Layout */
+"menu.saveLayout" = "レイアウトを保存...";
+"menu.restoreLayout" = "レイアウトを復元";
+"menu.restoreWithLaunch" = "復元 (アプリを起動)";
+"menu.exportLayouts" = "レイアウトを書き出す...";
+"menu.importLayouts" = "レイアウトを読み込む...";
+"menu.recentRestores" = "最近の復元";
+
+/* Menu - App */
+"menu.settings" = "設定...";
+"menu.quit" = "MWM を終了";
+
+/* Alerts */
+"alert.accessibilityRequired.title" = "アクセシビリティの許可が必要です";
+"alert.accessibilityRequired.message" = "MWM がウィンドウの位置を読み取るにはアクセシビリティの許可が必要です。システム設定で許可してから再試行してください。\n\nビルドし直した後は、許可をオフ→オンに切り替える必要がある場合があります。";
+"alert.openSystemSettings" = "システム設定を開く";
+"alert.cancel" = "キャンセル";
+"alert.ok" = "OK";
+
+"alert.noWindowsFound.title" = "ウィンドウが見つかりません";
+"alert.noWindowsFound.message" = "ウィンドウが検出されませんでした。以下の原因が考えられます:\n\n• アクセシビリティの許可を切り替えた直後 — オフ→オンに切り替えてください\n• 標準ウィンドウを持つアプリが開かれていない";
+
+"alert.importComplete.title" = "読み込み完了";
+"alert.importComplete.message" = "%lld 件のレイアウトを読み込みました。";
+"alert.importComplete.warnings" = "\n\n警告:\n%@";
+
+/* File Dialogs */
+"dialog.exportLayouts" = "レイアウトを書き出す";
+"dialog.importLayouts" = "レイアウトを読み込む";
+
+/* Settings Tabs */
+"settings.shortcuts" = "ショートカット";
+"settings.layouts" = "レイアウト";
+"settings.general" = "一般";
+
+/* Settings - Shortcuts Sections */
+"shortcuts.halves" = "半分";
+"shortcuts.quarters" = "4分割";
+"shortcuts.sizing" = "サイズ";
+"shortcuts.display" = "ディスプレイ";
+"shortcuts.focus" = "集中";
+
+/* Settings - General */
+"general.startup" = "起動";
+"general.launchAtLogin" = "ログイン時に起動";
+"general.about" = "情報";
+"general.version" = "バージョン";
+"general.build" = "ビルド";
+"general.language" = "言語";
+
+/* Language Options */
+"language.system" = "システム";
+"language.english" = "English";
+"language.japanese" = "日本語";
+
+/* Settings - Layouts */
+"layouts.windowCount" = "%lld 個のウィンドウ";
+"layouts.template" = "テンプレート";
+"layouts.deleteSelected" = "選択したレイアウトを削除";
+"layouts.export" = "レイアウトを書き出す";
+"layouts.import" = "レイアウトを読み込む";
+"layouts.selectToEdit" = "編集するレイアウトを選択";
+"layouts.autoRestoreEnabled" = "自動復元が有効";
+"layouts.autoRestore" = "自動復元";
+"layouts.restoreNow" = "今すぐ復元";
+"layouts.conflictsWith" = "競合: %@";
+
+/* Save Layout Dialog */
+"saveLayout.title" = "レイアウトを保存";
+"saveLayout.name" = "名前:";
+"saveLayout.namePlaceholder" = "マイレイアウト";
+"saveLayout.mode" = "モード:";
+"saveLayout.appSpecific" = "アプリ固有";
+"saveLayout.template" = "テンプレート (任意のウィンドウ)";
+"saveLayout.templateDescription" = "テンプレートモードは、アプリに関係なく最近使用したウィンドウに位置を適用します。";
+"saveLayout.windows" = "ウィンドウ (%lld/%lld)";
+"saveLayout.selectAll" = "すべて選択";
+"saveLayout.deselectAll" = "すべて解除";
+"saveLayout.save" = "保存";
+
+/* Layout Editor */
+"editor.noWindows" = "レイアウトにウィンドウがありません";
+"editor.addWindowsHint" = "下の＋ボタンでウィンドウを追加";
+"editor.display" = "ディスプレイ";
+"editor.snap" = "スナップ:";
+"editor.name" = "名前";
+"editor.layoutName" = "レイアウト名";
+"editor.windowsLabel" = "ウィンドウ";
+"editor.created" = "作成日";
+"editor.modeLabel" = "モード";
+"editor.trigger" = "トリガー";
+"editor.appSpecific" = "アプリ固有";
+"editor.templateLabel" = "テンプレート";
+"editor.templateHint" = "アプリに関係なく、最近使用したウィンドウに位置を適用します。";
+"editor.updateFromCurrent" = "現在のウィンドウで更新";
+"editor.updateFromCurrentHelp" = "現在開いているウィンドウの位置で更新";
+"editor.addWindowHelp" = "実行中のアプリからウィンドウを追加";
+"editor.removeFromLayout" = "レイアウトから削除";
+
+/* Add Window Sheet */
+"addWindow.title" = "ウィンドウをレイアウトに追加";
+"addWindow.position" = "位置:";
+"addWindow.cancel" = "キャンセル";
+"addWindow.add" = "追加";
+
+/* Position Presets */
+"preset.leftHalf" = "左半分";
+"preset.rightHalf" = "右半分";
+"preset.topHalf" = "上半分";
+"preset.bottomHalf" = "下半分";
+"preset.topLeft" = "左上";
+"preset.topRight" = "右上";
+"preset.bottomLeft" = "左下";
+"preset.bottomRight" = "右下";
+"preset.maximize" = "最大化";
+"preset.center" = "中央 (60%)";
+
+/* Window Title */
+"window.mwmSettings" = "MWM 設定";
+"window.saveLayout" = "レイアウトを保存";
+
+/* MenuBarView */
+"menuBar.saveCurrentLayout" = "現在のレイアウトを保存";
+"menuBar.enterLayoutName" = "レイアウトの名前を入力してください:";

@@ -8,39 +8,41 @@ struct MenuBarView: View {
 
     var body: some View {
         // Window halves
-        menuItem("Left Half", shortcut: .leftHalf) { services.dispatcher.dispatch(.leftHalf) }
-        menuItem("Right Half", shortcut: .rightHalf) { services.dispatcher.dispatch(.rightHalf) }
-        menuItem("Top Half", shortcut: .topHalf) { services.dispatcher.dispatch(.topHalf) }
-        menuItem("Bottom Half", shortcut: .bottomHalf) { services.dispatcher.dispatch(.bottomHalf) }
+        menuItem(L10n.string("menu.leftHalf"), shortcut: .leftHalf) { services.dispatcher.dispatch(.leftHalf) }
+        menuItem(L10n.string("menu.rightHalf"), shortcut: .rightHalf) { services.dispatcher.dispatch(.rightHalf) }
+        menuItem(L10n.string("menu.topHalf"), shortcut: .topHalf) { services.dispatcher.dispatch(.topHalf) }
+        menuItem(L10n.string("menu.bottomHalf"), shortcut: .bottomHalf) { services.dispatcher.dispatch(.bottomHalf) }
 
         Divider()
 
         // Quarters
-        menuItem("Top Left", shortcut: .topLeft) { services.dispatcher.dispatch(.topLeft) }
-        menuItem("Top Right", shortcut: .topRight) { services.dispatcher.dispatch(.topRight) }
-        menuItem("Bottom Left", shortcut: .bottomLeft) { services.dispatcher.dispatch(.bottomLeft) }
-        menuItem("Bottom Right", shortcut: .bottomRight) { services.dispatcher.dispatch(.bottomRight) }
+        menuItem(L10n.string("menu.topLeft"), shortcut: .topLeft) { services.dispatcher.dispatch(.topLeft) }
+        menuItem(L10n.string("menu.topRight"), shortcut: .topRight) { services.dispatcher.dispatch(.topRight) }
+        menuItem(L10n.string("menu.bottomLeft"), shortcut: .bottomLeft) { services.dispatcher.dispatch(.bottomLeft) }
+        menuItem(L10n.string("menu.bottomRight"), shortcut: .bottomRight) { services.dispatcher.dispatch(.bottomRight) }
 
         Divider()
 
         // Sizing
-        menuItem("Center", shortcut: .center) { services.dispatcher.dispatch(.center) }
-        menuItem("Maximize", shortcut: .maximize) { services.dispatcher.dispatch(.maximize) }
-        menuItem("Full Screen", shortcut: .toggleFullScreen) { services.dispatcher.dispatch(.toggleFullScreen) }
-        menuItem("Make Larger", shortcut: .increase) { services.dispatcher.dispatch(.increase) }
-        menuItem("Make Smaller", shortcut: .decrease) { services.dispatcher.dispatch(.decrease) }
+        menuItem(L10n.string("menu.center"), shortcut: .center) { services.dispatcher.dispatch(.center) }
+        menuItem(L10n.string("menu.maximize"), shortcut: .maximize) { services.dispatcher.dispatch(.maximize) }
+        menuItem(L10n.string("menu.fullScreen"), shortcut: .toggleFullScreen) { services.dispatcher.dispatch(.toggleFullScreen) }
+        menuItem(L10n.string("menu.makeLarger"), shortcut: .increase) { services.dispatcher.dispatch(.increase) }
+        menuItem(L10n.string("menu.makeSmaller"), shortcut: .decrease) { services.dispatcher.dispatch(.decrease) }
 
         Divider()
 
         // Display
-        menuItem("Next Display", shortcut: .nextScreen) { services.dispatcher.dispatch(.nextScreen) }
-        menuItem("Previous Display", shortcut: .previousScreen) { services.dispatcher.dispatch(.previousScreen) }
+        menuItem(L10n.string("menu.nextDisplay"), shortcut: .nextScreen) { services.dispatcher.dispatch(.nextScreen) }
+        menuItem(L10n.string("menu.previousDisplay"), shortcut: .previousScreen) { services.dispatcher.dispatch(.previousScreen) }
 
         Divider()
 
         // Focus Mode
         menuItem(
-            services.focusModeService.isActive ? "Exit Focus Mode" : "Focus Mode",
+            services.focusModeService.isActive
+                ? L10n.string("menu.exitFocusMode")
+                : L10n.string("menu.focusMode"),
             shortcut: .toggleFocusMode
         ) {
             services.focusModeService.toggle()
@@ -49,12 +51,12 @@ struct MenuBarView: View {
         Divider()
 
         // Layout save/restore
-        Button("Save Layout...") {
+        Button(L10n.string("menu.saveLayout")) {
             promptSaveLayout()
         }
 
         if !savedLayouts.isEmpty {
-            Menu("Restore Layout") {
+            Menu(L10n.string("menu.restoreLayout")) {
                 ForEach(savedLayouts) { layout in
                     Button(layout.name) {
                         let result = services.layoutService.restoreLayout(layout)
@@ -66,7 +68,7 @@ struct MenuBarView: View {
 
         Divider()
 
-        Button("Export Layouts...") {
+        Button(L10n.string("menu.exportLayouts")) {
             let panel = NSSavePanel()
             panel.allowedContentTypes = [.json]
             panel.nameFieldStringValue = "MWM-layouts.json"
@@ -79,7 +81,7 @@ struct MenuBarView: View {
             }
         }
 
-        Button("Import Layouts...") {
+        Button(L10n.string("menu.importLayouts")) {
             let panel = NSOpenPanel()
             panel.allowedContentTypes = [.json]
             panel.allowsMultipleSelection = false
@@ -88,8 +90,8 @@ struct MenuBarView: View {
                 let validation = try services.importExportService.importFromFile(url: url)
                 refreshLayouts()
                 let alert = NSAlert()
-                alert.messageText = "Import Complete"
-                alert.informativeText = "\(validation.validLayouts.count) layout(s) imported."
+                alert.messageText = L10n.string("alert.importComplete.title")
+                alert.informativeText = L10n.string("alert.importComplete.message", validation.validLayouts.count)
                 alert.runModal()
             } catch {
                 let alert = NSAlert(error: error)
@@ -99,11 +101,11 @@ struct MenuBarView: View {
 
         Divider()
 
-        Button("Settings...") {
+        Button(L10n.string("menu.settings")) {
             SettingsWindowController.shared.show()
         }
 
-        Button("Quit MWM") {
+        Button(L10n.string("menu.quit")) {
             NSApplication.shared.terminate(nil)
         }
         .keyboardShortcut("q")
@@ -120,13 +122,13 @@ struct MenuBarView: View {
 
     private func promptSaveLayout() {
         let alert = NSAlert()
-        alert.messageText = "Save Current Layout"
-        alert.informativeText = "Enter a name for this layout:"
-        alert.addButton(withTitle: "Save")
-        alert.addButton(withTitle: "Cancel")
+        alert.messageText = L10n.string("menuBar.saveCurrentLayout")
+        alert.informativeText = L10n.string("menuBar.enterLayoutName")
+        alert.addButton(withTitle: L10n.string("saveLayout.save"))
+        alert.addButton(withTitle: L10n.string("alert.cancel"))
 
         let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: 250, height: 24))
-        textField.placeholderString = "My Layout"
+        textField.placeholderString = L10n.string("saveLayout.namePlaceholder")
         alert.accessoryView = textField
 
         if alert.runModal() == .alertFirstButtonReturn {

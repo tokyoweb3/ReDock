@@ -1,0 +1,151 @@
+/* Menu - Window Halves */
+"menu.leftHalf" = "Left Half";
+"menu.rightHalf" = "Right Half";
+"menu.topHalf" = "Top Half";
+"menu.bottomHalf" = "Bottom Half";
+
+/* Menu - Quarters */
+"menu.topLeft" = "Top Left";
+"menu.topRight" = "Top Right";
+"menu.bottomLeft" = "Bottom Left";
+"menu.bottomRight" = "Bottom Right";
+
+/* Menu - Sizing */
+"menu.center" = "Center";
+"menu.maximize" = "Maximize";
+"menu.fullScreen" = "Full Screen";
+"menu.makeLarger" = "Make Larger";
+"menu.makeSmaller" = "Make Smaller";
+
+/* Menu - Display */
+"menu.nextDisplay" = "Next Display";
+"menu.previousDisplay" = "Previous Display";
+
+/* Menu - Focus */
+"menu.focusMode" = "Focus Mode";
+"menu.exitFocusMode" = "Exit Focus Mode";
+
+/* Menu - Layout */
+"menu.saveLayout" = "Save Layout...";
+"menu.restoreLayout" = "Restore Layout";
+"menu.restoreWithLaunch" = "Restore (Launch Apps)";
+"menu.exportLayouts" = "Export Layouts...";
+"menu.importLayouts" = "Import Layouts...";
+"menu.recentRestores" = "Recent Restores";
+
+/* Menu - App */
+"menu.settings" = "Settings...";
+"menu.quit" = "Quit MWM";
+
+/* Alerts */
+"alert.accessibilityRequired.title" = "Accessibility Permission Required";
+"alert.accessibilityRequired.message" = "MWM needs Accessibility permission to read window positions. Please grant it in System Settings, then try again.\n\nAfter rebuilding, you may need to toggle the permission off and on.";
+"alert.openSystemSettings" = "Open System Settings";
+"alert.cancel" = "Cancel";
+"alert.ok" = "OK";
+
+"alert.noWindowsFound.title" = "No Windows Found";
+"alert.noWindowsFound.message" = "No windows were detected. This can happen if:\n\n• Accessibility permission was recently toggled — try toggling it off and on\n• No apps with standard windows are open";
+
+"alert.importComplete.title" = "Import Complete";
+"alert.importComplete.message" = "%lld layout(s) imported.";
+"alert.importComplete.warnings" = "\n\nWarnings:\n%@";
+
+/* File Dialogs */
+"dialog.exportLayouts" = "Export Layouts";
+"dialog.importLayouts" = "Import Layouts";
+
+/* Settings Tabs */
+"settings.shortcuts" = "Shortcuts";
+"settings.layouts" = "Layouts";
+"settings.general" = "General";
+
+/* Settings - Shortcuts Sections */
+"shortcuts.halves" = "Halves";
+"shortcuts.quarters" = "Quarters";
+"shortcuts.sizing" = "Sizing";
+"shortcuts.display" = "Display";
+"shortcuts.focus" = "Focus";
+
+/* Settings - General */
+"general.startup" = "Startup";
+"general.launchAtLogin" = "Launch at Login";
+"general.about" = "About";
+"general.version" = "Version";
+"general.build" = "Build";
+"general.language" = "Language";
+
+/* Language Options */
+"language.system" = "System";
+"language.english" = "English";
+"language.japanese" = "日本語";
+
+/* Settings - Layouts */
+"layouts.windowCount" = "%lld windows";
+"layouts.template" = "Template";
+"layouts.deleteSelected" = "Delete selected layout";
+"layouts.export" = "Export layouts";
+"layouts.import" = "Import layouts";
+"layouts.selectToEdit" = "Select a layout to edit";
+"layouts.autoRestoreEnabled" = "Auto-restore enabled";
+"layouts.autoRestore" = "Auto-restore";
+"layouts.restoreNow" = "Restore Now";
+"layouts.conflictsWith" = "Conflicts with: %@";
+
+/* Save Layout Dialog */
+"saveLayout.title" = "Save Layout";
+"saveLayout.name" = "Name:";
+"saveLayout.namePlaceholder" = "My Layout";
+"saveLayout.mode" = "Mode:";
+"saveLayout.appSpecific" = "App-Specific";
+"saveLayout.template" = "Template (Any Window)";
+"saveLayout.templateDescription" = "Template mode applies positions to the most recently used windows, regardless of app.";
+"saveLayout.windows" = "Windows (%lld/%lld)";
+"saveLayout.selectAll" = "Select All";
+"saveLayout.deselectAll" = "Deselect All";
+"saveLayout.save" = "Save";
+
+/* Layout Editor */
+"editor.noWindows" = "No windows in layout";
+"editor.addWindowsHint" = "Add windows using the + button below";
+"editor.display" = "Display";
+"editor.snap" = "Snap:";
+"editor.name" = "Name";
+"editor.layoutName" = "Layout name";
+"editor.windowsLabel" = "Windows";
+"editor.created" = "Created";
+"editor.modeLabel" = "Mode";
+"editor.trigger" = "Trigger";
+"editor.appSpecific" = "App-Specific";
+"editor.templateLabel" = "Template";
+"editor.templateHint" = "Applies to the most recently used windows, regardless of app.";
+"editor.updateFromCurrent" = "Update from Current Windows";
+"editor.updateFromCurrentHelp" = "Update positions from currently open windows";
+"editor.addWindowHelp" = "Add window from running apps";
+"editor.removeFromLayout" = "Remove from layout";
+
+/* Add Window Sheet */
+"addWindow.title" = "Add Window to Layout";
+"addWindow.position" = "Position:";
+"addWindow.cancel" = "Cancel";
+"addWindow.add" = "Add";
+
+/* Position Presets */
+"preset.leftHalf" = "Left Half";
+"preset.rightHalf" = "Right Half";
+"preset.topHalf" = "Top Half";
+"preset.bottomHalf" = "Bottom Half";
+"preset.topLeft" = "Top Left";
+"preset.topRight" = "Top Right";
+"preset.bottomLeft" = "Bottom Left";
+"preset.bottomRight" = "Bottom Right";
+"preset.maximize" = "Maximize";
+"preset.center" = "Center (60%)";
+
+/* Window Title */
+"window.mwmSettings" = "MWM Settings";
+"window.saveLayout" = "Save Layout";
+
+/* MenuBarView */
+"menuBar.saveCurrentLayout" = "Save Current Layout";
+"menuBar.enterLayoutName" = "Enter a name for this layout:";

@@ -25,7 +25,7 @@ final class SettingsWindowController {
             backing: .buffered,
             defer: false
         )
-        window.title = "MWM Settings"
+        window.title = L10n.string("window.mwmSettings")
         window.contentView = hostingView
         window.center()
         window.isReleasedWhenClosed = false

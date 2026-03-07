@@ -2,24 +2,27 @@ import SwiftUI
 import KeyboardShortcuts
 
 struct SettingsView: View {
+    @ObservedObject private var localization = LocalizationManager.shared
+
     var body: some View {
         TabView {
             ShortcutsSettingsView()
                 .tabItem {
-                    Label("Shortcuts", systemImage: "command")
+                    Label(L10n.string("settings.shortcuts"), systemImage: "command")
                 }
 
             LayoutsSettingsView()
                 .tabItem {
-                    Label("Layouts", systemImage: "rectangle.3.group")
+                    Label(L10n.string("settings.layouts"), systemImage: "rectangle.3.group")
                 }
 
             GeneralSettingsView()
                 .tabItem {
-                    Label("General", systemImage: "gear")
+                    Label(L10n.string("settings.general"), systemImage: "gear")
                 }
         }
         .frame(width: 720, height: 540)
+        .id(localization.currentLanguage) // Force rebuild on language change
     }
 }
 
@@ -31,38 +34,38 @@ struct ShortcutsSettingsView: View {
             HStack(alignment: .top, spacing: 24) {
                 // Left column
                 VStack(spacing: 0) {
-                    shortcutSection("Halves") {
-                        shortcutRow("Left Half", icon: "rectangle.lefthalf.filled", name: .leftHalf)
-                        shortcutRow("Right Half", icon: "rectangle.righthalf.filled", name: .rightHalf)
-                        shortcutRow("Top Half", icon: "rectangle.tophalf.filled", name: .topHalf)
-                        shortcutRow("Bottom Half", icon: "rectangle.bottomhalf.filled", name: .bottomHalf)
+                    shortcutSection(L10n.string("shortcuts.halves")) {
+                        shortcutRow(L10n.string("menu.leftHalf"), icon: "rectangle.lefthalf.filled", name: .leftHalf)
+                        shortcutRow(L10n.string("menu.rightHalf"), icon: "rectangle.righthalf.filled", name: .rightHalf)
+                        shortcutRow(L10n.string("menu.topHalf"), icon: "rectangle.tophalf.filled", name: .topHalf)
+                        shortcutRow(L10n.string("menu.bottomHalf"), icon: "rectangle.bottomhalf.filled", name: .bottomHalf)
                     }
 
-                    shortcutSection("Quarters") {
-                        shortcutRow("Top Left", icon: "rectangle.inset.topleft.filled", name: .topLeft)
-                        shortcutRow("Top Right", icon: "rectangle.inset.topright.filled", name: .topRight)
-                        shortcutRow("Bottom Left", icon: "rectangle.inset.bottomleft.filled", name: .bottomLeft)
-                        shortcutRow("Bottom Right", icon: "rectangle.inset.bottomright.filled", name: .bottomRight)
+                    shortcutSection(L10n.string("shortcuts.quarters")) {
+                        shortcutRow(L10n.string("menu.topLeft"), icon: "rectangle.inset.topleft.filled", name: .topLeft)
+                        shortcutRow(L10n.string("menu.topRight"), icon: "rectangle.inset.topright.filled", name: .topRight)
+                        shortcutRow(L10n.string("menu.bottomLeft"), icon: "rectangle.inset.bottomleft.filled", name: .bottomLeft)
+                        shortcutRow(L10n.string("menu.bottomRight"), icon: "rectangle.inset.bottomright.filled", name: .bottomRight)
                     }
                 }
 
                 // Right column
                 VStack(spacing: 0) {
-                    shortcutSection("Sizing") {
-                        shortcutRow("Maximize", icon: "rectangle.fill", name: .maximize)
-                        shortcutRow("Full Screen", icon: "arrow.up.left.and.arrow.down.right", name: .toggleFullScreen)
-                        shortcutRow("Center", icon: "rectangle.center.inset.filled", name: .center)
-                        shortcutRow("Make Larger", icon: "plus.square", name: .increase)
-                        shortcutRow("Make Smaller", icon: "minus.square", name: .decrease)
+                    shortcutSection(L10n.string("shortcuts.sizing")) {
+                        shortcutRow(L10n.string("menu.maximize"), icon: "rectangle.fill", name: .maximize)
+                        shortcutRow(L10n.string("menu.fullScreen"), icon: "arrow.up.left.and.arrow.down.right", name: .toggleFullScreen)
+                        shortcutRow(L10n.string("menu.center"), icon: "rectangle.center.inset.filled", name: .center)
+                        shortcutRow(L10n.string("menu.makeLarger"), icon: "plus.square", name: .increase)
+                        shortcutRow(L10n.string("menu.makeSmaller"), icon: "minus.square", name: .decrease)
                     }
 
-                    shortcutSection("Display") {
-                        shortcutRow("Next Display", icon: "display.2", name: .nextScreen)
-                        shortcutRow("Previous Display", icon: "display", name: .previousScreen)
+                    shortcutSection(L10n.string("shortcuts.display")) {
+                        shortcutRow(L10n.string("menu.nextDisplay"), icon: "display.2", name: .nextScreen)
+                        shortcutRow(L10n.string("menu.previousDisplay"), icon: "display", name: .previousScreen)
                     }
 
-                    shortcutSection("Focus") {
-                        shortcutRow("Focus Mode", icon: "eye", name: .toggleFocusMode)
+                    shortcutSection(L10n.string("shortcuts.focus")) {
+                        shortcutRow(L10n.string("menu.focusMode"), icon: "eye", name: .toggleFocusMode)
                     }
                 }
             }
@@ -140,19 +143,19 @@ struct LayoutsSettingsView: View {
                         Image(systemName: "minus")
                     }
                     .disabled(selectedLayoutID == nil)
-                    .help("Delete selected layout")
+                    .help(L10n.string("layouts.deleteSelected"))
 
                     Spacer()
 
                     Button(action: { exportLayouts() }) {
                         Image(systemName: "square.and.arrow.up")
                     }
-                    .help("Export layouts")
+                    .help(L10n.string("layouts.export"))
 
                     Button(action: { importLayouts() }) {
                         Image(systemName: "square.and.arrow.down")
                     }
-                    .help("Import layouts")
+                    .help(L10n.string("layouts.import"))
                 }
                 .padding(6)
                 .background(Color(nsColor: .windowBackgroundColor))
@@ -173,9 +176,9 @@ struct LayoutsSettingsView: View {
                     // Bottom controls
                     VStack(spacing: 4) {
                         HStack {
-                            Toggle("Auto-restore", isOn: autoRestoreBinding)
+                            Toggle(L10n.string("layouts.autoRestore"), isOn: autoRestoreBinding)
                             Spacer()
-                            Button("Restore Now") {
+                            Button(L10n.string("layouts.restoreNow")) {
                                 let result = services.layoutService.restoreLayout(binding.wrappedValue)
                                 services.diagnosticsService.record(result: result, triggerSource: "settings")
                             }
@@ -189,7 +192,7 @@ struct LayoutsSettingsView: View {
                                     Image(systemName: "exclamationmark.triangle.fill")
                                         .font(.system(size: 10))
                                         .foregroundStyle(.orange)
-                                    Text("Conflicts with: \(conflicts.map(\.name).joined(separator: ", "))")
+                                    Text(L10n.string("layouts.conflictsWith", conflicts.map(\.name).joined(separator: ", ")))
                                         .font(.system(size: 10))
                                         .foregroundStyle(.orange)
                                     Spacer()
@@ -204,7 +207,7 @@ struct LayoutsSettingsView: View {
                         Image(systemName: "rectangle.3.group")
                             .font(.system(size: 32))
                             .foregroundStyle(.quaternary)
-                        Text("Select a layout to edit")
+                        Text(L10n.string("layouts.selectToEdit"))
                             .font(.callout)
                             .foregroundStyle(.secondary)
                     }
@@ -225,11 +228,11 @@ struct LayoutsSettingsView: View {
                     .font(.system(size: 13, weight: .medium))
                     .lineLimit(1)
                 HStack(spacing: 4) {
-                    Text("\(layout.windows.count) windows")
+                    Text(L10n.string("layouts.windowCount", layout.windows.count))
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                     if layout.mode == .template {
-                        Text("Template")
+                        Text(L10n.string("layouts.template"))
                             .font(.system(size: 9, weight: .medium))
                             .foregroundStyle(.white)
                             .padding(.horizontal, 4)
@@ -244,7 +247,7 @@ struct LayoutsSettingsView: View {
                 Image(systemName: "arrow.clockwise")
                     .font(.system(size: 10))
                     .foregroundStyle(.blue)
-                    .help("Auto-restore enabled")
+                    .help(L10n.string("layouts.autoRestoreEnabled"))
             }
         }
     }
@@ -324,10 +327,10 @@ struct LayoutsSettingsView: View {
             let validation = try services.importExportService.importFromFile(url: url)
             refresh()
             let alert = NSAlert()
-            alert.messageText = "Import Complete"
-            var message = "\(validation.validLayouts.count) layout(s) imported."
+            alert.messageText = L10n.string("alert.importComplete.title")
+            var message = L10n.string("alert.importComplete.message", validation.validLayouts.count)
             if !validation.warnings.isEmpty {
-                message += "\n\nWarnings:\n" + validation.warnings.joined(separator: "\n")
+                message += L10n.string("alert.importComplete.warnings", validation.warnings.joined(separator: "\n"))
             }
             alert.informativeText = message
             alert.runModal()
@@ -346,19 +349,38 @@ struct LayoutsSettingsView: View {
 
 struct GeneralSettingsView: View {
     @State private var launchAtLogin = LaunchAtLogin.isEnabled
+    @ObservedObject private var localization = LocalizationManager.shared
 
     var body: some View {
         Form {
-            Section("Startup") {
-                Toggle("Launch at Login", isOn: $launchAtLogin)
+            Section(L10n.string("general.language")) {
+                Picker(L10n.string("general.language"), selection: $localization.currentLanguage) {
+                    ForEach(AppLanguage.allCases) { lang in
+                        Text(lang.displayName).tag(lang)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 200)
+                .onChange(of: localization.currentLanguage) { _, _ in
+                    // Rebuild menu bar with new language
+                    AppDelegate.statusBar.rebuildMenu()
+                    // Update settings window title
+                    if let window = NSApp.windows.first(where: { $0.title.contains("MWM") || $0.title.contains("設定") }) {
+                        window.title = L10n.string("window.mwmSettings")
+                    }
+                }
+            }
+
+            Section(L10n.string("general.startup")) {
+                Toggle(L10n.string("general.launchAtLogin"), isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, newValue in
                         LaunchAtLogin.setEnabled(newValue)
                     }
             }
 
-            Section("About") {
-                LabeledContent("Version", value: Bundle.main.shortVersion)
-                LabeledContent("Build", value: Bundle.main.buildVersion)
+            Section(L10n.string("general.about")) {
+                LabeledContent(L10n.string("general.version"), value: Bundle.main.shortVersion)
+                LabeledContent(L10n.string("general.build"), value: Bundle.main.buildVersion)
             }
         }
         .formStyle(.grouped)

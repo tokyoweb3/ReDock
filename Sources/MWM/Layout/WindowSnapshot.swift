@@ -1,7 +1,7 @@
 import Foundation
 
 /// A snapshot of a single window's state for layout save/restore.
-struct WindowSnapshot: Codable, Identifiable {
+struct WindowSnapshot: Codable, Identifiable, Equatable {
     var id: UUID
     var appBundleID: String
     var appName: String

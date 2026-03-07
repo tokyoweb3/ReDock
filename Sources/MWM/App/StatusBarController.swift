@@ -29,34 +29,36 @@ final class StatusBarController {
         let menu = NSMenu()
 
         // Halves
-        menu.addItem(actionItem("Left Half", shortcut: .leftHalf, action: .leftHalf))
-        menu.addItem(actionItem("Right Half", shortcut: .rightHalf, action: .rightHalf))
-        menu.addItem(actionItem("Top Half", shortcut: .topHalf, action: .topHalf))
-        menu.addItem(actionItem("Bottom Half", shortcut: .bottomHalf, action: .bottomHalf))
+        menu.addItem(actionItem(L10n.string("menu.leftHalf"), shortcut: .leftHalf, action: .leftHalf))
+        menu.addItem(actionItem(L10n.string("menu.rightHalf"), shortcut: .rightHalf, action: .rightHalf))
+        menu.addItem(actionItem(L10n.string("menu.topHalf"), shortcut: .topHalf, action: .topHalf))
+        menu.addItem(actionItem(L10n.string("menu.bottomHalf"), shortcut: .bottomHalf, action: .bottomHalf))
         menu.addItem(.separator())
 
         // Quarters
-        menu.addItem(actionItem("Top Left", shortcut: .topLeft, action: .topLeft))
-        menu.addItem(actionItem("Top Right", shortcut: .topRight, action: .topRight))
-        menu.addItem(actionItem("Bottom Left", shortcut: .bottomLeft, action: .bottomLeft))
-        menu.addItem(actionItem("Bottom Right", shortcut: .bottomRight, action: .bottomRight))
+        menu.addItem(actionItem(L10n.string("menu.topLeft"), shortcut: .topLeft, action: .topLeft))
+        menu.addItem(actionItem(L10n.string("menu.topRight"), shortcut: .topRight, action: .topRight))
+        menu.addItem(actionItem(L10n.string("menu.bottomLeft"), shortcut: .bottomLeft, action: .bottomLeft))
+        menu.addItem(actionItem(L10n.string("menu.bottomRight"), shortcut: .bottomRight, action: .bottomRight))
         menu.addItem(.separator())
 
         // Sizing
-        menu.addItem(actionItem("Center", shortcut: .center, action: .center))
-        menu.addItem(actionItem("Maximize", shortcut: .maximize, action: .maximize))
-        menu.addItem(actionItem("Full Screen", shortcut: .toggleFullScreen, action: .toggleFullScreen))
-        menu.addItem(actionItem("Make Larger", shortcut: .increase, action: .increase))
-        menu.addItem(actionItem("Make Smaller", shortcut: .decrease, action: .decrease))
+        menu.addItem(actionItem(L10n.string("menu.center"), shortcut: .center, action: .center))
+        menu.addItem(actionItem(L10n.string("menu.maximize"), shortcut: .maximize, action: .maximize))
+        menu.addItem(actionItem(L10n.string("menu.fullScreen"), shortcut: .toggleFullScreen, action: .toggleFullScreen))
+        menu.addItem(actionItem(L10n.string("menu.makeLarger"), shortcut: .increase, action: .increase))
+        menu.addItem(actionItem(L10n.string("menu.makeSmaller"), shortcut: .decrease, action: .decrease))
         menu.addItem(.separator())
 
         // Display
-        menu.addItem(actionItem("Next Display", shortcut: .nextScreen, action: .nextScreen))
-        menu.addItem(actionItem("Previous Display", shortcut: .previousScreen, action: .previousScreen))
+        menu.addItem(actionItem(L10n.string("menu.nextDisplay"), shortcut: .nextScreen, action: .nextScreen))
+        menu.addItem(actionItem(L10n.string("menu.previousDisplay"), shortcut: .previousScreen, action: .previousScreen))
         menu.addItem(.separator())
 
         // Focus Mode
-        let focusTitle = services.focusModeService.isActive ? "Exit Focus Mode" : "Focus Mode"
+        let focusTitle = services.focusModeService.isActive
+            ? L10n.string("menu.exitFocusMode")
+            : L10n.string("menu.focusMode")
         let focusItem = NSMenuItem(title: focusTitle, action: #selector(MenuTarget.toggleFocus), keyEquivalent: "")
         focusItem.target = MenuTarget.shared
         applyShortcutDisplay(focusItem, name: .toggleFocusMode)
@@ -64,7 +66,7 @@ final class StatusBarController {
         menu.addItem(.separator())
 
         // Layout
-        let saveItem = NSMenuItem(title: "Save Layout...", action: #selector(MenuTarget.saveLayout), keyEquivalent: "")
+        let saveItem = NSMenuItem(title: L10n.string("menu.saveLayout"), action: #selector(MenuTarget.saveLayout), keyEquivalent: "")
         saveItem.target = MenuTarget.shared
         menu.addItem(saveItem)
 
@@ -77,7 +79,7 @@ final class StatusBarController {
                 item.representedObject = layout.id.uuidString as NSString
                 restoreMenu.addItem(item)
             }
-            let restoreItem = NSMenuItem(title: "Restore Layout", action: nil, keyEquivalent: "")
+            let restoreItem = NSMenuItem(title: L10n.string("menu.restoreLayout"), action: nil, keyEquivalent: "")
             restoreItem.submenu = restoreMenu
             menu.addItem(restoreItem)
 
@@ -88,7 +90,7 @@ final class StatusBarController {
                 item.representedObject = layout.id.uuidString as NSString
                 restoreWithLaunchMenu.addItem(item)
             }
-            let restoreWithLaunchItem = NSMenuItem(title: "Restore (Launch Apps)", action: nil, keyEquivalent: "")
+            let restoreWithLaunchItem = NSMenuItem(title: L10n.string("menu.restoreWithLaunch"), action: nil, keyEquivalent: "")
             restoreWithLaunchItem.submenu = restoreWithLaunchMenu
             menu.addItem(restoreWithLaunchItem)
         }
@@ -96,11 +98,11 @@ final class StatusBarController {
         menu.addItem(.separator())
 
         // Import/Export
-        let exportItem = NSMenuItem(title: "Export Layouts...", action: #selector(MenuTarget.exportLayouts), keyEquivalent: "")
+        let exportItem = NSMenuItem(title: L10n.string("menu.exportLayouts"), action: #selector(MenuTarget.exportLayouts), keyEquivalent: "")
         exportItem.target = MenuTarget.shared
         menu.addItem(exportItem)
 
-        let importItem = NSMenuItem(title: "Import Layouts...", action: #selector(MenuTarget.importLayouts), keyEquivalent: "")
+        let importItem = NSMenuItem(title: L10n.string("menu.importLayouts"), action: #selector(MenuTarget.importLayouts), keyEquivalent: "")
         importItem.target = MenuTarget.shared
         menu.addItem(importItem)
 
@@ -117,7 +119,7 @@ final class StatusBarController {
                 item.isEnabled = false
                 diagMenu.addItem(item)
             }
-            let diagItem = NSMenuItem(title: "Recent Restores", action: nil, keyEquivalent: "")
+            let diagItem = NSMenuItem(title: L10n.string("menu.recentRestores"), action: nil, keyEquivalent: "")
             diagItem.submenu = diagMenu
             menu.addItem(diagItem)
         }
@@ -125,12 +127,12 @@ final class StatusBarController {
         menu.addItem(.separator())
 
         // Settings & Quit
-        let settingsItem = NSMenuItem(title: "Settings...", action: #selector(MenuTarget.openSettings), keyEquivalent: ",")
+        let settingsItem = NSMenuItem(title: L10n.string("menu.settings"), action: #selector(MenuTarget.openSettings), keyEquivalent: ",")
         settingsItem.keyEquivalentModifierMask = .command
         settingsItem.target = MenuTarget.shared
         menu.addItem(settingsItem)
 
-        let quitItem = NSMenuItem(title: "Quit MWM", action: #selector(MenuTarget.quit), keyEquivalent: "q")
+        let quitItem = NSMenuItem(title: L10n.string("menu.quit"), action: #selector(MenuTarget.quit), keyEquivalent: "q")
         quitItem.keyEquivalentModifierMask = .command
         quitItem.target = MenuTarget.shared
         menu.addItem(quitItem)
@@ -227,10 +229,10 @@ final class StatusBarController {
     @objc func saveLayout() {
         guard services.permissions.isGranted else {
             let alert = NSAlert()
-            alert.messageText = "Accessibility Permission Required"
-            alert.informativeText = "MWM needs Accessibility permission to read window positions. Please grant it in System Settings, then try again.\n\nAfter rebuilding, you may need to toggle the permission off and on."
-            alert.addButton(withTitle: "Open System Settings")
-            alert.addButton(withTitle: "Cancel")
+            alert.messageText = L10n.string("alert.accessibilityRequired.title")
+            alert.informativeText = L10n.string("alert.accessibilityRequired.message")
+            alert.addButton(withTitle: L10n.string("alert.openSystemSettings"))
+            alert.addButton(withTitle: L10n.string("alert.cancel"))
             if alert.runModal() == .alertFirstButtonReturn {
                 services.permissions.openSystemSettings()
             }
@@ -240,10 +242,10 @@ final class StatusBarController {
         let snapshots = services.layoutService.captureCurrentWindows()
         if snapshots.isEmpty {
             let warnAlert = NSAlert()
-            warnAlert.messageText = "No Windows Found"
-            warnAlert.informativeText = "No windows were detected. This can happen if:\n\n• Accessibility permission was recently toggled — try toggling it off and on\n• No apps with standard windows are open"
-            warnAlert.addButton(withTitle: "Open System Settings")
-            warnAlert.addButton(withTitle: "OK")
+            warnAlert.messageText = L10n.string("alert.noWindowsFound.title")
+            warnAlert.informativeText = L10n.string("alert.noWindowsFound.message")
+            warnAlert.addButton(withTitle: L10n.string("alert.openSystemSettings"))
+            warnAlert.addButton(withTitle: L10n.string("alert.ok"))
             if warnAlert.runModal() == .alertFirstButtonReturn {
                 services.permissions.openSystemSettings()
             }
@@ -292,7 +294,7 @@ final class StatusBarController {
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.json]
         panel.nameFieldStringValue = "MWM-layouts.json"
-        panel.title = "Export Layouts"
+        panel.title = L10n.string("dialog.exportLayouts")
 
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
@@ -307,17 +309,17 @@ final class StatusBarController {
     @objc func importLayouts() {
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.json]
-        panel.title = "Import Layouts"
+        panel.title = L10n.string("dialog.importLayouts")
         panel.allowsMultipleSelection = false
 
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
             let validation = try services.importExportService.importFromFile(url: url)
             let alert = NSAlert()
-            alert.messageText = "Import Complete"
-            var message = "\(validation.validLayouts.count) layout(s) imported."
+            alert.messageText = L10n.string("alert.importComplete.title")
+            var message = L10n.string("alert.importComplete.message", validation.validLayouts.count)
             if !validation.warnings.isEmpty {
-                message += "\n\nWarnings:\n" + validation.warnings.joined(separator: "\n")
+                message += L10n.string("alert.importComplete.warnings", validation.warnings.joined(separator: "\n"))
             }
             alert.informativeText = message
             alert.runModal()

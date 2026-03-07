@@ -17,31 +17,31 @@ struct SaveLayoutView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Save Layout")
+            Text(L10n.string("saveLayout.title"))
                 .font(.headline)
 
             // Name field
             HStack {
-                Text("Name:")
+                Text(L10n.string("saveLayout.name"))
                     .frame(width: 50, alignment: .leading)
-                TextField("My Layout", text: $layoutName)
+                TextField(L10n.string("saveLayout.namePlaceholder"), text: $layoutName)
                     .textFieldStyle(.roundedBorder)
             }
 
             // Mode picker
             HStack {
-                Text("Mode:")
+                Text(L10n.string("saveLayout.mode"))
                     .frame(width: 50, alignment: .leading)
                 Picker("", selection: $mode) {
-                    Text("App-Specific").tag(LayoutMode.appSpecific)
-                    Text("Template (Any Window)").tag(LayoutMode.template)
+                    Text(L10n.string("saveLayout.appSpecific")).tag(LayoutMode.appSpecific)
+                    Text(L10n.string("saveLayout.template")).tag(LayoutMode.template)
                 }
                 .labelsHidden()
                 .frame(width: 200)
             }
 
             if mode == .template {
-                Text("Template mode applies positions to the most recently used windows, regardless of app.")
+                Text(L10n.string("saveLayout.templateDescription"))
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                     .padding(.leading, 54)
@@ -49,15 +49,15 @@ struct SaveLayoutView: View {
 
             // Window selection list
             HStack {
-                Text("Windows (\(selectedCount)/\(windowSelections.count))")
+                Text(L10n.string("saveLayout.windows", selectedCount, windowSelections.count))
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(.secondary)
                 Spacer()
-                Button("Select All") {
+                Button(L10n.string("saveLayout.selectAll")) {
                     for i in windowSelections.indices { windowSelections[i].isSelected = true }
                 }
                 .controlSize(.mini)
-                Button("Deselect All") {
+                Button(L10n.string("saveLayout.deselectAll")) {
                     for i in windowSelections.indices { windowSelections[i].isSelected = false }
                 }
                 .controlSize(.mini)
@@ -103,9 +103,9 @@ struct SaveLayoutView: View {
             // Buttons
             HStack {
                 Spacer()
-                Button("Cancel") { dismiss() }
+                Button(L10n.string("alert.cancel")) { dismiss() }
                     .keyboardShortcut(.cancelAction)
-                Button("Save") { save() }
+                Button(L10n.string("saveLayout.save")) { save() }
                     .keyboardShortcut(.defaultAction)
                     .disabled(selectedCount == 0)
             }
@@ -155,7 +155,7 @@ final class SaveLayoutWindowController {
             defer: false
         )
         window.contentView = hostingView
-        window.title = "Save Layout"
+        window.title = L10n.string("window.saveLayout")
         window.center()
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
