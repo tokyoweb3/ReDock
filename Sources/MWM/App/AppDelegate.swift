@@ -7,6 +7,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let services = Self.services
+        setupStatusBar()
 
         let trusted = services.permissions.check(promptIfNeeded: true)
         Self.logger.info("AX trusted: \(trusted)")
@@ -25,5 +26,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         services.hotkeyManager.registerAll()
         services.autoRestoreService.startObserving()
         Self.logger.info("Ready: hotkeys registered, auto-restore active")
+    }
+
+    static let statusBar = StatusBarController(services: AppDelegate.services)
+
+    func setupStatusBar() {
+        Self.statusBar.setup()
     }
 }

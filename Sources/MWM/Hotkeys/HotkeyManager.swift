@@ -29,7 +29,7 @@ extension KeyboardShortcuts.Name {
     static let previousScreen = Self("previousScreen", default: .init(.p, modifiers: [.control, .option, .command]))
 
     // Focus Mode
-    static let toggleFocusMode = Self("toggleFocusMode")
+    static let toggleFocusMode = Self("toggleFocusMode", default: .init(.z, modifiers: [.control, .option, .command]))
 }
 
 /// Manages global hotkey registration.

@@ -1,4 +1,5 @@
 import SwiftUI
+import KeyboardShortcuts
 
 struct MenuBarView: View {
     @State private var savedLayouts: [WindowLayout] = []
@@ -7,30 +8,41 @@ struct MenuBarView: View {
 
     var body: some View {
         // Window halves
-        Button("Left Half") { services.dispatcher.dispatch(.leftHalf) }
-        Button("Right Half") { services.dispatcher.dispatch(.rightHalf) }
-        Button("Top Half") { services.dispatcher.dispatch(.topHalf) }
-        Button("Bottom Half") { services.dispatcher.dispatch(.bottomHalf) }
+        menuItem("Left Half", shortcut: .leftHalf) { services.dispatcher.dispatch(.leftHalf) }
+        menuItem("Right Half", shortcut: .rightHalf) { services.dispatcher.dispatch(.rightHalf) }
+        menuItem("Top Half", shortcut: .topHalf) { services.dispatcher.dispatch(.topHalf) }
+        menuItem("Bottom Half", shortcut: .bottomHalf) { services.dispatcher.dispatch(.bottomHalf) }
 
         Divider()
 
         // Quarters
-        Button("Top Left") { services.dispatcher.dispatch(.topLeft) }
-        Button("Top Right") { services.dispatcher.dispatch(.topRight) }
-        Button("Bottom Left") { services.dispatcher.dispatch(.bottomLeft) }
-        Button("Bottom Right") { services.dispatcher.dispatch(.bottomRight) }
+        menuItem("Top Left", shortcut: .topLeft) { services.dispatcher.dispatch(.topLeft) }
+        menuItem("Top Right", shortcut: .topRight) { services.dispatcher.dispatch(.topRight) }
+        menuItem("Bottom Left", shortcut: .bottomLeft) { services.dispatcher.dispatch(.bottomLeft) }
+        menuItem("Bottom Right", shortcut: .bottomRight) { services.dispatcher.dispatch(.bottomRight) }
 
         Divider()
 
         // Sizing
-        Button("Center") { services.dispatcher.dispatch(.center) }
-        Button("Maximize") { services.dispatcher.dispatch(.maximize) }
-        Button("Full Screen") { services.dispatcher.dispatch(.toggleFullScreen) }
+        menuItem("Center", shortcut: .center) { services.dispatcher.dispatch(.center) }
+        menuItem("Maximize", shortcut: .maximize) { services.dispatcher.dispatch(.maximize) }
+        menuItem("Full Screen", shortcut: .toggleFullScreen) { services.dispatcher.dispatch(.toggleFullScreen) }
+        menuItem("Make Larger", shortcut: .increase) { services.dispatcher.dispatch(.increase) }
+        menuItem("Make Smaller", shortcut: .decrease) { services.dispatcher.dispatch(.decrease) }
+
+        Divider()
+
+        // Display
+        menuItem("Next Display", shortcut: .nextScreen) { services.dispatcher.dispatch(.nextScreen) }
+        menuItem("Previous Display", shortcut: .previousScreen) { services.dispatcher.dispatch(.previousScreen) }
 
         Divider()
 
         // Focus Mode
-        Button(services.focusModeService.isActive ? "Exit Focus Mode" : "Focus Mode") {
+        menuItem(
+            services.focusModeService.isActive ? "Exit Focus Mode" : "Focus Mode",
+            shortcut: .toggleFocusMode
+        ) {
             services.focusModeService.toggle()
         }
 
@@ -62,6 +74,14 @@ struct MenuBarView: View {
         }
         .keyboardShortcut("q")
         .onAppear { refreshLayouts() }
+    }
+
+    // MARK: - Helpers
+
+    private func menuItem(_ label: String, shortcut name: KeyboardShortcuts.Name, action: @escaping () -> Void) -> some View {
+        let shortcutText = KeyboardShortcuts.getShortcut(for: name)?.description ?? ""
+        let title = shortcutText.isEmpty ? label : "\(label)\t\(shortcutText)"
+        return Button(title, action: action)
     }
 
     private func promptSaveLayout() {

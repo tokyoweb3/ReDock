@@ -5,9 +5,10 @@ struct MWMApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
-        MenuBarExtra("MWM", systemImage: "rectangle.split.2x2") {
-            MenuBarView()
+        // Menu bar is managed by StatusBarController (NSStatusItem).
+        // An empty Settings scene is required to satisfy the App protocol.
+        Settings {
+            EmptyView()
         }
-        .menuBarExtraStyle(.menu)
     }
 }
