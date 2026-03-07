@@ -53,8 +53,8 @@ struct MenuBarView: View {
 
         Divider()
 
-        SettingsLink {
-            Text("Settings...")
+        Button("Settings...") {
+            SettingsWindowController.shared.show()
         }
 
         Button("Quit MWM") {

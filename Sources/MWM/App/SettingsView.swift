@@ -6,7 +6,7 @@ struct SettingsView: View {
         TabView {
             ShortcutsSettingsView()
                 .tabItem {
-                    Label("Shortcuts", systemImage: "keyboard")
+                    Label("Shortcuts", systemImage: "command")
                 }
 
             LayoutsSettingsView()
@@ -19,7 +19,7 @@ struct SettingsView: View {
                     Label("General", systemImage: "gear")
                 }
         }
-        .frame(width: 500, height: 550)
+        .frame(width: 620, height: 480)
     }
 }
 
@@ -27,48 +27,86 @@ struct SettingsView: View {
 
 struct ShortcutsSettingsView: View {
     var body: some View {
-        Form {
-            Section("Halves") {
-                shortcutRow("Left Half", name: .leftHalf)
-                shortcutRow("Right Half", name: .rightHalf)
-                shortcutRow("Top Half", name: .topHalf)
-                shortcutRow("Bottom Half", name: .bottomHalf)
-            }
+        ScrollView {
+            HStack(alignment: .top, spacing: 24) {
+                // Left column
+                VStack(spacing: 0) {
+                    shortcutSection("Halves") {
+                        shortcutRow("Left Half", icon: "rectangle.lefthalf.filled", name: .leftHalf)
+                        shortcutRow("Right Half", icon: "rectangle.righthalf.filled", name: .rightHalf)
+                        shortcutRow("Top Half", icon: "rectangle.tophalf.filled", name: .topHalf)
+                        shortcutRow("Bottom Half", icon: "rectangle.bottomhalf.filled", name: .bottomHalf)
+                    }
 
-            Section("Quarters") {
-                shortcutRow("Top Left", name: .topLeft)
-                shortcutRow("Top Right", name: .topRight)
-                shortcutRow("Bottom Left", name: .bottomLeft)
-                shortcutRow("Bottom Right", name: .bottomRight)
-            }
+                    shortcutSection("Quarters") {
+                        shortcutRow("Top Left", icon: "rectangle.inset.topleft.filled", name: .topLeft)
+                        shortcutRow("Top Right", icon: "rectangle.inset.topright.filled", name: .topRight)
+                        shortcutRow("Bottom Left", icon: "rectangle.inset.bottomleft.filled", name: .bottomLeft)
+                        shortcutRow("Bottom Right", icon: "rectangle.inset.bottomright.filled", name: .bottomRight)
+                    }
+                }
 
-            Section("Sizing") {
-                shortcutRow("Center", name: .center)
-                shortcutRow("Maximize", name: .maximize)
-                shortcutRow("Full Screen", name: .toggleFullScreen)
-                shortcutRow("Increase Size", name: .increase)
-                shortcutRow("Decrease Size", name: .decrease)
-            }
+                // Right column
+                VStack(spacing: 0) {
+                    shortcutSection("Sizing") {
+                        shortcutRow("Maximize", icon: "rectangle.fill", name: .maximize)
+                        shortcutRow("Full Screen", icon: "arrow.up.left.and.arrow.down.right", name: .toggleFullScreen)
+                        shortcutRow("Center", icon: "rectangle.center.inset.filled", name: .center)
+                        shortcutRow("Make Larger", icon: "plus.square", name: .increase)
+                        shortcutRow("Make Smaller", icon: "minus.square", name: .decrease)
+                    }
 
-            Section("Display") {
-                shortcutRow("Next Screen", name: .nextScreen)
-                shortcutRow("Previous Screen", name: .previousScreen)
-            }
+                    shortcutSection("Display") {
+                        shortcutRow("Next Display", icon: "display.2", name: .nextScreen)
+                        shortcutRow("Previous Display", icon: "display", name: .previousScreen)
+                    }
 
-            Section("Focus") {
-                shortcutRow("Toggle Focus Mode", name: .toggleFocusMode)
+                    shortcutSection("Focus") {
+                        shortcutRow("Focus Mode", icon: "eye", name: .toggleFocusMode)
+                    }
+                }
             }
+            .padding(16)
         }
-        .formStyle(.grouped)
-        .padding()
     }
 
-    private func shortcutRow(_ label: String, name: KeyboardShortcuts.Name) -> some View {
-        HStack {
-            Text(label)
-                .frame(width: 160, alignment: .leading)
-            KeyboardShortcuts.Recorder(for: name)
+    @ViewBuilder
+    private func shortcutSection(_ title: String, @ViewBuilder content: () -> some View) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(title)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 4)
+                .padding(.top, 12)
+                .padding(.bottom, 4)
+
+            VStack(spacing: 1) {
+                content()
+            }
+            .background(Color(nsColor: .separatorColor).opacity(0.3))
+            .clipShape(RoundedRectangle(cornerRadius: 6))
         }
+    }
+
+    private func shortcutRow(_ label: String, icon: String, name: KeyboardShortcuts.Name) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .frame(width: 18)
+
+            Text(label)
+                .font(.system(size: 12))
+                .lineLimit(1)
+
+            Spacer()
+
+            KeyboardShortcuts.Recorder(for: name)
+                .frame(width: 120)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(Color(nsColor: .controlBackgroundColor))
     }
 }
 
