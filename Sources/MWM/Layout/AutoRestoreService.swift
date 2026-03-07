@@ -57,40 +57,53 @@ final class AutoRestoreService {
         }
     }
 
+    /// Find all layouts whose trigger matches the current context.
+    func findConflicts() -> [WindowLayout] {
+        let context = contextResolver.resolve()
+        return layoutService.loadAll().filter { layout in
+            guard layout.autoRestore, let trigger = layout.trigger else { return false }
+            return trigger.matches(context)
+        }
+    }
+
     private func evaluateTriggers() {
         let context = contextResolver.resolve()
         let layouts = layoutService.loadAll()
 
-        for layout in layouts {
-            guard layout.autoRestore else { continue }
-            guard let trigger = layout.trigger else { continue }
+        let matching = layouts.filter { layout in
+            guard layout.autoRestore, let trigger = layout.trigger else { return false }
+            return trigger.matches(context)
+        }
 
-            if trigger.matches(context) {
-                Self.logger.info("Auto-restoring layout '\(layout.name)' (trigger: \(trigger.displayDescription))")
+        if matching.count > 1 {
+            let names = matching.map(\.name).joined(separator: ", ")
+            Self.logger.warning("Multiple auto-restore layouts match: \(names). Using most recently updated.")
+        }
 
-                if autoLaunchApps {
-                    Task {
-                        let launchResult = await appLaunchService.launchMissingApps(for: layout)
-                        Self.logger.info("App launch: \(launchResult.summary)")
+        guard let layout = matching.first, let trigger = layout.trigger else {
+            Self.logger.debug("No matching auto-restore layout for current context")
+            return
+        }
 
-                        // Brief delay for launched apps to create windows
-                        if !launchResult.launched.isEmpty {
-                            try? await Task.sleep(nanoseconds: 1_000_000_000)
-                        }
+        Self.logger.info("Auto-restoring layout '\(layout.name)' (trigger: \(trigger.displayDescription))")
 
-                        await MainActor.run {
-                            let result = layoutService.restoreLayout(layout)
-                            diagnosticsService.record(result: result, triggerSource: "auto-\(trigger.displayDescription)")
-                        }
-                    }
-                } else {
+        if autoLaunchApps {
+            Task {
+                let launchResult = await appLaunchService.launchMissingApps(for: layout)
+                Self.logger.info("App launch: \(launchResult.summary)")
+
+                if !launchResult.launched.isEmpty {
+                    try? await Task.sleep(nanoseconds: 1_000_000_000)
+                }
+
+                await MainActor.run {
                     let result = layoutService.restoreLayout(layout)
                     diagnosticsService.record(result: result, triggerSource: "auto-\(trigger.displayDescription)")
                 }
-                return
             }
+        } else {
+            let result = layoutService.restoreLayout(layout)
+            diagnosticsService.record(result: result, triggerSource: "auto-\(trigger.displayDescription)")
         }
-
-        Self.logger.debug("No matching auto-restore layout for current context")
     }
 }

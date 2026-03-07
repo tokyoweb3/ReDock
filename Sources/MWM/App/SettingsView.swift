@@ -171,14 +171,31 @@ struct LayoutsSettingsView: View {
                     }
 
                     // Bottom controls
-                    HStack {
-                        Toggle("Auto-restore", isOn: autoRestoreBinding)
-                        Spacer()
-                        Button("Restore Now") {
-                            let result = services.layoutService.restoreLayout(binding.wrappedValue)
-                            services.diagnosticsService.record(result: result, triggerSource: "settings")
+                    VStack(spacing: 4) {
+                        HStack {
+                            Toggle("Auto-restore", isOn: autoRestoreBinding)
+                            Spacer()
+                            Button("Restore Now") {
+                                let result = services.layoutService.restoreLayout(binding.wrappedValue)
+                                services.diagnosticsService.record(result: result, triggerSource: "settings")
+                            }
+                            .controlSize(.small)
                         }
-                        .controlSize(.small)
+
+                        if binding.wrappedValue.autoRestore {
+                            let conflicts = autoRestoreConflicts(for: binding.wrappedValue)
+                            if !conflicts.isEmpty {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .font(.system(size: 10))
+                                        .foregroundStyle(.orange)
+                                    Text("Conflicts with: \(conflicts.map(\.name).joined(separator: ", "))")
+                                        .font(.system(size: 10))
+                                        .foregroundStyle(.orange)
+                                    Spacer()
+                                }
+                            }
+                        }
                     }
                     .padding(.horizontal, 12)
                     .padding(.bottom, 8)
@@ -266,6 +283,16 @@ struct LayoutsSettingsView: View {
                 refresh()
             }
         )
+    }
+
+    private func autoRestoreConflicts(for layout: WindowLayout) -> [WindowLayout] {
+        layouts.filter { other in
+            other.id != layout.id
+                && other.autoRestore
+                && other.trigger != nil
+                && layout.trigger != nil
+                && other.trigger == layout.trigger
+        }
     }
 
     private func deleteSelected() {
