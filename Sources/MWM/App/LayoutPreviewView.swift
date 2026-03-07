@@ -102,6 +102,7 @@ struct LayoutEditorPreview: View {
     @Binding var windows: [WindowSnapshot]
     @Binding var selectedWindowID: UUID?
     var allDisplayFingerprints: [DisplayFingerprint] = []
+    var onDoubleClick: ((UUID) -> Void)?
 
     @State private var dragStartFrame: RelativeFrame?
     @State private var dragStartDisplayRect: CGRect?
@@ -215,6 +216,10 @@ struct LayoutEditorPreview: View {
                     dragStartArranged = nil
                 }
         )
+        .onTapGesture(count: 2) {
+            selectedWindowID = window.id
+            onDoubleClick?(window.id)
+        }
         .onTapGesture {
             selectedWindowID = window.id
         }
@@ -274,6 +279,8 @@ struct LayoutEditorView: View {
     @State private var draft: WindowLayout
     @State private var selectedWindowID: UUID?
     @State private var showingAddWindow = false
+    @State private var showingRecapture = false
+    @State private var showingAppPicker = false
     let onSave: () -> Void
 
     init(layout: Binding<WindowLayout>, onSave: @escaping () -> Void) {
@@ -294,7 +301,11 @@ struct LayoutEditorView: View {
             LayoutEditorPreview(
                 windows: $draft.windows,
                 selectedWindowID: $selectedWindowID,
-                allDisplayFingerprints: allDisplayFingerprints
+                allDisplayFingerprints: allDisplayFingerprints,
+                onDoubleClick: { windowID in
+                    selectedWindowID = windowID
+                    showingAppPicker = true
+                }
             )
             .frame(height: 180)
             .background(Color(nsColor: .windowBackgroundColor))
@@ -365,6 +376,7 @@ struct LayoutEditorView: View {
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                         .frame(width: 60, alignment: .leading)
+                        .help(L10n.string("tooltip.mode"))
                     Picker("", selection: $draft.mode) {
                         Text(L10n.string("editor.appSpecific")).tag(LayoutMode.appSpecific)
                         Text(L10n.string("editor.templateLabel")).tag(LayoutMode.template)
@@ -372,10 +384,13 @@ struct LayoutEditorView: View {
                     .labelsHidden()
                     .pickerStyle(.segmented)
                     .frame(width: 180)
+                    .help(draft.mode == .appSpecific
+                        ? L10n.string("tooltip.appSpecific")
+                        : L10n.string("tooltip.template"))
                 }
 
                 if draft.mode == .template {
-                    Text(L10n.string("editor.templateHint"))
+                    Text(L10n.string("tooltip.template"))
                         .font(.system(size: 10))
                         .foregroundStyle(.tertiary)
                         .padding(.leading, 60)
@@ -386,17 +401,17 @@ struct LayoutEditorView: View {
                 }
             }
 
-            // Update from current button
-            Button(action: { updateFromCurrent() }) {
+            // Re-capture from current windows
+            Button(action: { showingRecapture = true }) {
                 HStack(spacing: 4) {
-                    Image(systemName: "arrow.triangle.2.circlepath")
+                    Image(systemName: "camera")
                         .font(.system(size: 10))
-                    Text(L10n.string("editor.updateFromCurrent"))
+                    Text(L10n.string("editor.recapture"))
                         .font(.system(size: 11))
                 }
             }
             .controlSize(.small)
-            .help(L10n.string("editor.updateFromCurrentHelp"))
+            .help(L10n.string("editor.recaptureHelp"))
 
             // Window list header
             HStack {
@@ -404,6 +419,18 @@ struct LayoutEditorView: View {
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(.secondary)
                 Spacer()
+                Button(action: {
+                    if selectedWindowID != nil {
+                        showingAppPicker = true
+                    }
+                }) {
+                    Image(systemName: "arrow.triangle.swap")
+                        .font(.system(size: 10))
+                }
+                .controlSize(.small)
+                .disabled(selectedWindowID == nil)
+                .help(L10n.string("editor.changeApp"))
+
                 Button(action: { showingAddWindow = true }) {
                     Image(systemName: "plus")
                         .font(.system(size: 10))
@@ -428,14 +455,30 @@ struct LayoutEditorView: View {
         }
         .sheet(isPresented: $showingAddWindow) {
             AddWindowSheet(
-                onAdd: { snapshot in
-                    draft.windows.append(snapshot)
+                onAdd: { snapshots in
+                    draft.windows.append(contentsOf: snapshots)
                 }
             )
         }
+        .sheet(isPresented: $showingRecapture) {
+            RecaptureSheet(
+                onRecapture: { snapshots in
+                    draft.windows = snapshots
+                }
+            )
+        }
+        .sheet(isPresented: $showingAppPicker) {
+            if let windowID = selectedWindowID,
+               let index = draft.windows.firstIndex(where: { $0.id == windowID }) {
+                ChangeAppSheet(currentApp: draft.windows[index].appName) { bundleID, appName in
+                    draft.windows[index].appBundleID = bundleID
+                    draft.windows[index].appName = appName
+                }
+            }
+        }
     }
 
-    /// All unique display fingerprints from both draft and saved layout
+    /// All unique display fingerprints from draft, saved layout, and connected displays
     private var allDisplayFingerprints: [DisplayFingerprint] {
         var seen = Set<DisplayFingerprint>()
         var result: [DisplayFingerprint] = []
@@ -447,6 +490,12 @@ struct LayoutEditorView: View {
         for window in layout.windows {
             if seen.insert(window.display).inserted {
                 result.append(window.display)
+            }
+        }
+        // Include currently connected displays so all monitors are visible
+        for fp in AppDelegate.services.screenRegistry.fingerprints() {
+            if seen.insert(fp).inserted {
+                result.append(fp)
             }
         }
         return result.sorted {
@@ -539,6 +588,10 @@ struct LayoutEditorView: View {
             ? Color.accentColor.opacity(0.1)
             : Color(nsColor: .controlBackgroundColor))
         .contentShape(Rectangle())
+        .onTapGesture(count: 2) {
+            selectedWindowID = window.id
+            showingAppPicker = true
+        }
         .onTapGesture {
             selectedWindowID = window.id
         }
@@ -548,15 +601,6 @@ struct LayoutEditorView: View {
         draft.windows.removeAll { $0.id == id }
         if selectedWindowID == id {
             selectedWindowID = nil
-        }
-    }
-
-    private func updateFromCurrent() {
-        do {
-            let updated = try AppDelegate.services.layoutService.updateFromCurrent(layoutID: draft.id)
-            draft.windows = updated.windows
-        } catch {
-            // Layout may not be saved yet; silently ignore
         }
     }
 
@@ -588,23 +632,335 @@ struct LayoutEditorView: View {
     }
 }
 
-// MARK: - Add Window Sheet
+// MARK: - Add Window Sheet (multi-select)
 
-/// Sheet to add a window entry from currently running apps.
+/// Sheet to add window entries from currently running apps (supports multi-selection).
 struct AddWindowSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var runningApps: [RunningAppInfo] = []
-    @State private var selectedBundleID: String?
+    @State private var windowItems: [AddWindowItem] = []
+    @State private var useCurrentPosition = true
     @State private var selectedPreset: PositionPreset = .leftHalf
 
-    let onAdd: (WindowSnapshot) -> Void
+    let onAdd: ([WindowSnapshot]) -> Void
+
+    private var selectedCount: Int {
+        windowItems.filter(\.isSelected).count
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(L10n.string("addWindow.title"))
                 .font(.headline)
 
-            // App list
+            // Position mode
+            HStack {
+                Text(L10n.string("addWindow.position"))
+                    .font(.system(size: 12))
+                Picker("", selection: $useCurrentPosition) {
+                    Text(L10n.string("addWindow.currentPosition")).tag(true)
+                    ForEach(PositionPreset.allCases, id: \.self) { preset in
+                        Text(preset.label).tag(false)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 180)
+                .onChange(of: useCurrentPosition) { _, newValue in
+                    if !newValue && selectedPreset == .leftHalf {
+                        // Keep default preset
+                    }
+                }
+
+                if !useCurrentPosition {
+                    Picker("", selection: $selectedPreset) {
+                        ForEach(PositionPreset.allCases, id: \.self) { preset in
+                            Text(preset.label).tag(preset)
+                        }
+                    }
+                    .labelsHidden()
+                    .frame(width: 120)
+                }
+            }
+
+            // Select all / deselect all
+            HStack {
+                Text(L10n.string("addWindow.windowCount", selectedCount, windowItems.count))
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button(L10n.string("saveLayout.selectAll")) {
+                    for i in windowItems.indices { windowItems[i].isSelected = true }
+                }
+                .controlSize(.mini)
+                Button(L10n.string("saveLayout.deselectAll")) {
+                    for i in windowItems.indices { windowItems[i].isSelected = false }
+                }
+                .controlSize(.mini)
+            }
+
+            // Window list with checkboxes
+            List {
+                ForEach($windowItems) { $item in
+                    HStack(spacing: 8) {
+                        Toggle("", isOn: $item.isSelected)
+                            .toggleStyle(.checkbox)
+                            .labelsHidden()
+
+                        if let icon = item.icon {
+                            Image(nsImage: icon)
+                                .resizable()
+                                .frame(width: 18, height: 18)
+                        }
+
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(item.appName)
+                                .font(.system(size: 12))
+                                .lineLimit(1)
+                            if let title = item.windowTitle, !title.isEmpty {
+                                Text(title)
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+                        }
+
+                        Spacer()
+
+                        if let displayName = item.displayName {
+                            Text(displayName)
+                                .font(.system(size: 9))
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+                }
+            }
+            .frame(height: 240)
+
+            HStack {
+                Spacer()
+                Button(L10n.string("addWindow.cancel")) { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+                Button(L10n.string("addWindow.addCount", selectedCount)) { addWindows() }
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(selectedCount == 0)
+            }
+        }
+        .padding()
+        .frame(width: 440, height: 420)
+        .onAppear { loadWindowItems() }
+    }
+
+    private func loadWindowItems() {
+        let services = AppDelegate.services
+        let snapshots = services.layoutService.captureCurrentWindows()
+        windowItems = snapshots.map { snapshot in
+            let icon = NSRunningApplication.runningApplications(
+                withBundleIdentifier: snapshot.appBundleID
+            ).first?.icon
+            return AddWindowItem(
+                snapshot: snapshot,
+                appName: snapshot.appName,
+                windowTitle: snapshot.title,
+                displayName: snapshot.display.localizedName,
+                icon: icon,
+                isSelected: false
+            )
+        }
+    }
+
+    private func addWindows() {
+        let selected = windowItems.filter(\.isSelected)
+        let snapshots: [WindowSnapshot] = selected.map { item in
+            if useCurrentPosition {
+                return WindowSnapshot(
+                    id: UUID(),
+                    appBundleID: item.snapshot.appBundleID,
+                    appName: item.snapshot.appName,
+                    title: item.snapshot.title,
+                    role: item.snapshot.role,
+                    subrole: item.snapshot.subrole,
+                    relativeFrame: item.snapshot.relativeFrame,
+                    display: item.snapshot.display,
+                    isMinimized: item.snapshot.isMinimized,
+                    wasFullscreen: item.snapshot.wasFullscreen
+                )
+            } else {
+                let display = item.snapshot.display
+                return WindowSnapshot(
+                    id: UUID(),
+                    appBundleID: item.snapshot.appBundleID,
+                    appName: item.snapshot.appName,
+                    title: item.snapshot.title,
+                    role: "AXWindow",
+                    subrole: "AXStandardWindow",
+                    relativeFrame: selectedPreset.relativeFrame,
+                    display: display,
+                    isMinimized: false,
+                    wasFullscreen: false
+                )
+            }
+        }
+        onAdd(snapshots)
+        dismiss()
+    }
+}
+
+// MARK: - Re-capture Sheet
+
+/// Sheet to replace all windows in the layout with a fresh capture.
+struct RecaptureSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var windowSelections: [WindowSelection] = []
+    @State private var obstructedIDs: Set<UUID> = []
+    @State private var ignoreObstructed = false
+
+    let onRecapture: ([WindowSnapshot]) -> Void
+
+    private var selectedCount: Int {
+        windowSelections.filter(\.isSelected).count
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(L10n.string("editor.recaptureTitle"))
+                .font(.headline)
+
+            Text(L10n.string("editor.recaptureDescription"))
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+
+            if !obstructedIDs.isEmpty {
+                Toggle(L10n.string("saveLayout.ignoreObstructed"), isOn: $ignoreObstructed)
+                    .font(.system(size: 12))
+                    .onChange(of: ignoreObstructed) { _, newValue in
+                        for i in windowSelections.indices {
+                            if windowSelections[i].isObstructed {
+                                windowSelections[i].isSelected = !newValue
+                            }
+                        }
+                    }
+            }
+
+            HStack {
+                Text(L10n.string("saveLayout.windows", selectedCount, windowSelections.count))
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button(L10n.string("saveLayout.selectAll")) {
+                    for i in windowSelections.indices { windowSelections[i].isSelected = true }
+                }
+                .controlSize(.mini)
+                Button(L10n.string("saveLayout.deselectAll")) {
+                    for i in windowSelections.indices { windowSelections[i].isSelected = false }
+                }
+                .controlSize(.mini)
+            }
+
+            List {
+                ForEach($windowSelections) { $item in
+                    HStack(spacing: 8) {
+                        Toggle("", isOn: $item.isSelected)
+                            .toggleStyle(.checkbox)
+                            .labelsHidden()
+
+                        if let icon = NSRunningApplication.runningApplications(
+                            withBundleIdentifier: item.snapshot.appBundleID
+                        ).first?.icon {
+                            Image(nsImage: icon)
+                                .resizable()
+                                .frame(width: 16, height: 16)
+                        }
+
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(item.snapshot.appName)
+                                .font(.system(size: 12))
+                                .lineLimit(1)
+                            if let title = item.snapshot.title, !title.isEmpty {
+                                Text(title)
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+                        }
+
+                        Spacer()
+
+                        if item.isObstructed {
+                            Text(L10n.string("saveLayout.obstructedBadge"))
+                                .font(.system(size: 9, weight: .medium))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 4)
+                                .padding(.vertical, 1)
+                                .background(Color.secondary.opacity(0.5))
+                                .clipShape(Capsule())
+                        }
+
+                        Text(sizeLabel(item.snapshot.relativeFrame))
+                            .font(.system(size: 10, design: .monospaced))
+                            .foregroundStyle(.tertiary)
+                    }
+                    .opacity(ignoreObstructed && item.isObstructed ? 0.4 : 1.0)
+                }
+            }
+            .frame(minHeight: 200)
+
+            HStack {
+                Spacer()
+                Button(L10n.string("alert.cancel")) { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+                Button(L10n.string("editor.recaptureConfirm", selectedCount)) { recapture() }
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(selectedCount == 0)
+            }
+        }
+        .padding()
+        .frame(width: 480, height: 440)
+        .onAppear { captureWindows() }
+    }
+
+    private func captureWindows() {
+        let capture = AppDelegate.services.layoutService.captureWithObstructionInfo()
+        obstructedIDs = capture.obstructedIDs
+        windowSelections = capture.snapshots.map {
+            WindowSelection(
+                snapshot: $0,
+                isSelected: true,
+                isObstructed: capture.obstructedIDs.contains($0.id)
+            )
+        }
+    }
+
+    private func recapture() {
+        let selected = windowSelections
+            .filter { $0.isSelected && !(ignoreObstructed && $0.isObstructed) }
+            .map(\.snapshot)
+        onRecapture(selected)
+        dismiss()
+    }
+
+    private func sizeLabel(_ frame: RelativeFrame) -> String {
+        "\(Int(frame.width * 100))%x\(Int(frame.height * 100))%"
+    }
+}
+
+// MARK: - Change App Sheet
+
+/// Sheet to reassign a window slot to a different app.
+struct ChangeAppSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var runningApps: [RunningAppInfo] = []
+    @State private var selectedBundleID: String?
+    let currentApp: String
+    let onChange: (String, String) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(L10n.string("changeApp.title"))
+                .font(.headline)
+
+            Text(L10n.string("changeApp.current", currentApp))
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+
             List(runningApps, id: \.bundleID, selection: $selectedBundleID) { app in
                 HStack(spacing: 8) {
                     if let icon = app.icon {
@@ -624,62 +980,18 @@ struct AddWindowSheet: View {
             }
             .frame(height: 200)
 
-            // Position preset
-            HStack {
-                Text(L10n.string("addWindow.position"))
-                    .font(.system(size: 12))
-                Picker("", selection: $selectedPreset) {
-                    ForEach(PositionPreset.allCases, id: \.self) { preset in
-                        Text(preset.label).tag(preset)
-                    }
-                }
-                .labelsHidden()
-                .frame(width: 160)
-            }
-
-            // Preview of selected preset
-            presetPreview
-
             HStack {
                 Spacer()
-                Button(L10n.string("addWindow.cancel")) { dismiss() }
+                Button(L10n.string("alert.cancel")) { dismiss() }
                     .keyboardShortcut(.cancelAction)
-                Button(L10n.string("addWindow.add")) { addWindow() }
+                Button(L10n.string("changeApp.change")) { changeApp() }
                     .keyboardShortcut(.defaultAction)
                     .disabled(selectedBundleID == nil)
             }
         }
         .padding()
-        .frame(width: 380, height: 400)
+        .frame(width: 360, height: 340)
         .onAppear { loadRunningApps() }
-    }
-
-    private var presetPreview: some View {
-        let frame = selectedPreset.relativeFrame
-        return ZStack(alignment: .topLeading) {
-            RoundedRectangle(cornerRadius: 4)
-                .fill(Color(nsColor: .controlBackgroundColor))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 4)
-                        .strokeBorder(Color(nsColor: .separatorColor), lineWidth: 1)
-                )
-
-            RoundedRectangle(cornerRadius: 2)
-                .fill(Color.accentColor.opacity(0.3))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 2)
-                        .strokeBorder(Color.accentColor.opacity(0.6), lineWidth: 0.5)
-                )
-                .frame(
-                    width: 120 * frame.width,
-                    height: 70 * frame.height
-                )
-                .offset(
-                    x: 2 + 120 * frame.x,
-                    y: 2 + 70 * frame.y
-                )
-        }
-        .frame(width: 124, height: 74)
     }
 
     private func loadRunningApps() {
@@ -688,44 +1000,17 @@ struct AddWindowSheet: View {
             .compactMap { app -> RunningAppInfo? in
                 guard let bundleID = app.bundleIdentifier,
                       let name = app.localizedName else { return nil }
-                return RunningAppInfo(
-                    bundleID: bundleID,
-                    name: name,
-                    icon: app.icon
-                )
+                return RunningAppInfo(bundleID: bundleID, name: name, icon: app.icon)
             }
             .sorted { $0.name < $1.name }
-
-        // Deduplicate by bundleID
         var seen = Set<String>()
         runningApps = apps.filter { seen.insert($0.bundleID).inserted }
     }
 
-    private func addWindow() {
+    private func changeApp() {
         guard let bundleID = selectedBundleID,
               let app = runningApps.first(where: { $0.bundleID == bundleID }) else { return }
-
-        let fingerprints = AppDelegate.services.screenRegistry.fingerprints()
-        let display = fingerprints.first ?? DisplayFingerprint(
-            displayID: 0,
-            localizedName: "Display",
-            bounds: CGRect(x: 0, y: 0, width: 1920, height: 1080)
-        )
-
-        let snapshot = WindowSnapshot(
-            id: UUID(),
-            appBundleID: app.bundleID,
-            appName: app.name,
-            title: nil,
-            role: "AXWindow",
-            subrole: "AXStandardWindow",
-            relativeFrame: selectedPreset.relativeFrame,
-            display: display,
-            isMinimized: false,
-            wasFullscreen: false
-        )
-
-        onAdd(snapshot)
+        onChange(bundleID, app.name)
         dismiss()
     }
 }
@@ -736,6 +1021,16 @@ struct RunningAppInfo {
     var bundleID: String
     var name: String
     var icon: NSImage?
+}
+
+struct AddWindowItem: Identifiable {
+    let id = UUID()
+    var snapshot: WindowSnapshot
+    var appName: String
+    var windowTitle: String?
+    var displayName: String?
+    var icon: NSImage?
+    var isSelected: Bool
 }
 
 enum PositionPreset: CaseIterable {

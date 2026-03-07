@@ -1,0 +1,221 @@
+/* Menu - Window Halves */
+"menu.leftHalf" = "왼쪽 절반";
+"menu.rightHalf" = "오른쪽 절반";
+"menu.topHalf" = "위쪽 절반";
+"menu.bottomHalf" = "아래쪽 절반";
+
+/* Menu - Quarters */
+"menu.topLeft" = "왼쪽 상단";
+"menu.topRight" = "오른쪽 상단";
+"menu.bottomLeft" = "왼쪽 하단";
+"menu.bottomRight" = "오른쪽 하단";
+
+/* Menu - Sizing */
+"menu.center" = "가운데";
+"menu.maximize" = "최대화";
+"menu.fullScreen" = "전체 화면";
+"menu.makeLarger" = "크게";
+"menu.makeSmaller" = "작게";
+
+/* Menu - Display */
+"menu.nextDisplay" = "다음 디스플레이";
+"menu.previousDisplay" = "이전 디스플레이";
+
+/* Menu - Zen */
+"menu.focusMode" = "Zen 모드";
+"menu.exitFocusMode" = "Zen 모드 해제";
+
+/* Menu - Layout */
+"menu.saveLayout" = "레이아웃 저장...";
+"menu.restoreLayout" = "레이아웃 복원";
+"menu.restoreWithLaunch" = "복원 (앱 실행)";
+"menu.exportLayouts" = "레이아웃 내보내기...";
+"menu.importLayouts" = "레이아웃 가져오기...";
+"menu.recentRestores" = "최근 복원";
+
+/* Menu - App */
+"menu.settings" = "설정...";
+"menu.quit" = "MWM 종료";
+
+/* Alerts */
+"alert.accessibilityRequired.title" = "손쉬운 사용 권한 필요";
+"alert.accessibilityRequired.message" = "MWM이 윈도우 위치를 읽으려면 손쉬운 사용 권한이 필요합니다. 시스템 설정에서 권한을 부여한 후 다시 시도해 주세요.\n\n다시 빌드한 후에는 권한을 끄고 다시 켜야 할 수 있습니다.";
+"alert.openSystemSettings" = "시스템 설정 열기";
+"alert.cancel" = "취소";
+"alert.ok" = "확인";
+
+"alert.noWindowsFound.title" = "윈도우를 찾을 수 없음";
+"alert.noWindowsFound.message" = "윈도우가 감지되지 않았습니다. 가능한 원인:\n\n• 손쉬운 사용 권한을 방금 전환함 — 끄고 다시 켜 보세요\n• 표준 윈도우가 있는 앱이 열려 있지 않음";
+
+"alert.importComplete.title" = "가져오기 완료";
+"alert.importComplete.message" = "%lld개의 레이아웃을 가져왔습니다.";
+"alert.importComplete.warnings" = "\n\n경고:\n%@";
+
+/* File Dialogs */
+"dialog.exportLayouts" = "레이아웃 내보내기";
+"dialog.importLayouts" = "레이아웃 가져오기";
+
+/* Settings Tabs */
+"settings.shortcuts" = "단축키";
+"settings.layouts" = "레이아웃";
+"settings.general" = "일반";
+
+/* Settings - Shortcuts Sections */
+"shortcuts.halves" = "절반";
+"shortcuts.quarters" = "사분면";
+"shortcuts.sizing" = "크기";
+"shortcuts.display" = "디스플레이";
+"shortcuts.focus" = "Zen";
+"shortcuts.slotEmpty" = "슬롯 %lld (비어있음)";
+
+/* Settings - General */
+"general.startup" = "시작";
+"general.launchAtLogin" = "로그인 시 실행";
+"general.about" = "정보";
+"general.version" = "버전";
+"general.build" = "빌드";
+"general.language" = "언어";
+
+/* Language Options */
+"language.english" = "English";
+"language.japanese" = "日本語";
+
+/* Settings - Layouts */
+"layouts.windowCount" = "%lld개의 윈도우";
+"layouts.template" = "템플릿";
+"layouts.deleteSelected" = "선택한 레이아웃 삭제";
+"layouts.export" = "레이아웃 내보내기";
+"layouts.import" = "레이아웃 가져오기";
+"layouts.selectToEdit" = "편집할 레이아웃 선택";
+"layouts.autoRestoreEnabled" = "자동 복원 활성화됨";
+"layouts.autoRestore" = "자동 복원";
+"layouts.launchApps" = "실행 중이 아닌 앱 실행";
+"layouts.launchAppsHelp" = "이 레이아웃에 포함되어 있지만 현재 열려 있지 않은 앱을 자동으로 실행합니다";
+"layouts.workspaceSlot" = "워크스페이스 %lld";
+"layouts.restoreNow" = "지금 복원";
+"layouts.conflictsWith" = "충돌: %@";
+"layouts.shortcut" = "단축키";
+"layouts.favorite" = "즐겨찾기에 추가";
+"layouts.unfavorite" = "즐겨찾기에서 제거";
+"layouts.cannotDeleteFavorite" = "즐겨찾기 레이아웃은 삭제할 수 없습니다";
+"layouts.addLayout" = "레이아웃 추가";
+"layouts.addFromPreset" = "프리셋에서";
+"layouts.addFromPresetDescription" = "미리 정의된 윈도우 배치를 선택하세요";
+"layouts.captureCurrentWindows" = "현재 윈도우 캡처";
+"layouts.captureDescription" = "현재 데스크톱의 스냅샷을 저장합니다";
+"layouts.newEmpty" = "빈 레이아웃 만들기";
+"layouts.newEmptyDescription" = "빈 레이아웃에서 시작하여 수동으로 윈도우를 추가합니다";
+"layouts.newEmptyHint" = "편집기의 + 버튼을 사용하여 나중에 윈도우를 추가할 수 있습니다.";
+"layouts.create" = "생성";
+"layouts.capturedLayout" = "캡처한 레이아웃";
+"layouts.configurePreset" = "프리셋 설정";
+"layouts.anyApp" = "모든 앱";
+"layouts.back" = "뒤로";
+"layouts.shortcutConflict" = "이 단축키는 이미 할당되어 있습니다: %@";
+"layouts.shortcutReplaceMessage" = "기존 단축키를 교체하시겠습니까? 이전 바인딩이 제거됩니다.";
+"layouts.shortcutReplace" = "교체";
+
+/* Save Layout Dialog */
+"saveLayout.title" = "레이아웃 저장";
+"saveLayout.name" = "이름:";
+"saveLayout.namePlaceholder" = "내 레이아웃";
+"saveLayout.mode" = "모드:";
+"saveLayout.appSpecific" = "앱 전용";
+"saveLayout.template" = "템플릿 (모든 윈도우)";
+"saveLayout.templateDescription" = "템플릿 모드는 앱에 관계없이 최근 사용한 윈도우에 위치를 적용합니다.";
+"saveLayout.windows" = "윈도우 (%lld/%lld)";
+"saveLayout.selectAll" = "모두 선택";
+"saveLayout.deselectAll" = "모두 해제";
+"saveLayout.save" = "저장";
+
+/* Layout Editor */
+"editor.save" = "저장";
+"editor.saveHelp" = "이 레이아웃에 대한 변경 사항 저장";
+"editor.reset" = "재설정";
+"editor.resetHelp" = "변경 사항을 취소하고 저장된 상태로 되돌리기";
+"editor.unsavedChanges" = "저장되지 않은 변경 사항";
+"editor.noWindows" = "레이아웃에 윈도우 없음";
+"editor.addWindowsHint" = "아래 + 버튼으로 윈도우 추가";
+"editor.display" = "디스플레이";
+"editor.snap" = "스냅:";
+"editor.name" = "이름";
+"editor.layoutName" = "레이아웃 이름";
+"editor.windowsLabel" = "윈도우";
+"editor.created" = "생성일";
+"editor.modeLabel" = "모드";
+"editor.trigger" = "트리거";
+"editor.appSpecific" = "앱 전용";
+"editor.templateLabel" = "템플릿";
+"editor.templateHint" = "앱에 관계없이 최근 사용한 윈도우에 위치를 적용합니다.";
+"editor.recapture" = "다시 캡처";
+"editor.recaptureHelp" = "현재 데스크톱의 새 캡처로 모든 윈도우를 교체";
+"editor.recaptureTitle" = "윈도우 다시 캡처";
+"editor.recaptureDescription" = "이 레이아웃의 모든 윈도우를 현재 데스크톱 상태로 교체합니다.";
+"editor.recaptureConfirm" = "%lld개의 윈도우로 교체";
+"editor.addWindowHelp" = "현재 데스크톱에서 윈도우 추가";
+"editor.changeApp" = "할당된 앱 변경";
+"editor.removeFromLayout" = "레이아웃에서 제거";
+
+/* Add Window Sheet */
+"addWindow.title" = "레이아웃에 윈도우 추가";
+"addWindow.position" = "위치:";
+"addWindow.currentPosition" = "현재 위치";
+"addWindow.cancel" = "취소";
+"addWindow.add" = "추가";
+"addWindow.addCount" = "%lld개의 윈도우 추가";
+"addWindow.windowCount" = "%lld / %lld 선택됨";
+
+/* Change App Sheet */
+"changeApp.title" = "앱 변경";
+"changeApp.current" = "현재: %@";
+"changeApp.change" = "변경";
+
+/* Position Presets */
+"preset.leftHalf" = "왼쪽 절반";
+"preset.rightHalf" = "오른쪽 절반";
+"preset.topHalf" = "위쪽 절반";
+"preset.bottomHalf" = "아래쪽 절반";
+"preset.topLeft" = "왼쪽 상단";
+"preset.topRight" = "오른쪽 상단";
+"preset.bottomLeft" = "왼쪽 하단";
+"preset.bottomRight" = "오른쪽 하단";
+"preset.maximize" = "최대화";
+"preset.center" = "가운데 (60%)";
+
+/* Window Title */
+"window.mwmSettings" = "MWM 설정";
+"window.saveLayout" = "레이아웃 저장";
+
+/* Workspaces */
+"menu.workspaces" = "워크스페이스";
+"shortcuts.workspaces" = "워크스페이스";
+"workspace.coding" = "코딩";
+"workspace.research" = "리서치";
+"workspace.review" = "리뷰";
+"workspace.meeting" = "미팅";
+"workspace.writing" = "글쓰기 + Zen";
+
+/* Display Profile */
+"displayProfile.title" = "디스플레이 프로필";
+"displayProfile.current" = "현재 디스플레이";
+"displayProfile.displayCount" = "%lld개의 디스플레이";
+"displayProfile.updateTrigger" = "디스플레이 다시 캡처";
+"displayProfile.updateTriggerHelp" = "현재 Mac에 연결된 디스플레이 구성으로 자동 복원 트리거를 업데이트합니다";
+"displayProfile.noTrigger" = "디스플레이 트리거를 설정하려면 자동 복원을 활성화하세요";
+"displayProfile.autoSwitchHint" = "이 디스플레이 구성이 감지되면 이 레이아웃이 자동으로 복원됩니다.";
+"displayProfile.profileName" = "프로필 이름";
+"displayProfile.profileNamePlaceholder" = "예: 집 3화면, 카페 MacBook";
+"displayProfile.noProfiles" = "아직 디스플레이 프로필이 없습니다";
+"displayProfile.noProfilesHint" = "레이아웃에서 자동 복원을 활성화하면 프로필이 생성됩니다. 모니터를 연결하거나 분리하면 레이아웃이 자동으로 전환됩니다.";
+"displayProfile.connectedDisplays" = "연결된 디스플레이";
+"displayProfile.linkedLayout" = "연결된 레이아웃";
+
+/* Tooltip descriptions */
+"tooltip.autoRestore" = "연결된 디스플레이 구성이 감지되면 이 레이아웃을 자동으로 복원합니다 (예: 모니터 연결/분리 시)";
+"tooltip.appSpecific" = "앱별로 윈도우를 매칭 — 저장 시 같은 앱의 윈도우로 복원됩니다";
+"tooltip.template" = "앱 무시 — 현재 최전면에 있는 윈도우에 저장된 위치를 적용합니다";
+"tooltip.mode" = "레이아웃 복원 시 윈도우를 어떻게 매칭할지 선택합니다";
+
+/* MenuBarView */
+"menuBar.saveCurrentLayout" = "현재 레이아웃 저장";
+"menuBar.enterLayoutName" = "레이아웃 이름을 입력하세요:";

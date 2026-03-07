@@ -22,13 +22,28 @@ struct SettingsView: View {
                 }
         }
         .frame(width: 720, height: 540)
-        .id(localization.currentLanguage) // Force rebuild on language change
+        .id(localization.currentLanguage)
     }
 }
 
 // MARK: - Shortcuts Tab
 
 struct ShortcutsSettingsView: View {
+    @State private var layouts: [WindowLayout] = []
+    @State private var slotAssignments: [Int: UUID?] = [:]
+
+    /// Workspace slots with generic number icons.
+    private static let workspaceSlots: [(name: KeyboardShortcuts.Name, index: Int)] = [
+        (.workspaceSlot5, 5),
+        (.workspaceSlot6, 6),
+        (.workspaceSlot7, 7),
+        (.workspaceSlot8, 8),
+        (.workspaceSlot9, 9),
+    ]
+
+    private static let numberIcons = ["5.circle", "6.circle", "7.circle", "8.circle", "9.circle"]
+    private static let slotIndices = [5, 6, 7, 8, 9]
+
     var body: some View {
         ScrollView {
             HStack(alignment: .top, spacing: 24) {
@@ -67,10 +82,65 @@ struct ShortcutsSettingsView: View {
                     shortcutSection(L10n.string("shortcuts.focus")) {
                         shortcutRow(L10n.string("menu.focusMode"), icon: "eye", name: .toggleFocusMode)
                     }
+
+                    shortcutSection(L10n.string("shortcuts.workspaces")) {
+                        ForEach(Array(Self.workspaceSlots.enumerated()), id: \.element.index) { i, slot in
+                            workspaceSlotRow(slot: slot, iconIndex: i)
+                        }
+                    }
                 }
             }
             .padding(16)
         }
+        .onAppear { loadState() }
+    }
+
+    private func loadState() {
+        layouts = AppDelegate.services.layoutService.loadAll()
+        for idx in Self.slotIndices {
+            slotAssignments[idx] = WorkspaceSlotManager.layoutID(for: idx)
+        }
+    }
+
+    /// Workspace slot row: number icon + layout picker + shortcut recorder.
+    private func workspaceSlotRow(slot: (name: KeyboardShortcuts.Name, index: Int), iconIndex: Int) -> some View {
+        let icon = Self.numberIcons[iconIndex]
+        return HStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .frame(width: 18)
+
+            // Layout picker dropdown
+            Picker("", selection: slotBinding(for: slot.index)) {
+                Text(L10n.string("shortcuts.slotEmpty", slot.index))
+                    .tag(Optional<UUID>.none)
+                ForEach(layouts) { layout in
+                    Text(layout.name).tag(Optional(layout.id))
+                }
+            }
+            .labelsHidden()
+            .frame(maxWidth: 130)
+
+            Spacer()
+
+            KeyboardShortcuts.Recorder(for: slot.name)
+                .frame(width: 120)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(Color(nsColor: .controlBackgroundColor))
+    }
+
+    private func slotBinding(for slotIndex: Int) -> Binding<UUID?> {
+        Binding(
+            get: { slotAssignments[slotIndex] ?? nil },
+            set: { newValue in
+                slotAssignments[slotIndex] = newValue
+                WorkspaceSlotManager.setLayoutID(newValue, for: slotIndex)
+                AppDelegate.statusBar.rebuildMenu()
+            }
+        )
     }
 
     @ViewBuilder
@@ -113,13 +183,22 @@ struct ShortcutsSettingsView: View {
     }
 }
 
-// MARK: - Layouts Tab
+// MARK: - Layouts Tab (with Display Profiles segment)
 
 struct LayoutsSettingsView: View {
     @State private var layouts: [WindowLayout] = []
     @State private var selectedLayoutID: UUID?
+    @State private var showingAddLayout = false
+    @State private var shortcutConflict: String?
+    @State private var saveLayoutController: SaveLayoutWindowController?
+    @State private var activeSegment: LayoutSegment = .layouts
 
     private var services: AppServices { AppDelegate.services }
+
+    enum LayoutSegment: String, CaseIterable {
+        case layouts
+        case profiles
+    }
 
     private var selectedLayout: WindowLayout? {
         guard let id = selectedLayoutID else { return nil }
@@ -127,23 +206,58 @@ struct LayoutsSettingsView: View {
     }
 
     var body: some View {
+        VStack(spacing: 0) {
+            // Top segment picker
+            Picker("", selection: $activeSegment) {
+                Text(L10n.string("settings.layouts")).tag(LayoutSegment.layouts)
+                Text(L10n.string("displayProfile.title")).tag(LayoutSegment.profiles)
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal, 12)
+            .padding(.top, 8)
+            .padding(.bottom, 4)
+
+            if activeSegment == .layouts {
+                layoutsContent
+            } else {
+                DisplayProfilesView(layouts: $layouts)
+            }
+        }
+        .onAppear { refresh() }
+        .onChange(of: selectedLayoutID) { _, _ in shortcutConflict = nil }
+        .sheet(isPresented: $showingAddLayout) {
+            AddLayoutSheet(
+                onSave: { layout in saveNewLayout(layout) },
+                onCapture: { captureCurrentAsLayout() }
+            )
+        }
+    }
+
+    // MARK: - Layouts Content
+
+    private var layoutsContent: some View {
         HSplitView {
             // Left: layout list
             VStack(spacing: 0) {
                 List(selection: $selectedLayoutID) {
                     ForEach(layouts) { layout in
-                        layoutRow(layout)
-                            .tag(layout.id)
+                        layoutRow(layout).tag(layout.id)
                     }
                 }
 
-                // Bottom toolbar
                 HStack(spacing: 4) {
                     Button(action: { deleteSelected() }) {
                         Image(systemName: "minus")
                     }
-                    .disabled(selectedLayoutID == nil)
-                    .help(L10n.string("layouts.deleteSelected"))
+                    .disabled(selectedLayoutID == nil || (selectedLayout?.isFavorite ?? false))
+                    .help(selectedLayout?.isFavorite == true
+                        ? L10n.string("layouts.cannotDeleteFavorite")
+                        : L10n.string("layouts.deleteSelected"))
+
+                    Button(action: { showingAddLayout = true }) {
+                        Image(systemName: "plus")
+                    }
+                    .help(L10n.string("layouts.addLayout"))
 
                     Spacer()
 
@@ -162,7 +276,7 @@ struct LayoutsSettingsView: View {
             }
             .frame(minWidth: 180, idealWidth: 220, maxWidth: 280)
 
-            // Right: editor/preview
+            // Right: editor
             VStack {
                 if let binding = selectedLayoutBinding {
                     ScrollView {
@@ -176,13 +290,46 @@ struct LayoutsSettingsView: View {
                     // Bottom controls
                     VStack(spacing: 4) {
                         HStack {
+                            Text(L10n.string("layouts.shortcut"))
+                                .font(.system(size: 11))
+                            KeyboardShortcuts.Recorder(
+                                for: LayoutShortcutManager.shortcutName(for: binding.wrappedValue.id),
+                                onChange: { _ in handleShortcutChange(layoutID: binding.wrappedValue.id) }
+                            )
+                            .frame(width: 120)
+
+                            // Show workspace slot assignment if any
+                            if let slotLabel = workspaceSlotLabel(for: binding.wrappedValue.id) {
+                                Text(slotLabel)
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.blue)
+                            }
+                            Spacer()
+                        }
+
+                        // Display profile picker
+                        HStack {
+                            Text(L10n.string("displayProfile.title"))
+                                .font(.system(size: 11))
+                            profilePicker(for: binding)
+                            Spacer()
+                        }
+
+                        HStack {
                             Toggle(L10n.string("layouts.autoRestore"), isOn: autoRestoreBinding)
+                                .help(L10n.string("tooltip.autoRestore"))
                             Spacer()
                             Button(L10n.string("layouts.restoreNow")) {
                                 let result = services.layoutService.restoreLayout(binding.wrappedValue)
                                 services.diagnosticsService.record(result: result, triggerSource: "settings")
                             }
                             .controlSize(.small)
+                        }
+
+                        HStack {
+                            Toggle(L10n.string("layouts.launchApps"), isOn: launchAppsBinding)
+                                .help(L10n.string("layouts.launchAppsHelp"))
+                            Spacer()
                         }
 
                         if binding.wrappedValue.autoRestore {
@@ -216,7 +363,6 @@ struct LayoutsSettingsView: View {
             }
             .frame(minWidth: 300)
         }
-        .onAppear { refresh() }
     }
 
     // MARK: - Subviews
@@ -241,15 +387,73 @@ struct LayoutsSettingsView: View {
                             .clipShape(Capsule())
                     }
                 }
+                // Show linked display profile name
+                if let profileID = layout.displayProfileID,
+                   let profile = services.displayProfileStore.loadAll().first(where: { $0.id == profileID }) {
+                    HStack(spacing: 3) {
+                        Image(systemName: "display")
+                            .font(.system(size: 8))
+                            .foregroundStyle(.blue.opacity(0.7))
+                        Text(profile.name)
+                            .font(.system(size: 10))
+                            .foregroundStyle(.blue.opacity(0.7))
+                            .lineLimit(1)
+                    }
+                }
             }
             Spacer()
+
+            Button(action: { toggleFavorite(layout) }) {
+                Image(systemName: layout.isFavorite ? "star.fill" : "star")
+                    .font(.system(size: 11))
+                    .foregroundStyle(layout.isFavorite ? .yellow : .secondary)
+            }
+            .buttonStyle(.plain)
+            .help(layout.isFavorite
+                ? L10n.string("layouts.unfavorite")
+                : L10n.string("layouts.favorite"))
+
             if layout.autoRestore {
                 Image(systemName: "arrow.clockwise")
                     .font(.system(size: 10))
                     .foregroundStyle(.blue)
-                    .help(L10n.string("layouts.autoRestoreEnabled"))
+                    .help(L10n.string("tooltip.autoRestore"))
             }
         }
+    }
+
+    /// Picker to link a display profile to a layout.
+    private func profilePicker(for binding: Binding<WindowLayout>) -> some View {
+        let profiles = services.displayProfileStore.loadAll()
+        return Picker("", selection: profileIDBinding(for: binding.wrappedValue.id)) {
+            Text("--").tag(Optional<UUID>.none)
+            ForEach(profiles) { profile in
+                Text(profile.name).tag(Optional(profile.id))
+            }
+        }
+        .labelsHidden()
+        .frame(maxWidth: 200)
+        .help(L10n.string("tooltip.autoRestore"))
+    }
+
+    private func profileIDBinding(for layoutID: UUID) -> Binding<UUID?> {
+        Binding(
+            get: {
+                layouts.first(where: { $0.id == layoutID })?.displayProfileID
+            },
+            set: { newValue in
+                guard let index = layouts.firstIndex(where: { $0.id == layoutID }) else { return }
+                layouts[index].displayProfileID = newValue
+                // When linking a profile, also update the trigger for auto-restore
+                if let profileID = newValue,
+                   let profile = services.displayProfileStore.loadAll().first(where: { $0.id == profileID }) {
+                    layouts[index].trigger = .displayConfiguration(fingerprints: profile.fingerprints)
+                } else {
+                    layouts[index].trigger = nil
+                }
+                try? services.layoutService.save(layouts[index])
+            }
+        )
     }
 
     // MARK: - Bindings
@@ -266,26 +470,144 @@ struct LayoutsSettingsView: View {
         guard let id = selectedLayoutID,
               let layout = layouts.first(where: { $0.id == id }) else { return }
         try? services.layoutService.save(layout)
+        refreshShortcuts()
+    }
+
+    private func toggleFavorite(_ layout: WindowLayout) {
+        guard let index = layouts.firstIndex(where: { $0.id == layout.id }) else { return }
+        var updated = layouts[index]
+        updated.isFavorite = !updated.isFavorite
+        try? services.layoutService.save(updated)
+        refresh()
+        AppDelegate.statusBar.rebuildMenu()
+    }
+
+    private func saveNewLayout(_ layout: WindowLayout) {
+        do {
+            try services.layoutService.save(layout)
+            refresh()
+            selectedLayoutID = layout.id
+        } catch {
+            let alert = NSAlert(error: error)
+            alert.runModal()
+        }
+    }
+
+    private func captureCurrentAsLayout() {
+        guard services.permissions.isGranted else {
+            let alert = NSAlert()
+            alert.messageText = L10n.string("alert.accessibilityRequired.title")
+            alert.informativeText = L10n.string("alert.accessibilityRequired.message")
+            alert.addButton(withTitle: L10n.string("alert.openSystemSettings"))
+            alert.addButton(withTitle: L10n.string("alert.cancel"))
+            if alert.runModal() == .alertFirstButtonReturn {
+                services.permissions.openSystemSettings()
+            }
+            return
+        }
+
+        let capture = services.layoutService.captureWithObstructionInfo()
+        guard !capture.snapshots.isEmpty else {
+            let alert = NSAlert()
+            alert.messageText = L10n.string("alert.noWindowsFound.title")
+            alert.informativeText = L10n.string("alert.noWindowsFound.message")
+            alert.addButton(withTitle: L10n.string("alert.ok"))
+            alert.runModal()
+            return
+        }
+
+        let controller = SaveLayoutWindowController()
+        controller.show(snapshots: capture.snapshots, obstructedIDs: capture.obstructedIDs) { [self] name, selected, mode in
+            do {
+                let layout = try services.layoutService.saveLayout(name: name, snapshots: selected, mode: mode)
+                refresh()
+                selectedLayoutID = layout.id
+                refreshShortcuts()
+                AppDelegate.statusBar.rebuildMenu()
+            } catch {
+                let errorAlert = NSAlert(error: error)
+                errorAlert.runModal()
+            }
+        }
+        saveLayoutController = controller
+    }
+
+    private func handleShortcutChange(layoutID: UUID) {
+        let name = LayoutShortcutManager.shortcutName(for: layoutID)
+        guard let newShortcut = KeyboardShortcuts.getShortcut(for: name) else {
+            shortcutConflict = nil
+            refreshShortcuts()
+            return
+        }
+
+        let conflictName = LayoutShortcutManager.conflictingAction(for: layoutID, allLayouts: layouts)
+        guard let conflictName else {
+            shortcutConflict = nil
+            refreshShortcuts()
+            return
+        }
+
+        let alert = NSAlert()
+        alert.messageText = L10n.string("layouts.shortcutConflict", conflictName)
+        alert.informativeText = L10n.string("layouts.shortcutReplaceMessage")
+        alert.addButton(withTitle: L10n.string("layouts.shortcutReplace"))
+        alert.addButton(withTitle: L10n.string("alert.cancel"))
+        alert.alertStyle = .warning
+
+        let response = alert.runModal()
+        if response == .alertFirstButtonReturn {
+            LayoutShortcutManager.removeConflicting(shortcut: newShortcut, except: layoutID, allLayouts: layouts)
+            shortcutConflict = nil
+        } else {
+            KeyboardShortcuts.reset(name)
+            shortcutConflict = nil
+        }
+        refreshShortcuts()
     }
 
     private var autoRestoreBinding: Binding<Bool> {
         Binding(
-            get: {
-                selectedLayout?.autoRestore ?? false
-            },
+            get: { selectedLayout?.autoRestore ?? false },
             set: { newValue in
                 guard let id = selectedLayoutID,
                       var layout = layouts.first(where: { $0.id == id }) else { return }
                 layout.autoRestore = newValue
                 if newValue && layout.trigger == nil {
-                    layout.trigger = .displayConfiguration(
-                        fingerprints: services.screenRegistry.fingerprints()
-                    )
+                    // Auto-set trigger from linked profile or current displays
+                    if let profileID = layout.displayProfileID,
+                       let profile = services.displayProfileStore.loadAll().first(where: { $0.id == profileID }) {
+                        layout.trigger = .displayConfiguration(fingerprints: profile.fingerprints)
+                    } else {
+                        layout.trigger = .displayConfiguration(fingerprints: services.screenRegistry.fingerprints())
+                    }
                 }
                 try? services.layoutService.save(layout)
                 refresh()
             }
         )
+    }
+
+    private var launchAppsBinding: Binding<Bool> {
+        Binding(
+            get: { selectedLayout?.launchMissingApps ?? false },
+            set: { newValue in
+                guard let id = selectedLayoutID,
+                      var layout = layouts.first(where: { $0.id == id }) else { return }
+                layout.launchMissingApps = newValue
+                try? services.layoutService.save(layout)
+                refresh()
+            }
+        )
+    }
+
+    /// Returns a label like "Workspace 5" if this layout is assigned to a workspace slot.
+    private func workspaceSlotLabel(for layoutID: UUID) -> String? {
+        for idx in [5, 6, 7, 8, 9] {
+            if WorkspaceSlotManager.layoutID(for: idx) == layoutID {
+                return L10n.string("layouts.workspaceSlot", idx)
+            }
+        }
+        return nil
     }
 
     private func autoRestoreConflicts(for layout: WindowLayout) -> [WindowLayout] {
@@ -300,9 +622,12 @@ struct LayoutsSettingsView: View {
 
     private func deleteSelected() {
         guard let id = selectedLayoutID else { return }
+        if let layout = layouts.first(where: { $0.id == id }), layout.isFavorite { return }
         try? services.layoutService.delete(id: id)
         selectedLayoutID = nil
         refresh()
+        refreshShortcuts()
+        AppDelegate.statusBar.rebuildMenu()
     }
 
     private func exportLayouts() {
@@ -326,6 +651,7 @@ struct LayoutsSettingsView: View {
         do {
             let validation = try services.importExportService.importFromFile(url: url)
             refresh()
+            refreshShortcuts()
             let alert = NSAlert()
             alert.messageText = L10n.string("alert.importComplete.title")
             var message = L10n.string("alert.importComplete.message", validation.validLayouts.count)
@@ -343,6 +669,505 @@ struct LayoutsSettingsView: View {
     private func refresh() {
         layouts = services.layoutService.loadAll()
     }
+
+    private func refreshShortcuts() {
+        services.layoutShortcutManager.registerAll(layouts: layouts)
+    }
+}
+
+// MARK: - Display Profiles View (embedded in Layouts tab)
+
+struct DisplayProfilesView: View {
+    @Binding var layouts: [WindowLayout]
+    @State private var profiles: [DisplayProfile] = []
+    private var services: AppServices { AppDelegate.services }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                // Current display info
+                currentDisplaySection
+
+                Divider()
+
+                // Profiles list
+                if profiles.isEmpty {
+                    emptyView
+                } else {
+                    profilesList
+                }
+            }
+            .padding(16)
+        }
+        .onAppear { profiles = services.displayProfileStore.loadAll() }
+    }
+
+    private var currentDisplaySection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(L10n.string("displayProfile.connectedDisplays"))
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.secondary)
+
+            let fingerprints = services.screenRegistry.fingerprints()
+            VStack(spacing: 1) {
+                ForEach(Array(fingerprints.enumerated()), id: \.offset) { _, fp in
+                    HStack(spacing: 8) {
+                        Image(systemName: "display")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 18)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(fp.localizedName ?? "Display")
+                                .font(.system(size: 12))
+                            Text("\(Int(fp.bounds.width)) x \(Int(fp.bounds.height))")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.tertiary)
+                        }
+                        Spacer()
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 5)
+                    .background(Color(nsColor: .controlBackgroundColor))
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+        }
+    }
+
+    private var emptyView: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "display.trianglebadge.exclamationmark")
+                .font(.system(size: 28))
+                .foregroundStyle(.quaternary)
+            Text(L10n.string("displayProfile.noProfiles"))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.secondary)
+            Text(L10n.string("displayProfile.noProfilesHint"))
+                .font(.system(size: 11))
+                .foregroundStyle(.tertiary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 400)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 24)
+    }
+
+    private var profilesList: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(L10n.string("displayProfile.title"))
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.secondary)
+
+            VStack(spacing: 1) {
+                ForEach(profiles) { profile in
+                    profileRow(profile)
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+        }
+    }
+
+    private func profileRow(_ profile: DisplayProfile) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "display")
+                .font(.system(size: 14))
+                .foregroundStyle(.blue)
+                .frame(width: 22)
+
+            VStack(alignment: .leading, spacing: 2) {
+                TextField(
+                    L10n.string("displayProfile.profileNamePlaceholder"),
+                    text: profileNameBinding(for: profile.id)
+                )
+                .textFieldStyle(.plain)
+                .font(.system(size: 13, weight: .medium))
+
+                Text(profile.displayDescription)
+                    .font(.system(size: 10))
+                    .foregroundStyle(.tertiary)
+            }
+
+            Spacer()
+
+            // Linked layout
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(L10n.string("displayProfile.linkedLayout"))
+                    .font(.system(size: 9))
+                    .foregroundStyle(.tertiary)
+                let linked = layouts.first { $0.displayProfileID == profile.id }
+                Text(linked?.name ?? "--")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
+
+            // Delete profile
+            Button(action: { deleteProfile(profile.id) }) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(Color(nsColor: .controlBackgroundColor))
+    }
+
+    private func profileNameBinding(for profileID: UUID) -> Binding<String> {
+        Binding(
+            get: {
+                profiles.first(where: { $0.id == profileID })?.name ?? ""
+            },
+            set: { newValue in
+                guard let index = profiles.firstIndex(where: { $0.id == profileID }) else { return }
+                profiles[index].name = newValue
+                services.displayProfileStore.save(profiles[index])
+            }
+        )
+    }
+
+    private func deleteProfile(_ profileID: UUID) {
+        // Unlink any layouts referencing this profile
+        for (i, layout) in layouts.enumerated() where layout.displayProfileID == profileID {
+            var updated = layouts[i]
+            updated.displayProfileID = nil
+            updated.trigger = nil
+            try? services.layoutService.save(updated)
+            layouts[i] = updated
+        }
+        services.displayProfileStore.delete(id: profileID)
+        profiles = services.displayProfileStore.loadAll()
+    }
+}
+
+// MARK: - Add Layout Sheet (unified: new empty, from preset, capture)
+
+struct AddLayoutSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    enum AddMode {
+        case menu
+        case newEmpty
+        case fromPreset(WorkspacePreset?)
+        case presetConfig(WorkspacePreset)
+    }
+
+    @State private var mode: AddMode = .menu
+    @State private var layoutName: String = ""
+    @State private var slotAssignments: [SlotAssignment] = []
+    @State private var runningApps: [RunningAppInfo] = []
+
+    let onSave: (WindowLayout) -> Void
+    let onCapture: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            switch mode {
+            case .menu:
+                menuView
+            case .newEmpty:
+                newEmptyView
+            case .fromPreset:
+                presetListView
+            case .presetConfig(let preset):
+                presetConfigView(preset)
+            }
+
+            HStack {
+                if !isMenu {
+                    Button(L10n.string("layouts.back")) { mode = .menu }
+                }
+                Spacer()
+                Button(L10n.string("alert.cancel")) { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+
+                switch mode {
+                case .newEmpty:
+                    Button(L10n.string("layouts.create")) { createEmpty() }
+                        .keyboardShortcut(.defaultAction)
+                        .disabled(layoutName.trimmingCharacters(in: .whitespaces).isEmpty)
+                case .presetConfig:
+                    Button(L10n.string("saveLayout.save")) { savePreset() }
+                        .keyboardShortcut(.defaultAction)
+                default:
+                    EmptyView()
+                }
+            }
+        }
+        .padding()
+        .frame(width: 420)
+        .onAppear { loadRunningApps() }
+    }
+
+    private var isMenu: Bool {
+        if case .menu = mode { return true }
+        return false
+    }
+
+    // MARK: - Menu
+
+    private var menuView: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(L10n.string("layouts.addLayout"))
+                .font(.headline)
+
+            VStack(spacing: 1) {
+                menuButton(
+                    icon: "rectangle.dashed",
+                    title: L10n.string("layouts.newEmpty"),
+                    description: L10n.string("layouts.newEmptyDescription")
+                ) { mode = .newEmpty }
+
+                menuButton(
+                    icon: "rectangle.3.group",
+                    title: L10n.string("layouts.addFromPreset"),
+                    description: L10n.string("layouts.addFromPresetDescription")
+                ) { mode = .fromPreset(nil) }
+
+                menuButton(
+                    icon: "camera",
+                    title: L10n.string("layouts.captureCurrentWindows"),
+                    description: L10n.string("layouts.captureDescription")
+                ) {
+                    dismiss()
+                    // Delay to let sheet dismiss before showing capture window
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        onCapture()
+                    }
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+        }
+    }
+
+    private func menuButton(icon: String, title: String, description: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.system(size: 16))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 24)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 13, weight: .medium))
+                    Text(description)
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .background(Color(nsColor: .controlBackgroundColor))
+    }
+
+    // MARK: - New Empty
+
+    private var newEmptyView: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(L10n.string("layouts.newEmpty"))
+                .font(.headline)
+
+            HStack {
+                Text(L10n.string("saveLayout.name"))
+                    .frame(width: 50, alignment: .leading)
+                TextField(L10n.string("saveLayout.namePlaceholder"), text: $layoutName)
+                    .textFieldStyle(.roundedBorder)
+            }
+
+            Text(L10n.string("layouts.newEmptyHint"))
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func createEmpty() {
+        let name = layoutName.trimmingCharacters(in: .whitespaces)
+        guard !name.isEmpty else { return }
+        let layout = WindowLayout(name: name, windows: [])
+        onSave(layout)
+        dismiss()
+    }
+
+    // MARK: - Preset List
+
+    private var presetListView: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(L10n.string("layouts.addFromPreset"))
+                .font(.headline)
+
+            VStack(spacing: 1) {
+                ForEach(WorkspacePreset.allCases) { preset in
+                    Button(action: {
+                        layoutName = preset.displayName
+                        slotAssignments = preset.slots.map { slot in
+                            SlotAssignment(label: slot.label, frame: slot.frame, selectedBundleID: nil)
+                        }
+                        mode = .presetConfig(preset)
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: preset.icon)
+                                .font(.system(size: 14))
+                                .foregroundStyle(.secondary)
+                                .frame(width: 20)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(preset.displayName)
+                                    .font(.system(size: 13))
+                                Text(presetDescription(preset))
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Text("\(preset.slots.count)")
+                                .font(.system(size: 11, design: .monospaced))
+                                .foregroundStyle(.tertiary)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .background(Color(nsColor: .controlBackgroundColor))
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+        }
+    }
+
+    // MARK: - Preset Config
+
+    private func presetConfigView(_ preset: WorkspacePreset) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(L10n.string("layouts.configurePreset"))
+                .font(.headline)
+
+            HStack {
+                Text(L10n.string("saveLayout.name"))
+                    .frame(width: 50, alignment: .leading)
+                TextField(L10n.string("saveLayout.namePlaceholder"), text: $layoutName)
+                    .textFieldStyle(.roundedBorder)
+            }
+
+            VStack(spacing: 1) {
+                ForEach($slotAssignments) { $slot in
+                    HStack(spacing: 8) {
+                        Text(slot.label)
+                            .font(.system(size: 12, weight: .medium))
+                            .frame(width: 70, alignment: .leading)
+
+                        Text(positionLabel(slot.frame))
+                            .font(.system(size: 10, design: .monospaced))
+                            .foregroundStyle(.tertiary)
+                            .frame(width: 50)
+
+                        Picker("", selection: $slot.selectedBundleID) {
+                            Text(L10n.string("layouts.anyApp"))
+                                .tag(Optional<String>.none)
+                            ForEach(runningApps, id: \.bundleID) { app in
+                                HStack {
+                                    if let icon = app.icon {
+                                        Image(nsImage: icon)
+                                            .resizable()
+                                            .frame(width: 14, height: 14)
+                                    }
+                                    Text(app.name)
+                                }
+                                .tag(Optional(app.bundleID))
+                            }
+                        }
+                        .labelsHidden()
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color(nsColor: .controlBackgroundColor))
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+
+            if preset.enablesZenMode {
+                HStack(spacing: 4) {
+                    Image(systemName: "eye")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+                    Text("Zen Mode")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    private func savePreset() {
+        guard case .presetConfig(let preset) = mode else { return }
+        let screenRegistry = AppDelegate.services.screenRegistry
+        let fingerprints = screenRegistry.fingerprints()
+        let display = fingerprints.first ?? DisplayFingerprint(
+            displayID: 0, localizedName: "Display",
+            bounds: CGRect(x: 0, y: 0, width: 1920, height: 1080)
+        )
+
+        let hasAppAssignment = slotAssignments.contains { $0.selectedBundleID != nil }
+        let layoutMode: LayoutMode = hasAppAssignment ? .appSpecific : .template
+
+        let snapshots = slotAssignments.map { slot in
+            let bundleID = slot.selectedBundleID ?? "placeholder.\(slot.label.lowercased())"
+            let appName: String
+            if let bid = slot.selectedBundleID,
+               let app = runningApps.first(where: { $0.bundleID == bid }) {
+                appName = app.name
+            } else {
+                appName = slot.label
+            }
+            return WindowSnapshot(
+                id: UUID(), appBundleID: bundleID, appName: appName,
+                title: nil, role: "AXWindow", subrole: "AXStandardWindow",
+                relativeFrame: slot.frame, display: display,
+                isMinimized: false, wasFullscreen: false
+            )
+        }
+
+        let name = layoutName.isEmpty ? preset.displayName : layoutName
+        let layout = WindowLayout(name: name, mode: layoutMode, windows: snapshots)
+        onSave(layout)
+        dismiss()
+    }
+
+    // MARK: - Helpers
+
+    private func loadRunningApps() {
+        let apps = NSWorkspace.shared.runningApplications
+            .filter { $0.activationPolicy == .regular }
+            .compactMap { app -> RunningAppInfo? in
+                guard let bundleID = app.bundleIdentifier,
+                      let name = app.localizedName else { return nil }
+                return RunningAppInfo(bundleID: bundleID, name: name, icon: app.icon)
+            }
+            .sorted { $0.name < $1.name }
+        var seen = Set<String>()
+        runningApps = apps.filter { seen.insert($0.bundleID).inserted }
+    }
+
+    private func presetDescription(_ preset: WorkspacePreset) -> String {
+        preset.slots.map(\.label).joined(separator: " + ")
+            + (preset.enablesZenMode ? " + Zen" : "")
+    }
+
+    private func positionLabel(_ frame: RelativeFrame) -> String {
+        "\(Int(frame.width * 100))x\(Int(frame.height * 100))%"
+    }
+}
+
+struct SlotAssignment: Identifiable {
+    let id = UUID()
+    var label: String
+    var frame: RelativeFrame
+    var selectedBundleID: String?
 }
 
 // MARK: - General Tab
@@ -354,17 +1179,17 @@ struct GeneralSettingsView: View {
     var body: some View {
         Form {
             Section(L10n.string("general.language")) {
-                Picker(L10n.string("general.language"), selection: $localization.currentLanguage) {
-                    ForEach(AppLanguage.allCases) { lang in
-                        Text(lang.displayName).tag(lang)
+                LabeledContent(L10n.string("general.language")) {
+                    Picker("", selection: $localization.currentLanguage) {
+                        ForEach(AppLanguage.allCases) { lang in
+                            Text(languageLabel(lang)).tag(lang)
+                        }
                     }
+                    .labelsHidden()
+                    .frame(width: 200)
                 }
-                .labelsHidden()
-                .frame(width: 200)
                 .onChange(of: localization.currentLanguage) { _, _ in
-                    // Rebuild menu bar with new language
                     AppDelegate.statusBar.rebuildMenu()
-                    // Update settings window title
                     if let window = NSApp.windows.first(where: { $0.title.contains("MWM") || $0.title.contains("設定") }) {
                         window.title = L10n.string("window.mwmSettings")
                     }
@@ -385,6 +1210,14 @@ struct GeneralSettingsView: View {
         }
         .formStyle(.grouped)
         .padding()
+    }
+
+    private func languageLabel(_ lang: AppLanguage) -> String {
+        let systemLang = LocalizationManager.detectSystemLanguage()
+        if lang == systemLang {
+            return lang.displayName + lang.systemSuffix
+        }
+        return lang.displayName
     }
 }
 

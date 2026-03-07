@@ -21,9 +21,9 @@
 "menu.nextDisplay" = "次のディスプレイ";
 "menu.previousDisplay" = "前のディスプレイ";
 
-/* Menu - Focus */
-"menu.focusMode" = "集中モード";
-"menu.exitFocusMode" = "集中モードを解除";
+/* Menu - Zen */
+"menu.focusMode" = "Zenモード";
+"menu.exitFocusMode" = "Zenモードを解除";
 
 /* Menu - Layout */
 "menu.saveLayout" = "レイアウトを保存...";
@@ -65,7 +65,8 @@
 "shortcuts.quarters" = "4分割";
 "shortcuts.sizing" = "サイズ";
 "shortcuts.display" = "ディスプレイ";
-"shortcuts.focus" = "集中";
+"shortcuts.focus" = "Zen";
+"shortcuts.slotEmpty" = "スロット %lld (未割当)";
 
 /* Settings - General */
 "general.startup" = "起動";
@@ -88,8 +89,31 @@
 "layouts.selectToEdit" = "編集するレイアウトを選択";
 "layouts.autoRestoreEnabled" = "自動復元が有効";
 "layouts.autoRestore" = "自動復元";
+"layouts.launchApps" = "未起動のアプリを起動";
+"layouts.launchAppsHelp" = "レイアウトに含まれるアプリが起動していない場合、自動的に起動します";
+"layouts.workspaceSlot" = "ワークスペース %lld";
 "layouts.restoreNow" = "今すぐ復元";
 "layouts.conflictsWith" = "競合: %@";
+"layouts.shortcut" = "ショートカット";
+"layouts.favorite" = "お気に入りに追加";
+"layouts.unfavorite" = "お気に入りから削除";
+"layouts.cannotDeleteFavorite" = "お気に入りのレイアウトは削除できません";
+"layouts.addLayout" = "レイアウトを追加";
+"layouts.addFromPreset" = "プリセットから作成";
+"layouts.addFromPresetDescription" = "定義済みのウィンドウ配置から選択";
+"layouts.captureCurrentWindows" = "現在のウィンドウをキャプチャ";
+"layouts.captureDescription" = "現在のデスクトップのスナップショットを保存";
+"layouts.newEmpty" = "新規空レイアウト";
+"layouts.newEmptyDescription" = "空のレイアウトを作成し、後からウィンドウを追加";
+"layouts.newEmptyHint" = "エディタの＋ボタンで後からウィンドウを追加できます。";
+"layouts.create" = "作成";
+"layouts.capturedLayout" = "キャプチャしたレイアウト";
+"layouts.configurePreset" = "プリセットの設定";
+"layouts.anyApp" = "任意のアプリ";
+"layouts.back" = "戻る";
+"layouts.shortcutConflict" = "このショートカットは既に使用されています: %@";
+"layouts.shortcutReplaceMessage" = "既存のショートカットを置き換えますか？元の割り当ては解除されます。";
+"layouts.shortcutReplace" = "置き換える";
 
 /* Save Layout Dialog */
 "saveLayout.title" = "レイアウトを保存";
@@ -103,6 +127,9 @@
 "saveLayout.selectAll" = "すべて選択";
 "saveLayout.deselectAll" = "すべて解除";
 "saveLayout.save" = "保存";
+"saveLayout.ignoreObstructed" = "隠れたウィンドウを除外";
+"saveLayout.ignoreObstructedHint" = "他のウィンドウに完全に隠れているウィンドウを除外します。";
+"saveLayout.obstructedBadge" = "隠れ";
 
 /* Layout Editor */
 "editor.save" = "保存";
@@ -123,16 +150,28 @@
 "editor.appSpecific" = "アプリ固有";
 "editor.templateLabel" = "テンプレート";
 "editor.templateHint" = "アプリに関係なく、最近使用したウィンドウに位置を適用します。";
-"editor.updateFromCurrent" = "現在のウィンドウで更新";
-"editor.updateFromCurrentHelp" = "現在開いているウィンドウの位置で更新";
-"editor.addWindowHelp" = "実行中のアプリからウィンドウを追加";
+"editor.recapture" = "再キャプチャ";
+"editor.recaptureHelp" = "現在のデスクトップ状態で全ウィンドウを差し替え";
+"editor.recaptureTitle" = "ウィンドウの再キャプチャ";
+"editor.recaptureDescription" = "このレイアウトの全ウィンドウを現在のデスクトップ状態で差し替えます。";
+"editor.recaptureConfirm" = "%lld 個のウィンドウで差し替え";
+"editor.addWindowHelp" = "現在のデスクトップからウィンドウを追加";
+"editor.changeApp" = "割り当てアプリを変更";
 "editor.removeFromLayout" = "レイアウトから削除";
 
 /* Add Window Sheet */
 "addWindow.title" = "ウィンドウをレイアウトに追加";
 "addWindow.position" = "位置:";
+"addWindow.currentPosition" = "現在の位置";
 "addWindow.cancel" = "キャンセル";
 "addWindow.add" = "追加";
+"addWindow.addCount" = "%lld 個のウィンドウを追加";
+"addWindow.windowCount" = "%lld / %lld 選択中";
+
+/* Change App Sheet */
+"changeApp.title" = "アプリを変更";
+"changeApp.current" = "現在: %@";
+"changeApp.change" = "変更";
 
 /* Position Presets */
 "preset.leftHalf" = "左半分";
@@ -149,6 +188,36 @@
 /* Window Title */
 "window.mwmSettings" = "MWM 設定";
 "window.saveLayout" = "レイアウトを保存";
+
+/* Workspaces */
+"menu.workspaces" = "ワークスペース";
+"shortcuts.workspaces" = "ワークスペース";
+"workspace.coding" = "コーディング";
+"workspace.research" = "リサーチ";
+"workspace.review" = "レビュー";
+"workspace.meeting" = "ミーティング";
+"workspace.writing" = "ライティング + Zen";
+
+/* Display Profile */
+"displayProfile.title" = "ディスプレイプロファイル";
+"displayProfile.current" = "現在のディスプレイ";
+"displayProfile.displayCount" = "%lld台のディスプレイ";
+"displayProfile.updateTrigger" = "ディスプレイを再取得";
+"displayProfile.updateTriggerHelp" = "現在Macに接続されているディスプレイ構成に自動復元トリガーを更新します";
+"displayProfile.noTrigger" = "ディスプレイトリガーを設定するには自動復元を有効にしてください";
+"displayProfile.autoSwitchHint" = "このディスプレイ構成が検出されると、このレイアウトが自動的に復元されます。";
+"displayProfile.profileName" = "プロファイル名";
+"displayProfile.profileNamePlaceholder" = "例: 自宅 3画面、カフェ MacBook";
+"displayProfile.noProfiles" = "ディスプレイプロファイルはまだありません";
+"displayProfile.noProfilesHint" = "レイアウトの自動復元を有効にするとプロファイルが作成されます。モニターの接続・切断時にレイアウトが自動で切り替わります。";
+"displayProfile.connectedDisplays" = "接続中のディスプレイ";
+"displayProfile.linkedLayout" = "紐付けレイアウト";
+
+/* Tooltip descriptions */
+"tooltip.autoRestore" = "紐付けたディスプレイ構成が検出されると、このレイアウトを自動的に復元します（例: モニターの接続・切断時）";
+"tooltip.appSpecific" = "アプリごとにウィンドウを照合 — 保存時と同じアプリのウィンドウに復元します";
+"tooltip.template" = "アプリを無視 — 現在最前面にあるウィンドウに保存した位置を適用します";
+"tooltip.mode" = "レイアウト復元時にウィンドウをどう照合するかを選択します";
 
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "現在のレイアウトを保存";
