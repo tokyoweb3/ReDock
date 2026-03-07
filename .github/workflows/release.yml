@@ -1,0 +1,106 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.2.app
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+
+      - name: Run tests
+        run: swift test --parallel
+
+      - name: Build release binary
+        run: swift build -c release
+
+      - name: Create .app bundle
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          APP_BUNDLE="build/release/MWM.app"
+          CONTENTS="$APP_BUNDLE/Contents"
+          MACOS="$CONTENTS/MacOS"
+          RESOURCES="$CONTENTS/Resources"
+
+          mkdir -p "$MACOS" "$RESOURCES"
+          cp ".build/release/MWM" "$MACOS/MWM"
+          strip "$MACOS/MWM"
+
+          # Copy SPM resource bundles
+          for bundle in .build/release/*.bundle; do
+            if [ -d "$bundle" ]; then
+              cp -R "$bundle" "$RESOURCES/"
+            fi
+          done
+
+          # Generate icon
+          swift scripts/generate_icon.swift "$(pwd)"
+          iconutil -c icns build/MWM.iconset -o "$RESOURCES/AppIcon.icns"
+          rm -rf build/MWM.iconset
+
+          cat > "$CONTENTS/Info.plist" << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleIdentifier</key>
+              <string>com.mwm.app</string>
+              <key>CFBundleName</key>
+              <string>MWM</string>
+              <key>CFBundleDisplayName</key>
+              <string>MWM</string>
+              <key>CFBundleExecutable</key>
+              <string>MWM</string>
+              <key>CFBundleVersion</key>
+              <string>${VERSION}</string>
+              <key>CFBundleShortVersionString</key>
+              <string>${VERSION}</string>
+              <key>CFBundlePackageType</key>
+              <string>APPL</string>
+              <key>CFBundleIconFile</key>
+              <string>AppIcon</string>
+              <key>LSUIElement</key>
+              <true/>
+              <key>LSMinimumSystemVersion</key>
+              <string>14.0</string>
+          </dict>
+          </plist>
+          EOF
+
+          codesign --force --sign - --deep "$APP_BUNDLE"
+
+      - name: Create DMG
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          DMG_STAGING="build/release/dmg-staging"
+          mkdir -p "$DMG_STAGING"
+          cp -R "build/release/MWM.app" "$DMG_STAGING/"
+          ln -s /Applications "$DMG_STAGING/Applications"
+
+          hdiutil create -volname "MWM ${VERSION}" \
+            -srcfolder "$DMG_STAGING" \
+            -ov -format UDZO \
+            "build/release/MWM-${VERSION}.dmg"
+
+          rm -rf "$DMG_STAGING"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/release/MWM-*.dmg
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false

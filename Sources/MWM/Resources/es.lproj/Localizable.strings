@@ -216,6 +216,10 @@
 "tooltip.template" = "Ignorar apps — aplicar las posiciones guardadas a las ventanas actualmente en primer plano";
 "tooltip.mode" = "Elegir cómo se emparejan las ventanas al restaurar esta disposición";
 
+/* Display Variants */
+"variant.add" = "Añadir variante para pantallas actuales";
+"variant.delete" = "Eliminar variante";
+
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "Guardar disposición actual";
 "menuBar.enterLayoutName" = "Introduce un nombre para esta disposición:";

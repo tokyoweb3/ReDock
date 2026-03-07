@@ -216,6 +216,10 @@
 "tooltip.template" = "Apps ignorieren — gespeicherte Positionen auf die aktuell vordersten Fenster anwenden";
 "tooltip.mode" = "Wählen, wie Fenster beim Wiederherstellen dieses Layouts zugeordnet werden";
 
+/* Display Variants */
+"variant.add" = "Variante für aktuelle Bildschirme hinzufügen";
+"variant.delete" = "Variante löschen";
+
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "Aktuelles Layout sichern";
 "menuBar.enterLayoutName" = "Geben Sie einen Namen für dieses Layout ein:";

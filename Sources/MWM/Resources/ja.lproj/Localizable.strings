@@ -219,6 +219,10 @@
 "tooltip.template" = "アプリを無視 — 現在最前面にあるウィンドウに保存した位置を適用します";
 "tooltip.mode" = "レイアウト復元時にウィンドウをどう照合するかを選択します";
 
+/* Display Variants */
+"variant.add" = "現在のディスプレイ用のバリアントを追加";
+"variant.delete" = "バリアントを削除";
+
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "現在のレイアウトを保存";
 "menuBar.enterLayoutName" = "レイアウトの名前を入力してください:";

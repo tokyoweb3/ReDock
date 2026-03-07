@@ -42,9 +42,9 @@ cat > "$CONTENTS/Info.plist" << 'PLIST'
     <key>CFBundleExecutable</key>
     <string>MWM</string>
     <key>CFBundleVersion</key>
-    <string>1.0</string>
+    <string>2.0.0</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0</string>
+    <string>2.0.0</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleIconFile</key>

@@ -20,6 +20,9 @@ final class AppServices {
     let restorePlanner: RestorePlanner
     let diagnosticsService: DiagnosticsService
     let importExportService: ImportExportService
+    let workspaceService: WorkspaceService
+    let layoutShortcutManager: LayoutShortcutManager
+    let displayProfileStore: DisplayProfileStore
 
     init() {
         permissions = PermissionsService()
@@ -39,11 +42,22 @@ final class AppServices {
         diagnosticsService = DiagnosticsService()
         importExportService = ImportExportService(store: layoutStore)
 
+        layoutShortcutManager = LayoutShortcutManager()
+        displayProfileStore = DisplayProfileStore()
+
+        workspaceService = WorkspaceService(
+            windowQuerying: windowQuerying,
+            screenRegistry: screenRegistry,
+            focusModeService: focusModeService,
+            diagnosticsService: diagnosticsService
+        )
+
         autoRestoreService = AutoRestoreService(
             layoutService: layoutService,
             contextResolver: contextResolver,
             appLaunchService: appLaunchService,
-            diagnosticsService: diagnosticsService
+            diagnosticsService: diagnosticsService,
+            displayProfileStore: displayProfileStore
         )
     }
 }

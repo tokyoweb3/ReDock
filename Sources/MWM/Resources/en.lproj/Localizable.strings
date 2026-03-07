@@ -219,6 +219,10 @@
 "tooltip.template" = "Ignore apps — apply saved positions to whichever windows are currently in front";
 "tooltip.mode" = "Choose how windows are matched when restoring this layout";
 
+/* Display Variants */
+"variant.add" = "Add variant for current displays";
+"variant.delete" = "Delete Variant";
+
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "Save Current Layout";
 "menuBar.enterLayoutName" = "Enter a name for this layout:";

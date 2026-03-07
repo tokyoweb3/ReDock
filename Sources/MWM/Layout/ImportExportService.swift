@@ -96,7 +96,7 @@ final class ImportExportService {
                 var fixed = layout
                 fixed.name = "Imported"
                 validLayouts.append(fixed)
-            } else if layout.windows.isEmpty {
+            } else if layout.variants.allSatisfy({ $0.windows.isEmpty }) {
                 warnings.append("Layout '\(layout.name)' has no windows, skipping")
             } else if layout.schemaVersion > WindowLayout.currentSchemaVersion {
                 warnings.append("Layout '\(layout.name)' has newer schema version \(layout.schemaVersion)")
@@ -118,6 +118,8 @@ final class ImportExportService {
         let validation = validate(data: data)
         guard validation.isUsable else { return validation }
 
+        let existingNames = Set(store.loadAll().map(\.name))
+
         for layout in validation.validLayouts {
             var imported = layout
             imported.id = UUID()
@@ -125,6 +127,18 @@ final class ImportExportService {
             imported.updatedAt = Date()
             // Clear auto-restore triggers on import to avoid conflicts
             imported.autoRestore = false
+
+            // Deduplicate name if it already exists
+            if existingNames.contains(imported.name) {
+                var suffix = 2
+                var candidate = "\(imported.name) (\(suffix))"
+                while existingNames.contains(candidate) {
+                    suffix += 1
+                    candidate = "\(imported.name) (\(suffix))"
+                }
+                imported.name = candidate
+            }
+
             try store.save(imported)
         }
 

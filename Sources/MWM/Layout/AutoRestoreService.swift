@@ -9,8 +9,10 @@ final class AutoRestoreService {
     private let contextResolver: ContextResolver
     private let appLaunchService: AppLaunchService
     private let diagnosticsService: DiagnosticsService
+    private let displayProfileStore: DisplayProfileStore?
     private var debounceTimer: Timer?
     private var isObserving = false
+    private var isRestoring = false
 
     /// Whether to auto-launch missing apps during restore.
     var autoLaunchApps: Bool = false
@@ -19,12 +21,14 @@ final class AutoRestoreService {
         layoutService: LayoutService,
         contextResolver: ContextResolver,
         appLaunchService: AppLaunchService,
-        diagnosticsService: DiagnosticsService
+        diagnosticsService: DiagnosticsService,
+        displayProfileStore: DisplayProfileStore? = nil
     ) {
         self.layoutService = layoutService
         self.contextResolver = contextResolver
         self.appLaunchService = appLaunchService
         self.diagnosticsService = diagnosticsService
+        self.displayProfileStore = displayProfileStore
     }
 
     func startObserving() {
@@ -53,8 +57,17 @@ final class AutoRestoreService {
     @objc private func screenConfigurationChanged(_ notification: Notification) {
         debounceTimer?.invalidate()
         debounceTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { [weak self] _ in
+            self?.autoDetectDisplayProfile()
             self?.evaluateTriggers()
         }
+    }
+
+    /// Auto-detect and register the current display configuration as a profile.
+    private func autoDetectDisplayProfile() {
+        guard let store = displayProfileStore else { return }
+        let fingerprints = contextResolver.resolve().displayFingerprints
+        _ = store.findOrCreate(fingerprints: Array(fingerprints))
+        Self.logger.debug("Display profile auto-detected for \(fingerprints.count) display(s)")
     }
 
     /// Find all layouts whose trigger matches the current context.
@@ -67,6 +80,12 @@ final class AutoRestoreService {
     }
 
     private func evaluateTriggers() {
+        // Guard against concurrent restore operations
+        guard !isRestoring else {
+            Self.logger.debug("Skipping trigger evaluation: restore already in progress")
+            return
+        }
+
         let context = contextResolver.resolve()
         let layouts = layoutService.loadAll()
 
@@ -86,6 +105,7 @@ final class AutoRestoreService {
         }
 
         Self.logger.info("Auto-restoring layout '\(layout.name)' (trigger: \(trigger.displayDescription))")
+        isRestoring = true
 
         if autoLaunchApps {
             Task {
@@ -99,11 +119,13 @@ final class AutoRestoreService {
                 await MainActor.run {
                     let result = layoutService.restoreLayout(layout)
                     diagnosticsService.record(result: result, triggerSource: "auto-\(trigger.displayDescription)")
+                    isRestoring = false
                 }
             }
         } else {
             let result = layoutService.restoreLayout(layout)
             diagnosticsService.record(result: result, triggerSource: "auto-\(trigger.displayDescription)")
+            isRestoring = false
         }
     }
 }

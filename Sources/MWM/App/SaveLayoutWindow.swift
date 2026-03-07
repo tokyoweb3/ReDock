@@ -6,9 +6,12 @@ struct SaveLayoutView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var layoutName: String = ""
     @State private var mode: LayoutMode = .appSpecific
+    @State private var ignoreObstructed: Bool = false
     @State private var windowSelections: [WindowSelection] = []
 
     let snapshots: [WindowSnapshot]
+    /// Bundle IDs of windows that are fully obstructed (hidden behind others).
+    let obstructedBundleIDs: Set<UUID>
     let onSave: (String, [WindowSnapshot], LayoutMode) -> Void
 
     var selectedCount: Int {
@@ -45,6 +48,22 @@ struct SaveLayoutView: View {
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                     .padding(.leading, 54)
+            }
+
+            // Ignore obstructed windows option
+            if !obstructedBundleIDs.isEmpty {
+                Toggle(L10n.string("saveLayout.ignoreObstructed"), isOn: $ignoreObstructed)
+                    .font(.system(size: 12))
+                    .onChange(of: ignoreObstructed) { _, newValue in
+                        applyObstructedFilter(newValue)
+                    }
+
+                if ignoreObstructed {
+                    Text(L10n.string("saveLayout.ignoreObstructedHint"))
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                        .padding(.leading, 20)
+                }
             }
 
             // Window selection list
@@ -92,10 +111,21 @@ struct SaveLayoutView: View {
 
                         Spacer()
 
+                        if item.isObstructed {
+                            Text(L10n.string("saveLayout.obstructedBadge"))
+                                .font(.system(size: 9, weight: .medium))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 4)
+                                .padding(.vertical, 1)
+                                .background(Color.secondary.opacity(0.5))
+                                .clipShape(Capsule())
+                        }
+
                         Text(sizeLabel(item.snapshot.relativeFrame))
                             .font(.system(size: 10, design: .monospaced))
                             .foregroundStyle(.tertiary)
                     }
+                    .opacity(ignoreObstructed && item.isObstructed ? 0.4 : 1.0)
                 }
             }
             .frame(minHeight: 200)
@@ -113,15 +143,31 @@ struct SaveLayoutView: View {
         .padding()
         .frame(width: 480, height: 460)
         .onAppear {
-            windowSelections = snapshots.map { WindowSelection(snapshot: $0, isSelected: true) }
+            windowSelections = snapshots.map {
+                WindowSelection(
+                    snapshot: $0,
+                    isSelected: true,
+                    isObstructed: obstructedBundleIDs.contains($0.id)
+                )
+            }
         }
     }
 
     private func save() {
         let name = layoutName.isEmpty ? "Untitled" : layoutName
-        let selected = windowSelections.filter(\.isSelected).map(\.snapshot)
+        let selected = windowSelections
+            .filter { $0.isSelected && !(ignoreObstructed && $0.isObstructed) }
+            .map(\.snapshot)
         onSave(name, selected, mode)
         dismiss()
+    }
+
+    private func applyObstructedFilter(_ ignore: Bool) {
+        for i in windowSelections.indices {
+            if windowSelections[i].isObstructed {
+                windowSelections[i].isSelected = !ignore
+            }
+        }
     }
 
     private func sizeLabel(_ frame: RelativeFrame) -> String {
@@ -135,14 +181,15 @@ struct WindowSelection: Identifiable {
     let id = UUID()
     var snapshot: WindowSnapshot
     var isSelected: Bool
+    var isObstructed: Bool = false
 }
 
 /// NSWindow wrapper for hosting the save layout sheet.
 final class SaveLayoutWindowController {
     private var window: NSWindow?
 
-    func show(snapshots: [WindowSnapshot], onSave: @escaping (String, [WindowSnapshot], LayoutMode) -> Void) {
-        let view = SaveLayoutView(snapshots: snapshots, onSave: { name, selected, mode in
+    func show(snapshots: [WindowSnapshot], obstructedIDs: Set<UUID> = [], onSave: @escaping (String, [WindowSnapshot], LayoutMode) -> Void) {
+        let view = SaveLayoutView(snapshots: snapshots, obstructedBundleIDs: obstructedIDs, onSave: { name, selected, mode in
             onSave(name, selected, mode)
             self.window?.close()
         })

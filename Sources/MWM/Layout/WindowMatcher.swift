@@ -35,7 +35,7 @@ enum WindowMatcher {
     }
 
     /// Match all snapshots in a layout against live windows.
-    /// Each live window can only be matched once.
+    /// Each live window can only be matched once (identity-based removal).
     static func matchAll(snapshots: [WindowSnapshot], candidates: [WindowInfo]) -> [(WindowSnapshot, MatchResult)] {
         var remainingCandidates = candidates
         var results: [(WindowSnapshot, MatchResult)] = []
@@ -45,7 +45,10 @@ enum WindowMatcher {
             results.append((snapshot, result))
 
             if case .matched(let matched, _) = result {
-                remainingCandidates.removeAll { $0.appBundleID == matched.appBundleID && $0.title == matched.title && $0.frame == matched.frame }
+                // Remove only the first matching instance to avoid double-matching
+                if let idx = remainingCandidates.firstIndex(where: { $0.appBundleID == matched.appBundleID && $0.title == matched.title && $0.frame == matched.frame }) {
+                    remainingCandidates.remove(at: idx)
+                }
             }
         }
 

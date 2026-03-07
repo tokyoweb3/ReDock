@@ -29,6 +29,7 @@ final class SettingsWindowController {
         window.contentView = hostingView
         window.center()
         window.isReleasedWhenClosed = false
+        window.hidesOnDeactivate = false
         window.makeKeyAndOrderFront(nil)
 
         NSApp.activate(ignoringOtherApps: true)

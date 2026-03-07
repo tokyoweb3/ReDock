@@ -278,6 +278,7 @@ struct LayoutEditorView: View {
     @Binding var layout: WindowLayout
     @State private var draft: WindowLayout
     @State private var selectedWindowID: UUID?
+    @State private var activeVariantIndex: Int = 0
     @State private var showingAddWindow = false
     @State private var showingRecapture = false
     @State private var showingAppPicker = false
@@ -292,14 +293,128 @@ struct LayoutEditorView: View {
     private var hasChanges: Bool {
         draft.name != layout.name
             || draft.mode != layout.mode
-            || draft.windows != layout.windows
+            || draft.autoRestore != layout.autoRestore
+            || draft.trigger != layout.trigger
+            || draft.launchMissingApps != layout.launchMissingApps
+            || draft.variants != layout.variants
+    }
+
+    /// Safe index clamped to valid range.
+    private var safeIndex: Int {
+        min(activeVariantIndex, max(0, draft.variants.count - 1))
+    }
+
+    /// Active variant's windows (read-only access).
+    private var activeWindows: [WindowSnapshot] {
+        guard !draft.variants.isEmpty else { return [] }
+        return draft.variants[safeIndex].windows
+    }
+
+    /// Binding to the active variant's windows for the minimap editor.
+    private var activeWindowsBinding: Binding<[WindowSnapshot]> {
+        Binding(
+            get: {
+                guard !draft.variants.isEmpty else { return [] }
+                return draft.variants[safeIndex].windows
+            },
+            set: { newValue in
+                guard !draft.variants.isEmpty else { return }
+                draft.variants[safeIndex].windows = newValue
+            }
+        )
+    }
+
+    // MARK: - Variant Selector
+
+    @ViewBuilder
+    private var variantSelector: some View {
+        HStack(spacing: 4) {
+            ForEach(Array(draft.variants.enumerated()), id: \.element.id) { index, variant in
+                Button {
+                    activeVariantIndex = index
+                    selectedWindowID = nil
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: variantIcon(for: variant))
+                            .font(.system(size: 9))
+                        Text(variant.displayDescription)
+                            .font(.system(size: 10))
+                            .lineLimit(1)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        RoundedRectangle(cornerRadius: 5)
+                            .fill(safeIndex == index
+                                ? Color.accentColor.opacity(0.15)
+                                : Color(nsColor: .controlBackgroundColor))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 5)
+                            .strokeBorder(safeIndex == index
+                                ? Color.accentColor.opacity(0.4)
+                                : Color(nsColor: .separatorColor).opacity(0.5),
+                                lineWidth: 1)
+                    )
+                }
+                .buttonStyle(.plain)
+                .contextMenu {
+                    if draft.variants.count > 1 {
+                        Button(L10n.string("variant.delete"), role: .destructive) {
+                            deleteVariant(at: index)
+                        }
+                    }
+                }
+            }
+
+            Button {
+                addVariant()
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 9))
+                    .padding(4)
+            }
+            .buttonStyle(.plain)
+            .help(L10n.string("variant.add"))
+
+            Spacer()
+        }
+    }
+
+    private func variantIcon(for variant: DisplayVariant) -> String {
+        switch variant.displayFingerprints.count {
+        case 0: return "display"
+        case 1: return "display"
+        case 2: return "display.2"
+        default: return "display.2"
+        }
+    }
+
+    private func addVariant() {
+        let fingerprints = AppDelegate.services.screenRegistry.fingerprints()
+        let variant = DisplayVariant(displayFingerprints: fingerprints, windows: [])
+        draft.variants.append(variant)
+        activeVariantIndex = draft.variants.count - 1
+        selectedWindowID = nil
+    }
+
+    private func deleteVariant(at index: Int) {
+        guard draft.variants.count > 1 else { return }
+        draft.variants.remove(at: index)
+        if activeVariantIndex >= draft.variants.count {
+            activeVariantIndex = draft.variants.count - 1
+        }
+        selectedWindowID = nil
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            // Variant selector (shown when multiple variants exist)
+            variantSelector
+
             // Interactive minimap
             LayoutEditorPreview(
-                windows: $draft.windows,
+                windows: activeWindowsBinding,
                 selectedWindowID: $selectedWindowID,
                 allDisplayFingerprints: allDisplayFingerprints,
                 onDoubleClick: { windowID in
@@ -368,7 +483,7 @@ struct LayoutEditorView: View {
 
             // Metadata
             VStack(alignment: .leading, spacing: 4) {
-                metaRow(L10n.string("editor.windowsLabel"), value: "\(draft.windows.count)")
+                metaRow(L10n.string("editor.windowsLabel"), value: "\(activeWindows.count)")
                 metaRow(L10n.string("editor.created"), value: formatted(draft.createdAt))
 
                 HStack {
@@ -442,7 +557,7 @@ struct LayoutEditorView: View {
             // Editable window list
             ScrollView {
                 VStack(spacing: 1) {
-                    ForEach(draft.windows) { window in
+                    ForEach(activeWindows) { window in
                         editableWindowRow(window)
                     }
                 }
@@ -452,44 +567,56 @@ struct LayoutEditorView: View {
         .onChange(of: layout) { _, newValue in
             draft = newValue
             selectedWindowID = nil
+            if activeVariantIndex >= newValue.variants.count {
+                activeVariantIndex = 0
+            }
         }
         .sheet(isPresented: $showingAddWindow) {
             AddWindowSheet(
                 onAdd: { snapshots in
-                    draft.windows.append(contentsOf: snapshots)
+                    guard !draft.variants.isEmpty else { return }
+                    draft.variants[safeIndex].windows.append(contentsOf: snapshots)
                 }
             )
         }
         .sheet(isPresented: $showingRecapture) {
             RecaptureSheet(
                 onRecapture: { snapshots in
-                    draft.windows = snapshots
+                    guard !draft.variants.isEmpty else { return }
+                    draft.variants[safeIndex].windows = snapshots
+                    // Update variant's display fingerprints from recaptured windows
+                    let fps = Array(Set(snapshots.map(\.display)))
+                    draft.variants[safeIndex].displayFingerprints = fps
                 }
             )
         }
         .sheet(isPresented: $showingAppPicker) {
-            if let windowID = selectedWindowID,
-               let index = draft.windows.firstIndex(where: { $0.id == windowID }) {
-                ChangeAppSheet(currentApp: draft.windows[index].appName) { bundleID, appName in
-                    draft.windows[index].appBundleID = bundleID
-                    draft.windows[index].appName = appName
+            if !draft.variants.isEmpty,
+               let windowID = selectedWindowID,
+               let index = draft.variants[safeIndex].windows.firstIndex(where: { $0.id == windowID }) {
+                ChangeAppSheet(currentApp: draft.variants[safeIndex].windows[index].appName) { bundleID, appName in
+                    draft.variants[safeIndex].windows[index].appBundleID = bundleID
+                    draft.variants[safeIndex].windows[index].appName = appName
                 }
             }
         }
     }
 
-    /// All unique display fingerprints from draft, saved layout, and connected displays
+    /// All unique display fingerprints from active variant and connected displays
     private var allDisplayFingerprints: [DisplayFingerprint] {
         var seen = Set<DisplayFingerprint>()
         var result: [DisplayFingerprint] = []
-        for window in draft.windows {
+        for window in activeWindows {
             if seen.insert(window.display).inserted {
                 result.append(window.display)
             }
         }
-        for window in layout.windows {
-            if seen.insert(window.display).inserted {
-                result.append(window.display)
+        // Include active variant's registered fingerprints
+        if !draft.variants.isEmpty {
+            for fp in draft.variants[safeIndex].displayFingerprints {
+                if seen.insert(fp).inserted {
+                    result.append(fp)
+                }
             }
         }
         // Include currently connected displays so all monitors are visible
@@ -537,11 +664,11 @@ struct LayoutEditorView: View {
 
     private func presetButton(_ label: String, x: CGFloat, y: CGFloat, w: CGFloat, h: CGFloat) -> some View {
         Button(label) {
-            guard let id = selectedWindowID,
-                  let index = draft.windows.firstIndex(where: { $0.id == id }) else { return }
-            var updated = draft.windows[index]
+            guard let id = selectedWindowID, !draft.variants.isEmpty,
+                  let index = draft.variants[safeIndex].windows.firstIndex(where: { $0.id == id }) else { return }
+            var updated = draft.variants[safeIndex].windows[index]
             updated.relativeFrame = RelativeFrame(x: x, y: y, width: w, height: h)
-            draft.windows[index] = updated
+            draft.variants[safeIndex].windows[index] = updated
         }
         .controlSize(.mini)
         .font(.system(size: 9, weight: .medium, design: .monospaced))
@@ -598,7 +725,8 @@ struct LayoutEditorView: View {
     }
 
     private func removeWindow(id: UUID) {
-        draft.windows.removeAll { $0.id == id }
+        guard !draft.variants.isEmpty else { return }
+        draft.variants[safeIndex].windows.removeAll { $0.id == id }
         if selectedWindowID == id {
             selectedWindowID = nil
         }

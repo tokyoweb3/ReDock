@@ -216,6 +216,10 @@
 "tooltip.template" = "앱 무시 — 현재 최전면에 있는 윈도우에 저장된 위치를 적용합니다";
 "tooltip.mode" = "레이아웃 복원 시 윈도우를 어떻게 매칭할지 선택합니다";
 
+/* Display Variants */
+"variant.add" = "현재 디스플레이용 변형 추가";
+"variant.delete" = "변형 삭제";
+
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "현재 레이아웃 저장";
 "menuBar.enterLayoutName" = "레이아웃 이름을 입력하세요:";

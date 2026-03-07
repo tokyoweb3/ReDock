@@ -1,6 +1,6 @@
 # MWM — Mac Window Manager
 
-A lightweight macOS window manager inspired by ShiftIt and Moom Classic. Snap windows to halves, quarters, and more with keyboard shortcuts. Save and restore multi-display layouts.
+A lightweight macOS window manager inspired by ShiftIt and Moom Classic. Snap windows to halves, quarters, and more with keyboard shortcuts. Save and restore multi-display layouts with context-aware auto-restore.
 
 ## Requirements
 
@@ -62,27 +62,38 @@ Save the current arrangement of all windows and restore it later.
 **Save:**
 1. Arrange your windows as desired
 2. Click the MWM menu bar icon > **Save Layout...**
-3. Enter a name and click Save
+3. Select windows to include, choose a mode (App-Specific or Template), and click Save
 
 **Restore:**
 1. Click MWM menu bar icon > **Restore Layout** > select a layout
 2. Or use **Restore (Launch Apps)** to also open any apps that aren't running
 
-**Preview in Settings:**
+**Layout Modes:**
+- **App-Specific** — Matches windows by app bundle ID. Restores each app to its saved position.
+- **Template** — Applies saved positions to the N most recently used windows, regardless of app.
+
+**Layout Editor:**
 1. Open **Settings > Layouts**
-2. Select a layout to see a visual minimap of window positions
-3. View metadata (window count, creation date, trigger info)
+2. Select a layout to see a visual minimap preview
+3. Drag windows in the minimap to reposition, use snap presets for precise alignment
+4. Edit layout name, mode, and window list
+5. Save or Reset changes independently
 
 ### Auto-Restore
 
-Automatically restore a layout when your display configuration changes:
+Automatically restore a layout when your environment changes:
 
 1. Open **Settings > Layouts**
 2. Select a layout and enable **Auto-restore**
 3. The current display configuration is saved as the trigger
 4. When you connect/disconnect displays matching the trigger, the layout restores automatically
 
-Triggers can also match Wi-Fi networks (for office vs. home setups).
+**Context Triggers:**
+- **Display configuration** — Triggered by connecting/disconnecting monitors
+- **Wi-Fi SSID** — Triggered by network changes (office vs. home setups)
+- **Compound (AND)** — Combine multiple triggers for precise matching
+
+Conflicts between layouts with overlapping triggers are detected and shown in the UI.
 
 ### Focus Mode
 
@@ -95,11 +106,33 @@ Share or back up your layouts:
 - **Export:** Menu bar > Export Layouts... (or Settings > Layouts toolbar)
 - **Import:** Menu bar > Import Layouts... (or Settings > Layouts toolbar)
 
-Layouts are exported as a JSON file that can be shared across machines.
+Layouts are exported as a versioned JSON file. On import, duplicate names are automatically disambiguated and auto-restore triggers are cleared for safety.
 
 ### Diagnostics
 
-Recent restore results are shown in the menu bar under **Recent Restores**, including which windows were restored, skipped, or failed.
+Recent restore results are shown in the menu bar under **Recent Restores**, including which windows were restored, skipped, or failed — with specific failure reasons.
+
+### Stage Manager Compatibility
+
+MWM detects Stage Manager and automatically filters out its strip windows during layout save and restore, preventing interference with window management operations.
+
+### Multi-Language Support
+
+MWM supports 9 languages:
+
+| Language | |
+|----------|---|
+| English | Default |
+| 日本語 (Japanese) | |
+| 简体中文 (Simplified Chinese) | |
+| 繁體中文 (Traditional Chinese) | |
+| 한국어 (Korean) | |
+| Español (Spanish) | |
+| Français (French) | |
+| Deutsch (German) | |
+| Português (Brazilian Portuguese) | |
+
+The language follows your system setting by default. You can override it in **Settings > General > Language**. The system-detected language is annotated with "(System)" in the picker.
 
 ## Settings
 
@@ -108,8 +141,8 @@ Open via menu bar > **Settings...** (Cmd+,)
 | Tab | Contents |
 |-----|----------|
 | Shortcuts | Customize all keyboard shortcuts |
-| Layouts | Manage saved layouts with visual preview, auto-restore, import/export |
-| General | Launch at Login, version info |
+| Layouts | Manage saved layouts with visual preview, drag editor, auto-restore, import/export |
+| General | Language selection, Launch at Login, version info |
 
 ## Troubleshooting
 
@@ -132,17 +165,22 @@ Same cause as above — Accessibility permission needs to be re-granted after re
 
 Shortcuts are set to defaults on first launch. If they appear blank, open Settings > Shortcuts and click each recorder to assign shortcuts.
 
+### Restore says "failed" for some windows
+
+Some apps (e.g., Electron-based apps) may not respond to Accessibility setFrame commands. MWM verifies each window position after restore and reports failures individually.
+
 ## Architecture
 
 ```
 Sources/MWM/
-  App/              App lifecycle, menu bar, settings UI
+  App/              App lifecycle, menu bar, settings UI, localization
   Accessibility/    AXUIElement wrapper, permissions
-  WindowManagement/ Window actions, calculations, dispatcher
+  WindowManagement/ Window actions, calculations, dispatcher, Stage Manager
   Screen/           Display detection, coordinate conversion
-  Layout/           Save/restore, triggers, diagnostics, import/export
+  Layout/           Save/restore, triggers, diagnostics, import/export, auto-restore
   Hotkeys/          KeyboardShortcuts integration
   Focus/            Focus Mode service
+  Resources/        Localization strings (en, ja, zh-Hans, zh-Hant, ko, es, fr, de, pt-BR)
 ```
 
 ## License

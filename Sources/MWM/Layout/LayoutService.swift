@@ -240,19 +240,67 @@ final class LayoutService {
     // MARK: - Restore
 
     func restoreLayout(_ layout: WindowLayout) -> RestoreResult {
+        let effectiveWindows = resolveEffectiveWindows(for: layout)
+
         if layout.launchMissingApps && layout.mode == .appSpecific {
-            launchMissingApps(for: layout)
+            launchMissingApps(windows: effectiveWindows)
         }
         switch layout.mode {
         case .appSpecific:
-            return restoreAppSpecific(layout)
+            return restoreAppSpecific(layout, windows: effectiveWindows)
         case .template:
-            return restoreTemplate(layout)
+            return restoreTemplate(layout, windows: effectiveWindows)
         }
     }
 
-    /// Launch apps that are referenced in the layout but not currently running.
-    private func launchMissingApps(for layout: WindowLayout) {
+    /// Select the best variant's windows for the current display configuration.
+    private func resolveEffectiveWindows(for layout: WindowLayout) -> [WindowSnapshot] {
+        guard layout.variants.count > 1 else {
+            return layout.windows
+        }
+        let currentFingerprints = screenRegistry.fingerprints()
+        return Self.bestVariant(from: layout.variants, for: currentFingerprints).windows
+    }
+
+    /// Find the best matching variant for a set of display fingerprints.
+    static func bestVariant(from variants: [DisplayVariant], for currentFingerprints: [DisplayFingerprint]) -> DisplayVariant {
+        guard variants.count > 1 else {
+            return variants.first ?? DisplayVariant(displayFingerprints: [], windows: [])
+        }
+
+        var bestIndex = 0
+        var bestScore = -1.0
+
+        for (i, variant) in variants.enumerated() {
+            let score = variantMatchScore(variant: variant, currentFingerprints: currentFingerprints)
+            if score > bestScore {
+                bestScore = score
+                bestIndex = i
+            }
+        }
+
+        return variants[bestIndex]
+    }
+
+    /// Score how well a variant's display fingerprints match the current displays.
+    private static func variantMatchScore(variant: DisplayVariant, currentFingerprints: [DisplayFingerprint]) -> Double {
+        guard !variant.displayFingerprints.isEmpty else { return 0 }
+
+        var matches = 0
+        for fp in variant.displayFingerprints {
+            if currentFingerprints.contains(where: { $0.approximatelyMatches(fp) }) {
+                matches += 1
+            }
+        }
+
+        let total = max(variant.displayFingerprints.count, currentFingerprints.count)
+        // Bonus for exact display count match
+        let countBonus: Double = variant.displayFingerprints.count == currentFingerprints.count ? 0.1 : 0
+        return Double(matches) / Double(total) + countBonus
+    }
+
+    /// Launch apps that are referenced but not currently running.
+    private func launchMissingApps(windows: [WindowSnapshot]) {
         let runningBundleIDs = Set(
             NSWorkspace.shared.runningApplications
                 .filter { $0.activationPolicy == .regular }
@@ -260,7 +308,7 @@ final class LayoutService {
         )
 
         let missingBundleIDs = Set(
-            layout.windows.map(\.appBundleID)
+            windows.map(\.appBundleID)
                 .filter { !$0.hasPrefix("placeholder.") && !runningBundleIDs.contains($0) }
         )
 
@@ -277,9 +325,9 @@ final class LayoutService {
     }
 
     /// Traditional restore: match by app bundle ID.
-    private func restoreAppSpecific(_ layout: WindowLayout) -> RestoreResult {
+    private func restoreAppSpecific(_ layout: WindowLayout, windows: [WindowSnapshot]) -> RestoreResult {
         let liveWindows = windowQuerying.allVisibleWindows()
-        let matches = WindowMatcher.matchAll(snapshots: layout.windows, candidates: liveWindows)
+        let matches = WindowMatcher.matchAll(snapshots: windows, candidates: liveWindows)
 
         var details: [WindowRestoreDetail] = []
         var restored = 0
@@ -355,11 +403,11 @@ final class LayoutService {
     }
 
     /// Template restore: apply to the N most recently used windows regardless of app.
-    private func restoreTemplate(_ layout: WindowLayout) -> RestoreResult {
+    private func restoreTemplate(_ layout: WindowLayout, windows: [WindowSnapshot]) -> RestoreResult {
         let liveWindows = windowQuerying.allVisibleWindows()
             .filter { !$0.isMinimized && !$0.isFullscreen }
 
-        let slotCount = layout.windows.count
+        let slotCount = windows.count
         let targets = Array(liveWindows.prefix(slotCount))
 
         var details: [WindowRestoreDetail] = []
@@ -367,7 +415,7 @@ final class LayoutService {
         var skipped = 0
         var failed = 0
 
-        for (index, snapshot) in layout.windows.enumerated() {
+        for (index, snapshot) in windows.enumerated() {
             guard index < targets.count else {
                 skipped += 1
                 details.append(WindowRestoreDetail(

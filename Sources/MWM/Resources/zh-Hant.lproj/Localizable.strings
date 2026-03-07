@@ -216,6 +216,10 @@
 "tooltip.template" = "忽略應用程式 — 將儲存的位置套用到目前最前方的視窗";
 "tooltip.mode" = "選擇回復佈局時如何配對視窗";
 
+/* Display Variants */
+"variant.add" = "為目前顯示器新增變體";
+"variant.delete" = "刪除變體";
+
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "儲存目前佈局";
 "menuBar.enterLayoutName" = "請輸入佈局名稱：";

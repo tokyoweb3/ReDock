@@ -216,6 +216,10 @@
 "tooltip.template" = "Ignorar apps — aplicar as posições salvas às janelas atualmente em primeiro plano";
 "tooltip.mode" = "Escolher como as janelas são combinadas ao restaurar este layout";
 
+/* Display Variants */
+"variant.add" = "Adicionar variante para telas atuais";
+"variant.delete" = "Excluir variante";
+
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "Salvar layout atual";
 "menuBar.enterLayoutName" = "Digite um nome para este layout:";

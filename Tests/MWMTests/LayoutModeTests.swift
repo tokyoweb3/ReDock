@@ -63,9 +63,9 @@ struct LayoutModeTests {
         #expect(layout.name == "V1 Layout")
     }
 
-    @Test("Schema version is 2")
+    @Test("Schema version is 3")
     func schemaVersion() {
-        #expect(WindowLayout.currentSchemaVersion == 2)
+        #expect(WindowLayout.currentSchemaVersion == 3)
     }
 
     @Test("Layout store round-trip with template mode")

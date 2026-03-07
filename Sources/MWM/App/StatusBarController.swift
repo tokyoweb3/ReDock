@@ -65,12 +65,46 @@ final class StatusBarController {
         menu.addItem(focusItem)
         menu.addItem(.separator())
 
+        // Workspaces (slot-based)
+        let workspacesMenu = NSMenu()
+        let allLayouts = services.layoutService.loadAll()
+        let slotIndices = [5, 6, 7, 8, 9]
+        for (shortcutName, slotIndex) in zip(workspaceSlotNames, slotIndices) {
+            let layoutID = WorkspaceSlotManager.layoutID(for: slotIndex)
+            let layout = layoutID.flatMap { id in allLayouts.first { $0.id == id } }
+            let title = layout?.name ?? L10n.string("shortcuts.slotEmpty", slotIndex)
+            let item = NSMenuItem(
+                title: title,
+                action: layout != nil ? #selector(MenuTarget.restoreWorkspaceSlot(_:)) : nil,
+                keyEquivalent: ""
+            )
+            item.target = MenuTarget.shared
+            item.representedObject = slotIndex as NSNumber
+            applyShortcutDisplay(item, name: shortcutName)
+            workspacesMenu.addItem(item)
+        }
+        let workspacesItem = NSMenuItem(title: L10n.string("menu.workspaces"), action: nil, keyEquivalent: "")
+        workspacesItem.submenu = workspacesMenu
+        menu.addItem(workspacesItem)
+        menu.addItem(.separator())
+
         // Layout
         let saveItem = NSMenuItem(title: L10n.string("menu.saveLayout"), action: #selector(MenuTarget.saveLayout), keyEquivalent: "")
         saveItem.target = MenuTarget.shared
         menu.addItem(saveItem)
 
         let layouts = services.layoutService.loadAll()
+
+        // Favorite layouts shown directly with shortcuts
+        let favorites = layouts.filter(\.isFavorite)
+        for layout in favorites {
+            let item = NSMenuItem(title: layout.name, action: #selector(MenuTarget.restoreLayout(_:)), keyEquivalent: "")
+            item.target = MenuTarget.shared
+            item.representedObject = layout.id.uuidString as NSString
+            applyShortcutDisplay(item, name: LayoutShortcutManager.shortcutName(for: layout.id))
+            menu.addItem(item)
+        }
+
         if !layouts.isEmpty {
             let restoreMenu = NSMenu()
             for layout in layouts {
@@ -224,6 +258,20 @@ final class StatusBarController {
         services.focusModeService.toggle()
     }
 
+    @objc func applyWorkspace(_ sender: NSMenuItem) {
+        guard let rawValue = sender.representedObject as? String,
+              let preset = WorkspacePreset(rawValue: rawValue) else { return }
+        services.workspaceService.apply(preset)
+    }
+
+    @objc func restoreWorkspaceSlot(_ sender: NSMenuItem) {
+        guard let slotIndex = sender.representedObject as? Int,
+              let layoutID = WorkspaceSlotManager.layoutID(for: slotIndex),
+              let layout = services.layoutService.loadAll().first(where: { $0.id == layoutID }) else { return }
+        let result = services.layoutService.restoreLayout(layout)
+        services.diagnosticsService.record(result: result, triggerSource: "workspace-slot-\(slotIndex)")
+    }
+
     private var saveLayoutController: SaveLayoutWindowController?
 
     @objc func saveLayout() {
@@ -239,8 +287,8 @@ final class StatusBarController {
             return
         }
 
-        let snapshots = services.layoutService.captureCurrentWindows()
-        if snapshots.isEmpty {
+        let capture = services.layoutService.captureWithObstructionInfo()
+        if capture.snapshots.isEmpty {
             let warnAlert = NSAlert()
             warnAlert.messageText = L10n.string("alert.noWindowsFound.title")
             warnAlert.informativeText = L10n.string("alert.noWindowsFound.message")
@@ -253,7 +301,7 @@ final class StatusBarController {
         }
 
         let controller = SaveLayoutWindowController()
-        controller.show(snapshots: snapshots) { [weak self] name, selected, mode in
+        controller.show(snapshots: capture.snapshots, obstructedIDs: capture.obstructedIDs) { [weak self] name, selected, mode in
             guard let self else { return }
             do {
                 try _ = self.services.layoutService.saveLayout(name: name, snapshots: selected, mode: mode)

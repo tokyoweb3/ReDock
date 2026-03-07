@@ -216,6 +216,10 @@
 "tooltip.template" = "忽略应用 — 将保存的位置应用到当前最前面的窗口";
 "tooltip.mode" = "选择恢复布局时如何匹配窗口";
 
+/* Display Variants */
+"variant.add" = "为当前显示器添加变体";
+"variant.delete" = "删除变体";
+
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "保存当前布局";
 "menuBar.enterLayoutName" = "请输入布局名称：";

@@ -216,6 +216,10 @@
 "tooltip.template" = "Ignorer les apps — appliquer les positions enregistrées aux fenêtres actuellement au premier plan";
 "tooltip.mode" = "Choisir comment les fenêtres sont associées lors de la restauration de cette disposition";
 
+/* Display Variants */
+"variant.add" = "Ajouter une variante pour les écrans actuels";
+"variant.delete" = "Supprimer la variante";
+
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "Enregistrer la disposition actuelle";
 "menuBar.enterLayoutName" = "Entrez un nom pour cette disposition :";

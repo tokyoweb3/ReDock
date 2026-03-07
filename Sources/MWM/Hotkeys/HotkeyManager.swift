@@ -1,3 +1,4 @@
+import Foundation
 import KeyboardShortcuts
 
 // MARK: - Shortcut Name Definitions
@@ -30,7 +31,68 @@ extension KeyboardShortcuts.Name {
 
     // Focus Mode
     static let toggleFocusMode = Self("toggleFocusMode", default: .init(.z, modifiers: [.control, .option, .command]))
+
+    // Workspace slots (numbered 5-9)
+    static let workspaceSlot5 = Self("workspaceSlot5", default: .init(.five, modifiers: [.control, .option, .command]))
+    static let workspaceSlot6 = Self("workspaceSlot6", default: .init(.six, modifiers: [.control, .option, .command]))
+    static let workspaceSlot7 = Self("workspaceSlot7", default: .init(.seven, modifiers: [.control, .option, .command]))
+    static let workspaceSlot8 = Self("workspaceSlot8", default: .init(.eight, modifiers: [.control, .option, .command]))
+    static let workspaceSlot9 = Self("workspaceSlot9", default: .init(.nine, modifiers: [.control, .option, .command]))
+
+    // Legacy names (kept for backwards compat with saved shortcuts)
+    static let workspaceCoding = Self("workspaceCoding")
+    static let workspaceResearch = Self("workspaceResearch")
+    static let workspaceReview = Self("workspaceReview")
+    static let workspaceMeeting = Self("workspaceMeeting")
+    static let workspaceWriting = Self("workspaceWriting")
 }
+
+/// All workspace slot shortcut names in order.
+let workspaceSlotNames: [KeyboardShortcuts.Name] = [
+    .workspaceSlot5, .workspaceSlot6, .workspaceSlot7,
+    .workspaceSlot8, .workspaceSlot9,
+]
+
+// MARK: - Workspace Slot Manager
+
+/// Manages which layout is assigned to each workspace slot (5-9).
+/// Stored in UserDefaults as slot index -> layout UUID string.
+enum WorkspaceSlotManager {
+    private static let prefix = "workspaceSlot"
+
+    /// Get the layout ID assigned to a slot index (5-9).
+    static func layoutID(for slotIndex: Int) -> UUID? {
+        guard let str = UserDefaults.standard.string(forKey: "\(prefix).\(slotIndex)") else { return nil }
+        return UUID(uuidString: str)
+    }
+
+    /// Set the layout ID for a slot index (5-9). Pass nil to unassign.
+    static func setLayoutID(_ id: UUID?, for slotIndex: Int) {
+        if let id {
+            UserDefaults.standard.set(id.uuidString, forKey: "\(prefix).\(slotIndex)")
+        } else {
+            UserDefaults.standard.removeObject(forKey: "\(prefix).\(slotIndex)")
+        }
+    }
+
+    /// Assign default preset layouts to empty slots.
+    static func seedDefaultAssignments(layouts: [WindowLayout]) {
+        let presetNames = WorkspacePreset.allCases.map(\.displayName)
+        let slotIndices = [5, 6, 7, 8, 9]
+
+        for (i, presetName) in presetNames.enumerated() {
+            let slotIndex = slotIndices[i]
+            // Only seed if slot is empty
+            guard layoutID(for: slotIndex) == nil else { continue }
+            // Find the layout matching this preset name
+            if let layout = layouts.first(where: { $0.name == presetName }) {
+                setLayoutID(layout.id, for: slotIndex)
+            }
+        }
+    }
+}
+
+// MARK: - Hotkey Manager
 
 /// Manages global hotkey registration.
 /// Routes window actions through the shared WindowActionDispatcher.
@@ -70,5 +132,23 @@ final class HotkeyManager {
         KeyboardShortcuts.onKeyUp(for: .toggleFocusMode) {
             AppDelegate.services.focusModeService.toggle()
         }
+
+        // Workspace slots → restore assigned layout
+        let slotIndices = [5, 6, 7, 8, 9]
+        for (name, slotIndex) in zip(workspaceSlotNames, slotIndices) {
+            KeyboardShortcuts.onKeyUp(for: name) {
+                Self.restoreSlot(slotIndex)
+            }
+        }
+    }
+
+    private static func restoreSlot(_ slotIndex: Int) {
+        let services = AppDelegate.services
+        guard let layoutID = WorkspaceSlotManager.layoutID(for: slotIndex),
+              let layout = services.layoutService.loadAll().first(where: { $0.id == layoutID }) else {
+            return
+        }
+        let result = services.layoutService.restoreLayout(layout)
+        services.diagnosticsService.record(result: result, triggerSource: "workspace-slot-\(slotIndex)")
     }
 }
