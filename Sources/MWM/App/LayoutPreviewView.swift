@@ -250,10 +250,44 @@ struct LayoutEditorView: View {
                 metaRow("Windows", value: "\(layout.windows.count)")
                 metaRow("Created", value: formatted(layout.createdAt))
 
+                HStack {
+                    Text("Mode")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 60, alignment: .leading)
+                    Picker("", selection: $layout.mode) {
+                        Text("App-Specific").tag(LayoutMode.appSpecific)
+                        Text("Template").tag(LayoutMode.template)
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.segmented)
+                    .frame(width: 180)
+                    .onChange(of: layout.mode) { _, _ in onSave() }
+                }
+
+                if layout.mode == .template {
+                    Text("Applies to the most recently used windows, regardless of app.")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.tertiary)
+                        .padding(.leading, 60)
+                }
+
                 if let trigger = layout.trigger {
                     metaRow("Trigger", value: trigger.displayDescription)
                 }
             }
+
+            // Update from current button
+            Button(action: { updateFromCurrent() }) {
+                HStack(spacing: 4) {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .font(.system(size: 10))
+                    Text("Update from Current Windows")
+                        .font(.system(size: 11))
+                }
+            }
+            .controlSize(.small)
+            .help("Update positions from currently open windows")
 
             // Window list header
             HStack {
@@ -374,6 +408,15 @@ struct LayoutEditorView: View {
             selectedWindowID = nil
         }
         onSave()
+    }
+
+    private func updateFromCurrent() {
+        do {
+            let updated = try AppDelegate.services.layoutService.updateFromCurrent(layoutID: layout.id)
+            layout.windows = updated.windows
+        } catch {
+            // Layout may not be saved yet; silently ignore
+        }
     }
 
     // MARK: - Helpers

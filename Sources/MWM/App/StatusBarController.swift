@@ -222,6 +222,8 @@ final class StatusBarController {
         services.focusModeService.toggle()
     }
 
+    private var saveLayoutController: SaveLayoutWindowController?
+
     @objc func saveLayout() {
         guard services.permissions.isGranted else {
             let alert = NSAlert()
@@ -235,35 +237,30 @@ final class StatusBarController {
             return
         }
 
-        let alert = NSAlert()
-        alert.messageText = "Save Current Layout"
-        alert.informativeText = "Enter a name for this layout:"
-        alert.addButton(withTitle: "Save")
-        alert.addButton(withTitle: "Cancel")
+        let snapshots = services.layoutService.captureCurrentWindows()
+        if snapshots.isEmpty {
+            let warnAlert = NSAlert()
+            warnAlert.messageText = "No Windows Found"
+            warnAlert.informativeText = "No windows were detected. This can happen if:\n\n• Accessibility permission was recently toggled — try toggling it off and on\n• No apps with standard windows are open"
+            warnAlert.addButton(withTitle: "Open System Settings")
+            warnAlert.addButton(withTitle: "OK")
+            if warnAlert.runModal() == .alertFirstButtonReturn {
+                services.permissions.openSystemSettings()
+            }
+            return
+        }
 
-        let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: 250, height: 24))
-        textField.placeholderString = "My Layout"
-        alert.accessoryView = textField
-
-        if alert.runModal() == .alertFirstButtonReturn {
-            let name = textField.stringValue.isEmpty ? "Untitled" : textField.stringValue
+        let controller = SaveLayoutWindowController()
+        controller.show(snapshots: snapshots) { [weak self] name, selected, mode in
+            guard let self else { return }
             do {
-                let layout = try services.layoutService.saveCurrentLayout(name: name)
-                if layout.windows.isEmpty {
-                    let warnAlert = NSAlert()
-                    warnAlert.messageText = "No Windows Found"
-                    warnAlert.informativeText = "Layout was saved but no windows were detected. This can happen if:\n\n• Accessibility permission was recently toggled — try toggling it off and on\n• No apps with standard windows are open"
-                    warnAlert.addButton(withTitle: "Open System Settings")
-                    warnAlert.addButton(withTitle: "OK")
-                    if warnAlert.runModal() == .alertFirstButtonReturn {
-                        services.permissions.openSystemSettings()
-                    }
-                }
+                try _ = self.services.layoutService.saveLayout(name: name, snapshots: selected, mode: mode)
             } catch {
                 let errorAlert = NSAlert(error: error)
                 errorAlert.runModal()
             }
         }
+        saveLayoutController = controller
     }
 
     @objc func restoreLayout(_ sender: NSMenuItem) {

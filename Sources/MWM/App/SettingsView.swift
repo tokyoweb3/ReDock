@@ -207,9 +207,20 @@ struct LayoutsSettingsView: View {
                 Text(layout.name)
                     .font(.system(size: 13, weight: .medium))
                     .lineLimit(1)
-                Text("\(layout.windows.count) windows")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 4) {
+                    Text("\(layout.windows.count) windows")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                    if layout.mode == .template {
+                        Text("Template")
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 1)
+                            .background(Color.orange.opacity(0.7))
+                            .clipShape(Capsule())
+                    }
+                }
             }
             Spacer()
             if layout.autoRestore {
