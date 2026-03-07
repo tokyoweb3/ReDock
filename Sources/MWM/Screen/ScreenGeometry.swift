@@ -50,8 +50,10 @@ enum ScreenGeometry {
 
     // MARK: - Private
 
+    /// Primary display height (the display at CG origin, always screens[0]).
+    /// NSScreen.main changes based on focused window — must NOT be used for coordinate conversion.
     private static var mainScreenHeight: CGFloat {
-        NSScreen.main?.frame.height ?? 0
+        NSScreen.screens.first?.frame.height ?? 0
     }
 
     private static func intersectionArea(_ a: CGRect, _ b: CGRect) -> CGFloat {

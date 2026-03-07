@@ -8,10 +8,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         let services = Self.services
 
-        if services.permissions.check(promptIfNeeded: true) {
+        let trusted = services.permissions.check(promptIfNeeded: true)
+        Self.logger.info("AX trusted: \(trusted)")
+
+        if trusted {
             onPermissionGranted(services)
         } else {
             services.permissions.pollUntilGranted { [weak self] in
+                Self.logger.info("Accessibility permission granted via polling")
                 self?.onPermissionGranted(services)
             }
         }
@@ -20,6 +24,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func onPermissionGranted(_ services: AppServices) {
         services.hotkeyManager.registerAll()
         services.autoRestoreService.startObserving()
-        Self.logger.info("MWM ready: hotkeys registered, auto-restore monitoring active")
+        Self.logger.info("Ready: hotkeys registered, auto-restore active")
     }
 }

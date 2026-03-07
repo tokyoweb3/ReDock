@@ -25,11 +25,10 @@ final class AccessibilityElement {
 
     func axValue<T>(_ key: String, type: AXValueType) -> T? {
         guard let rawValue: AXValue = attribute(key) else { return nil }
-        var result: T?
-        withUnsafeMutablePointer(to: &result) { ptr in
-            _ = AXValueGetValue(rawValue, type, ptr)
-        }
-        return result
+        let ptr = UnsafeMutablePointer<T>.allocate(capacity: 1)
+        defer { ptr.deallocate() }
+        guard AXValueGetValue(rawValue, type, ptr) else { return nil }
+        return ptr.pointee
     }
 
     func setAttribute(_ key: String, value: AnyObject) {
