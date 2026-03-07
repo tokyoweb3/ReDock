@@ -57,9 +57,43 @@ struct MenuBarView: View {
             Menu("Restore Layout") {
                 ForEach(savedLayouts) { layout in
                     Button(layout.name) {
-                        _ = services.layoutService.restoreLayout(layout)
+                        let result = services.layoutService.restoreLayout(layout)
+                        services.diagnosticsService.record(result: result, triggerSource: "manual")
                     }
                 }
+            }
+        }
+
+        Divider()
+
+        Button("Export Layouts...") {
+            let panel = NSSavePanel()
+            panel.allowedContentTypes = [.json]
+            panel.nameFieldStringValue = "MWM-layouts.json"
+            guard panel.runModal() == .OK, let url = panel.url else { return }
+            do {
+                try services.importExportService.exportToFile(savedLayouts, url: url)
+            } catch {
+                let alert = NSAlert(error: error)
+                alert.runModal()
+            }
+        }
+
+        Button("Import Layouts...") {
+            let panel = NSOpenPanel()
+            panel.allowedContentTypes = [.json]
+            panel.allowsMultipleSelection = false
+            guard panel.runModal() == .OK, let url = panel.url else { return }
+            do {
+                let validation = try services.importExportService.importFromFile(url: url)
+                refreshLayouts()
+                let alert = NSAlert()
+                alert.messageText = "Import Complete"
+                alert.informativeText = "\(validation.validLayouts.count) layout(s) imported."
+                alert.runModal()
+            } catch {
+                let alert = NSAlert(error: error)
+                alert.runModal()
             }
         }
 

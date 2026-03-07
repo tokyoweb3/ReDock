@@ -80,7 +80,48 @@ final class StatusBarController {
             let restoreItem = NSMenuItem(title: "Restore Layout", action: nil, keyEquivalent: "")
             restoreItem.submenu = restoreMenu
             menu.addItem(restoreItem)
+
+            let restoreWithLaunchMenu = NSMenu()
+            for layout in layouts {
+                let item = NSMenuItem(title: layout.name, action: #selector(MenuTarget.restoreWithLaunch(_:)), keyEquivalent: "")
+                item.target = MenuTarget.shared
+                item.representedObject = layout.id.uuidString as NSString
+                restoreWithLaunchMenu.addItem(item)
+            }
+            let restoreWithLaunchItem = NSMenuItem(title: "Restore (Launch Apps)", action: nil, keyEquivalent: "")
+            restoreWithLaunchItem.submenu = restoreWithLaunchMenu
+            menu.addItem(restoreWithLaunchItem)
         }
+
+        menu.addItem(.separator())
+
+        // Import/Export
+        let exportItem = NSMenuItem(title: "Export Layouts...", action: #selector(MenuTarget.exportLayouts), keyEquivalent: "")
+        exportItem.target = MenuTarget.shared
+        menu.addItem(exportItem)
+
+        let importItem = NSMenuItem(title: "Import Layouts...", action: #selector(MenuTarget.importLayouts), keyEquivalent: "")
+        importItem.target = MenuTarget.shared
+        menu.addItem(importItem)
+
+        // Diagnostics
+        let recentRecords = services.diagnosticsService.recentRecords
+        if !recentRecords.isEmpty {
+            let diagMenu = NSMenu()
+            for record in recentRecords.prefix(10) {
+                let formatter = DateFormatter()
+                formatter.dateStyle = .short
+                formatter.timeStyle = .short
+                let title = "\(formatter.string(from: record.timestamp)) — \(record.summary)"
+                let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+                item.isEnabled = false
+                diagMenu.addItem(item)
+            }
+            let diagItem = NSMenuItem(title: "Recent Restores", action: nil, keyEquivalent: "")
+            diagItem.submenu = diagMenu
+            menu.addItem(diagItem)
+        }
+
         menu.addItem(.separator())
 
         // Settings & Quit
@@ -207,7 +248,64 @@ final class StatusBarController {
         guard let idString = sender.representedObject as? String,
               let uuid = UUID(uuidString: idString),
               let layout = services.layoutService.loadAll().first(where: { $0.id == uuid }) else { return }
-        _ = services.layoutService.restoreLayout(layout)
+        let result = services.layoutService.restoreLayout(layout)
+        services.diagnosticsService.record(result: result, triggerSource: "manual")
+    }
+
+    @objc func restoreWithLaunch(_ sender: NSMenuItem) {
+        guard let idString = sender.representedObject as? String,
+              let uuid = UUID(uuidString: idString),
+              let layout = services.layoutService.loadAll().first(where: { $0.id == uuid }) else { return }
+
+        Task {
+            let launchResult = await services.appLaunchService.launchMissingApps(for: layout)
+            if !launchResult.launched.isEmpty {
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+            }
+            await MainActor.run {
+                let result = services.layoutService.restoreLayout(layout)
+                services.diagnosticsService.record(result: result, triggerSource: "manual-with-launch")
+            }
+        }
+    }
+
+    @objc func exportLayouts() {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.json]
+        panel.nameFieldStringValue = "MWM-layouts.json"
+        panel.title = "Export Layouts"
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            let layouts = services.layoutService.loadAll()
+            try services.importExportService.exportToFile(layouts, url: url)
+        } catch {
+            let alert = NSAlert(error: error)
+            alert.runModal()
+        }
+    }
+
+    @objc func importLayouts() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.json]
+        panel.title = "Import Layouts"
+        panel.allowsMultipleSelection = false
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            let validation = try services.importExportService.importFromFile(url: url)
+            let alert = NSAlert()
+            alert.messageText = "Import Complete"
+            var message = "\(validation.validLayouts.count) layout(s) imported."
+            if !validation.warnings.isEmpty {
+                message += "\n\nWarnings:\n" + validation.warnings.joined(separator: "\n")
+            }
+            alert.informativeText = message
+            alert.runModal()
+        } catch {
+            let alert = NSAlert(error: error)
+            alert.runModal()
+        }
     }
 
     @objc func openSettings() {

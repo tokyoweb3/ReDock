@@ -14,6 +14,13 @@ final class AppServices {
     let focusModeService: FocusModeService
     let autoRestoreService: AutoRestoreService
 
+    // v2 services
+    let contextResolver: ContextResolver
+    let appLaunchService: AppLaunchService
+    let restorePlanner: RestorePlanner
+    let diagnosticsService: DiagnosticsService
+    let importExportService: ImportExportService
+
     init() {
         permissions = PermissionsService()
         screenRegistry = ScreenRegistry()
@@ -24,6 +31,19 @@ final class AppServices {
         layoutStore = LayoutStore()
         layoutService = LayoutService(store: layoutStore, screenRegistry: screenRegistry, windowQuerying: windowQuerying)
         focusModeService = FocusModeService(screenRegistry: screenRegistry)
-        autoRestoreService = AutoRestoreService(layoutService: layoutService, screenRegistry: screenRegistry)
+
+        // v2
+        contextResolver = ContextResolver(screenRegistry: screenRegistry)
+        appLaunchService = AppLaunchService()
+        restorePlanner = RestorePlanner(appLaunchService: appLaunchService)
+        diagnosticsService = DiagnosticsService()
+        importExportService = ImportExportService(store: layoutStore)
+
+        autoRestoreService = AutoRestoreService(
+            layoutService: layoutService,
+            contextResolver: contextResolver,
+            appLaunchService: appLaunchService,
+            diagnosticsService: diagnosticsService
+        )
     }
 }
