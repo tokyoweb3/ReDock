@@ -521,6 +521,29 @@ final class LayoutService {
         try store.save(layout)
     }
 
+    /// Disable auto-restore on all other variants sharing the same displayProfileID.
+    /// Returns the number of layouts that were modified.
+    @discardableResult
+    func disableConflictingAutoRestore(keepVariantID: UUID, displayProfileID: UUID) -> Int {
+        var modifiedCount = 0
+        for var layout in store.loadAll() {
+            var changed = false
+            for i in layout.variants.indices {
+                if layout.variants[i].id != keepVariantID
+                    && layout.variants[i].displayProfileID == displayProfileID
+                    && layout.variants[i].autoRestore {
+                    layout.variants[i].autoRestore = false
+                    changed = true
+                }
+            }
+            if changed {
+                try? store.save(layout)
+                modifiedCount += 1
+            }
+        }
+        return modifiedCount
+    }
+
     // MARK: - Private
 
     private func findTargetScreen(for snapshot: WindowSnapshot) -> NSScreen? {

@@ -834,6 +834,22 @@ struct DisplayProfilesView: View {
                 Text(profile.displayDescription)
                     .font(.system(size: 10))
                     .foregroundStyle(.tertiary)
+
+                if let layoutName = autoRestoreLayoutName(for: profile.id) {
+                    HStack(spacing: 3) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 8))
+                        Text(L10n.string("displayProfile.autoRestoreLayout", layoutName))
+                            .font(.system(size: 10))
+                    }
+                    .foregroundStyle(.blue)
+                }
+
+                if let lastSeen = profile.lastSeenAt {
+                    Text(L10n.string("displayProfile.lastSeen", lastSeen.formatted(date: .abbreviated, time: .shortened)))
+                        .font(.system(size: 10))
+                        .foregroundStyle(.tertiary)
+                }
             }
 
             Spacer()
@@ -849,6 +865,17 @@ struct DisplayProfilesView: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
         .background(Color(nsColor: .controlBackgroundColor))
+    }
+
+    private func autoRestoreLayoutName(for profileID: UUID) -> String? {
+        for layout in layouts {
+            for variant in layout.variants {
+                if variant.displayProfileID == profileID && variant.autoRestore {
+                    return layout.name
+                }
+            }
+        }
+        return nil
     }
 
     private func profileNameBinding(for profileID: UUID) -> Binding<String> {

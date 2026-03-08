@@ -94,7 +94,6 @@
 "layouts.launchAppsHelp" = "Automatically launch apps that are part of this layout but not currently open";
 "layouts.workspaceSlot" = "Workspace %lld";
 "layouts.restoreNow" = "Restore Now";
-"layouts.conflictsWith" = "Conflicts with: %@";
 "layouts.shortcut" = "Shortcut";
 "layouts.favorite" = "Add to Favorites";
 "layouts.unfavorite" = "Remove from Favorites";
@@ -216,6 +215,8 @@
 "displayProfile.noProfilesHint" = "Enable auto-restore on a layout to create a display profile. Layouts will switch automatically when you connect or disconnect monitors.";
 "displayProfile.connectedDisplays" = "Connected Displays";
 "displayProfile.linkedLayout" = "Linked Layout";
+"displayProfile.autoRestoreLayout" = "Auto-restore: %@";
+"displayProfile.lastSeen" = "Last seen: %@";
 
 /* Tooltip descriptions */
 "tooltip.autoRestore" = "Automatically restore this layout when the linked display configuration is detected (e.g. connecting/disconnecting a monitor)";

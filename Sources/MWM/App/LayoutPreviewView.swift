@@ -348,6 +348,12 @@ struct LayoutEditorView: View {
                             let isConfigured = draft.variants.contains {
                                 $0.displayProfileID == profile.id && !$0.windows.isEmpty
                             }
+                            let hasAutoRestore = draft.variants.contains {
+                                $0.displayProfileID == profile.id && $0.autoRestore
+                            }
+                            if hasAutoRestore {
+                                Image(systemName: "arrow.clockwise")
+                            }
                             Text("\(profile.name) (\(profile.fingerprints.count))")
                             Text(isConfigured
                                 ? L10n.string("variant.configured")
@@ -373,22 +379,6 @@ struct LayoutEditorView: View {
             }
             .font(.system(size: 11))
 
-            // Conflict warning per display profile
-            if !draft.variants.isEmpty && draft.variants[safeIndex].autoRestore {
-                let conflicts = variantConflicts()
-                if !conflicts.isEmpty {
-                    HStack(spacing: 4) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.system(size: 10))
-                            .foregroundStyle(.orange)
-                        Text(L10n.string("layouts.conflictsWith",
-                            conflicts.map { $0.layoutName }.joined(separator: ", ")))
-                            .font(.system(size: 10))
-                            .foregroundStyle(.orange)
-                        Spacer()
-                    }
-                }
-            }
         }
         .onChange(of: selectedProfileID) { _, newID in
             guard let profileID = newID else { return }
@@ -417,6 +407,20 @@ struct LayoutEditorView: View {
             set: { newValue in
                 guard !draft.variants.isEmpty else { return }
                 draft.variants[safeIndex].autoRestore = newValue
+
+                if newValue, let profileID = draft.variants[safeIndex].displayProfileID {
+                    // Exclusive control: disable auto-restore on same-profile variants in other layouts
+                    AppDelegate.services.layoutService.disableConflictingAutoRestore(
+                        keepVariantID: draft.variants[safeIndex].id,
+                        displayProfileID: profileID
+                    )
+                    // Also disable within the same draft (other variants with same profile)
+                    for i in draft.variants.indices where i != safeIndex {
+                        if draft.variants[i].displayProfileID == profileID {
+                            draft.variants[i].autoRestore = false
+                        }
+                    }
+                }
             }
         )
     }
@@ -431,15 +435,6 @@ struct LayoutEditorView: View {
                 guard !draft.variants.isEmpty else { return }
                 draft.variants[safeIndex].launchMissingApps = newValue
             }
-        )
-    }
-
-    private func variantConflicts() -> [(layoutName: String, variantDescription: String)] {
-        let allLayouts = AppDelegate.services.layoutService.loadAll()
-        return AutoRestoreService.findVariantConflicts(
-            for: draft,
-            variantIndex: safeIndex,
-            allLayouts: allLayouts
         )
     }
 

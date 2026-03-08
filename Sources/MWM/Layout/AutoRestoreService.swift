@@ -73,29 +73,6 @@ final class AutoRestoreService {
         }
     }
 
-    /// Find all (layout, variant) pairs with autoRestore enabled that match a given display profile.
-    static func findVariantConflicts(
-        for layout: WindowLayout,
-        variantIndex: Int,
-        allLayouts: [WindowLayout]
-    ) -> [(layoutName: String, variantDescription: String)] {
-        guard variantIndex < layout.variants.count else { return [] }
-        let variant = layout.variants[variantIndex]
-        guard variant.autoRestore, let profileID = variant.displayProfileID else { return [] }
-
-        var conflicts: [(String, String)] = []
-        for other in allLayouts {
-            for otherVariant in other.variants {
-                // Skip self
-                if otherVariant.id == variant.id { continue }
-                guard otherVariant.autoRestore,
-                      otherVariant.displayProfileID == profileID else { continue }
-                conflicts.append((other.name, otherVariant.displayDescription))
-            }
-        }
-        return conflicts
-    }
-
     private func evaluateTriggers() {
         guard !isRestoring else {
             Self.logger.debug("Skipping trigger evaluation: restore already in progress")

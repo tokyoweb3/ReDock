@@ -7,12 +7,14 @@ struct DisplayProfile: Codable, Identifiable, Equatable {
     var name: String
     var fingerprints: [DisplayFingerprint]
     var createdAt: Date
+    var lastSeenAt: Date?
 
     init(id: UUID = UUID(), name: String, fingerprints: [DisplayFingerprint]) {
         self.id = id
         self.name = name
         self.fingerprints = fingerprints
         self.createdAt = Date()
+        self.lastSeenAt = Date()
     }
 
     /// Check if this profile matches a set of current fingerprints.
@@ -84,7 +86,9 @@ final class DisplayProfileStore {
     /// Returns the matching profile, or creates a new one with a default name.
     func findOrCreate(fingerprints: [DisplayFingerprint]) -> DisplayProfile {
         let existing = loadAll()
-        if let match = existing.first(where: { $0.matches(fingerprints) }) {
+        if var match = existing.first(where: { $0.matches(fingerprints) }) {
+            match.lastSeenAt = Date()
+            save(match)
             return match
         }
 

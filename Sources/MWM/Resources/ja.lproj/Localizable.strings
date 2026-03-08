@@ -94,7 +94,6 @@
 "layouts.launchAppsHelp" = "レイアウトに含まれるアプリが起動していない場合、自動的に起動します";
 "layouts.workspaceSlot" = "ワークスペース %lld";
 "layouts.restoreNow" = "今すぐ復元";
-"layouts.conflictsWith" = "競合: %@";
 "layouts.shortcut" = "ショートカット";
 "layouts.favorite" = "お気に入りに追加";
 "layouts.unfavorite" = "お気に入りから削除";
@@ -216,6 +215,8 @@
 "displayProfile.noProfilesHint" = "レイアウトの自動復元を有効にするとプロファイルが作成されます。モニターの接続・切断時にレイアウトが自動で切り替わります。";
 "displayProfile.connectedDisplays" = "接続中のディスプレイ";
 "displayProfile.linkedLayout" = "紐付けレイアウト";
+"displayProfile.autoRestoreLayout" = "自動復元: %@";
+"displayProfile.lastSeen" = "最終検知: %@";
 
 /* Tooltip descriptions */
 "tooltip.autoRestore" = "紐付けたディスプレイ構成が検出されると、このレイアウトを自動的に復元します（例: モニターの接続・切断時）";

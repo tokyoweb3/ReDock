@@ -91,13 +91,14 @@ struct AutoRestoreIntegrationTests {
         #expect(layout.trigger?.matches(wifiOnly) == false)
     }
 
-    // MARK: - Conflict Detection (per-variant)
+    // MARK: - Auto-restore Exclusive Control
 
-    @Test("Two variants with same display profile are conflicts")
-    func variantConflictDetection() throws {
+    @Test("Enabling auto-restore disables conflicting variants in other layouts")
+    func exclusiveAutoRestore() throws {
         defer { cleanup() }
 
         let store = LayoutStore(directory: tempDir)
+        let service = LayoutService(store: store, screenRegistry: ScreenRegistry(), windowQuerying: MockWindowQuerying())
         let profileID = UUID()
         let fingerprints = [
             DisplayFingerprint(displayID: 1, localizedName: "Main", bounds: CGRect(x: 0, y: 0, width: 1920, height: 1080)),
@@ -114,38 +115,45 @@ struct AutoRestoreIntegrationTests {
         try store.save(layout1)
         try store.save(layout2)
 
-        let allLayouts = store.loadAll()
-        let conflicts = AutoRestoreService.findVariantConflicts(
-            for: layout1,
-            variantIndex: 0,
-            allLayouts: allLayouts
+        // Enable auto-restore on layout1's variant — should disable layout2's
+        let modified = service.disableConflictingAutoRestore(
+            keepVariantID: layout1.variants[0].id,
+            displayProfileID: profileID
         )
-        #expect(conflicts.count == 1)
-        #expect(conflicts.first?.layoutName == "Layout B")
+        #expect(modified == 1)
+
+        let reloaded = store.loadAll()
+        let reloadedB = reloaded.first(where: { $0.name == "Layout B" })!
+        #expect(reloadedB.variants[0].autoRestore == false)
     }
 
-    @Test("Variants with different profiles are not conflicts")
-    func noConflictDifferentProfiles() throws {
+    @Test("Exclusive auto-restore does not affect different profiles")
+    func exclusiveAutoRestoreDifferentProfiles() throws {
         defer { cleanup() }
 
         let store = LayoutStore(directory: tempDir)
+        let service = LayoutService(store: store, screenRegistry: ScreenRegistry(), windowQuerying: MockWindowQuerying())
+        let profileA = UUID()
+        let profileB = UUID()
 
         var layout1 = WindowLayout(name: "Office", autoRestore: true, windows: [MockWindowQuerying.makeSnapshot()])
-        layout1.variants[0].displayProfileID = UUID()
+        layout1.variants[0].displayProfileID = profileA
 
         var layout2 = WindowLayout(name: "Home", autoRestore: true, windows: [MockWindowQuerying.makeSnapshot()])
-        layout2.variants[0].displayProfileID = UUID()
+        layout2.variants[0].displayProfileID = profileB
 
         try store.save(layout1)
         try store.save(layout2)
 
-        let allLayouts = store.loadAll()
-        let conflicts = AutoRestoreService.findVariantConflicts(
-            for: layout1,
-            variantIndex: 0,
-            allLayouts: allLayouts
+        let modified = service.disableConflictingAutoRestore(
+            keepVariantID: layout1.variants[0].id,
+            displayProfileID: profileA
         )
-        #expect(conflicts.isEmpty)
+        #expect(modified == 0)
+
+        let reloaded = store.loadAll()
+        let reloadedHome = reloaded.first(where: { $0.name == "Home" })!
+        #expect(reloadedHome.variants[0].autoRestore == true)
     }
 
     // MARK: - Display trigger (legacy trigger-based matching)
