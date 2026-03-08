@@ -37,22 +37,22 @@ Use keyboard shortcuts to snap the focused window:
 
 | Action | Default Shortcut |
 |--------|-----------------|
-| Left Half | Ctrl+Opt+Left |
-| Right Half | Ctrl+Opt+Right |
-| Top Half | Ctrl+Opt+Up |
-| Bottom Half | Ctrl+Opt+Down |
-| Top Left | Ctrl+Opt+U |
-| Top Right | Ctrl+Opt+I |
-| Bottom Left | Ctrl+Opt+J |
-| Bottom Right | Ctrl+Opt+K |
-| Maximize | Ctrl+Opt+Return |
-| Center | Ctrl+Opt+C |
-| Full Screen | Ctrl+Opt+F |
-| Make Larger | Ctrl+Opt+= |
-| Make Smaller | Ctrl+Opt+- |
-| Next Display | Ctrl+Opt+Cmd+Right |
-| Prev Display | Ctrl+Opt+Cmd+Left |
-| Focus Mode | Ctrl+Opt+Z |
+| Left Half | Ctrl+Opt+Cmd+Left |
+| Right Half | Ctrl+Opt+Cmd+Right |
+| Top Half | Ctrl+Opt+Cmd+Up |
+| Bottom Half | Ctrl+Opt+Cmd+Down |
+| Top Left | Ctrl+Opt+Cmd+1 |
+| Top Right | Ctrl+Opt+Cmd+2 |
+| Bottom Left | Ctrl+Opt+Cmd+3 |
+| Bottom Right | Ctrl+Opt+Cmd+4 |
+| Maximize | Ctrl+Opt+Cmd+M |
+| Center | Ctrl+Opt+Cmd+C |
+| Full Screen | Ctrl+Opt+Cmd+F |
+| Make Larger | Ctrl+Opt+Cmd+= |
+| Make Smaller | Ctrl+Opt+Cmd+- |
+| Next Display | Ctrl+Opt+Cmd+N |
+| Prev Display | Ctrl+Opt+Cmd+P |
+| Focus Mode | Ctrl+Opt+Cmd+Z |
 
 All shortcuts are customizable in **Settings > Shortcuts**.
 
@@ -67,7 +67,7 @@ Save the current arrangement of all windows and restore it later.
 
 **Restore:**
 1. Click MWM menu bar icon > **Restore Layout** > select a layout
-2. Or use **Restore (Launch Apps)** to also open any apps that aren't running
+2. If **Launch Apps** is enabled for the active variant, MWM can open missing apps before restoring
 
 **Layout Modes:**
 - **App-Specific** — Matches windows by app bundle ID. Restores each app to its saved position.
@@ -91,6 +91,12 @@ Save the current arrangement of all windows and restore it later.
 - Snap presets: L1/2, R1/2, T1/2, B1/2, TL, TR, BL, BR, Max
 - Remove individual windows with inline delete
 
+### Favorites & Layout Shortcuts
+
+- Mark a layout as a favorite in **Settings > Layouts** to pin it directly in the menu bar
+- Favorite layouts can keep their own dedicated shortcuts in addition to workspace slot assignments
+- Shortcut conflicts are auto-resolved in the UI by clearing the older binding and showing a notice
+
 ### Display Variants & Profiles
 
 Each layout supports **multiple display variants** — one per display profile (monitor configuration). This lets a single layout adapt to different setups (e.g., docked 3-screen at office vs. laptop-only at cafe).
@@ -107,11 +113,11 @@ Five built-in workspace presets optimized for common workflows:
 
 | Preset | Layout | Shortcut |
 |--------|--------|----------|
-| Coding | Editor 60% + Terminal 20% + Browser 20% | Ctrl+Opt+5 |
-| Research | Browser 50% + Notes 50% | Ctrl+Opt+6 |
-| Review | Editor 50% + Terminal 50% | Ctrl+Opt+7 |
-| Meeting | Browser maximized | Ctrl+Opt+8 |
-| Writing | Editor centered 70% (+ Focus Mode) | Ctrl+Opt+9 |
+| Coding | Editor 60% + Terminal 20% + Browser 20% | Ctrl+Opt+Cmd+5 |
+| Research | Browser 50% + Notes 50% | Ctrl+Opt+Cmd+6 |
+| Review | Editor 50% + Terminal 50% | Ctrl+Opt+Cmd+7 |
+| Meeting | Browser maximized | Ctrl+Opt+Cmd+8 |
+| Writing | Editor centered 70% (+ Focus Mode) | Ctrl+Opt+Cmd+9 |
 
 Workspace slots 5–9 can be reassigned to any layout in **Settings > Shortcuts**.
 
@@ -122,21 +128,17 @@ Automatically restore a layout variant when your display environment changes:
 1. Open **Settings > Layouts** and select a layout
 2. Select a display profile from the variant picker
 3. Enable **Auto-restore** for that variant
-4. When your displays match the profile, the variant restores automatically
+4. Optionally enable **Launch Apps** for that variant
+5. When your displays match the profile, the variant restores automatically
 
 **Per-variant control:**
 - Auto-restore is configured per display variant, not per layout
 - Each variant can independently enable/disable auto-restore and app launching
 - Conflicts (multiple variants with the same display profile) are detected and shown as warnings
 
-**Context Triggers:**
-- **Display configuration** — Triggered by connecting/disconnecting monitors
-- **Wi-Fi SSID** — Triggered by network changes (office vs. home setups)
-- **Compound (AND)** — Combine multiple triggers for precise matching
-
 ### Focus Mode
 
-Hides all apps except the frontmost one, helping you concentrate on a single task. The focused window is centered at 75% screen size. Toggle via the menu bar or shortcut (Ctrl+Opt+Z). Exiting restores all hidden apps and original window positions.
+Hides all apps except the frontmost one, helping you concentrate on a single task. The focused window is centered at 75% screen size. Toggle via the menu bar or shortcut (Ctrl+Opt+Cmd+Z). Exiting restores all hidden apps and original window positions.
 
 ### Import / Export
 
@@ -183,8 +185,8 @@ Open via menu bar > **Settings...** (Cmd+,)
 
 | Tab | Contents |
 |-----|----------|
-| Shortcuts | Customize all keyboard shortcuts, assign layouts to workspace slots 5–9 |
-| Layouts | Manage layouts with visual editor, display variants, auto-restore, import/export, display profiles |
+| Shortcuts | Customize all built-in shortcuts, assign layouts to workspace slots 5–9, manage layout-specific shortcuts |
+| Layouts | Manage layouts with visual editor, favorites, display variants, auto-restore, import/export, and display profiles |
 | General | Language selection, Launch at Login, version info |
 
 ## Architecture
