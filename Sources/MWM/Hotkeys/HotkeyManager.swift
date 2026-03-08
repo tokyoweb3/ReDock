@@ -153,8 +153,10 @@ final class HotkeyManager {
               let layout = services.layoutService.loadAll().first(where: { $0.id == layoutID }) else {
             return
         }
-        let result = services.layoutService.restoreLayout(layout)
-        services.diagnosticsService.record(result: result, triggerSource: "workspace-slot-\(slotIndex)")
+        Task {
+            let result = await services.layoutService.restoreLayoutAsync(layout)
+            services.diagnosticsService.record(result: result, triggerSource: "workspace-slot-\(slotIndex)")
+        }
 
         let shortcutName = workspaceSlotNames[slotIndex - 5]
         ActionOverlayWindow.showForShortcut(name: shortcutName, title: layout.name)

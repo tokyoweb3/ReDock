@@ -141,8 +141,10 @@ final class LayoutShortcutManager {
             logger.warning("Layout \(id) not found for shortcut")
             return
         }
-        let result = services.layoutService.restoreLayout(layout)
-        services.diagnosticsService.record(result: result, triggerSource: "shortcut")
+        Task {
+            let result = await services.layoutService.restoreLayoutAsync(layout)
+            services.diagnosticsService.record(result: result, triggerSource: "shortcut")
+        }
 
         ActionOverlayWindow.showForShortcut(name: shortcutName(for: id), title: layout.name)
     }

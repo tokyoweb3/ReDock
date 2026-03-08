@@ -268,8 +268,10 @@ final class StatusBarController {
         guard let slotIndex = sender.representedObject as? Int,
               let layoutID = WorkspaceSlotManager.layoutID(for: slotIndex),
               let layout = services.layoutService.loadAll().first(where: { $0.id == layoutID }) else { return }
-        let result = services.layoutService.restoreLayout(layout)
-        services.diagnosticsService.record(result: result, triggerSource: "workspace-slot-\(slotIndex)")
+        Task {
+            let result = await services.layoutService.restoreLayoutAsync(layout)
+            services.diagnosticsService.record(result: result, triggerSource: "workspace-slot-\(slotIndex)")
+        }
     }
 
     private var saveLayoutController: SaveLayoutWindowController?
@@ -317,24 +319,19 @@ final class StatusBarController {
         guard let idString = sender.representedObject as? String,
               let uuid = UUID(uuidString: idString),
               let layout = services.layoutService.loadAll().first(where: { $0.id == uuid }) else { return }
-        let result = services.layoutService.restoreLayout(layout)
-        services.diagnosticsService.record(result: result, triggerSource: "manual")
+        Task {
+            let result = await services.layoutService.restoreLayoutAsync(layout)
+            services.diagnosticsService.record(result: result, triggerSource: "manual")
+        }
     }
 
     @objc func restoreWithLaunch(_ sender: NSMenuItem) {
         guard let idString = sender.representedObject as? String,
               let uuid = UUID(uuidString: idString),
               let layout = services.layoutService.loadAll().first(where: { $0.id == uuid }) else { return }
-
         Task {
-            let launchResult = await services.appLaunchService.launchMissingApps(for: layout)
-            if !launchResult.launched.isEmpty {
-                try? await Task.sleep(nanoseconds: 1_000_000_000)
-            }
-            await MainActor.run {
-                let result = services.layoutService.restoreLayout(layout)
-                services.diagnosticsService.record(result: result, triggerSource: "manual-with-launch")
-            }
+            let result = await services.layoutService.restoreLayoutAsync(layout)
+            services.diagnosticsService.record(result: result, triggerSource: "manual-with-launch")
         }
     }
 

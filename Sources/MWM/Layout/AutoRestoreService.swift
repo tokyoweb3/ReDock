@@ -7,7 +7,6 @@ final class AutoRestoreService {
 
     private let layoutService: LayoutService
     private let contextResolver: ContextResolver
-    private let appLaunchService: AppLaunchService
     private let diagnosticsService: DiagnosticsService
     private let displayProfileStore: DisplayProfileStore?
     private var debounceTimer: Timer?
@@ -17,13 +16,11 @@ final class AutoRestoreService {
     init(
         layoutService: LayoutService,
         contextResolver: ContextResolver,
-        appLaunchService: AppLaunchService,
         diagnosticsService: DiagnosticsService,
         displayProfileStore: DisplayProfileStore? = nil
     ) {
         self.layoutService = layoutService
         self.contextResolver = contextResolver
-        self.appLaunchService = appLaunchService
         self.diagnosticsService = diagnosticsService
         self.displayProfileStore = displayProfileStore
     }
@@ -132,26 +129,8 @@ final class AutoRestoreService {
         Self.logger.info("Auto-restoring layout '\(match.layout.name)' variant '\(match.variant.displayDescription)'")
         isRestoring = true
 
-        if match.variant.launchMissingApps {
-            Task {
-                let launchResult = await appLaunchService.launchMissingApps(
-                    for: match.layout,
-                    windows: match.variant.windows
-                )
-                Self.logger.info("App launch: \(launchResult.summary)")
-
-                if !launchResult.launched.isEmpty {
-                    try? await Task.sleep(nanoseconds: 1_000_000_000)
-                }
-
-                await MainActor.run {
-                    let result = layoutService.restoreLayout(match.layout, variantWindows: match.variant.windows)
-                    diagnosticsService.record(result: result, triggerSource: "auto-\(match.variant.displayDescription)")
-                    isRestoring = false
-                }
-            }
-        } else {
-            let result = layoutService.restoreLayout(match.layout, variantWindows: match.variant.windows)
+        Task {
+            let result = await layoutService.restoreLayoutAsync(match.layout, variantWindows: match.variant.windows, launchApps: match.variant.launchMissingApps)
             diagnosticsService.record(result: result, triggerSource: "auto-\(match.variant.displayDescription)")
             isRestoring = false
         }

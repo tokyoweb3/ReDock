@@ -22,4 +22,12 @@ struct WindowRestoreDetail {
         case skipped(reason: String)
         case failed(reason: String)
     }
+
+    var statusDescription: String {
+        switch status {
+        case .restored: return "restored"
+        case .skipped(let reason): return "skipped: \(reason)"
+        case .failed(let reason): return "failed: \(reason)"
+        }
+    }
 }

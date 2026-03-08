@@ -59,8 +59,10 @@ struct MenuBarView: View {
             Menu(L10n.string("menu.restoreLayout")) {
                 ForEach(savedLayouts) { layout in
                     Button(layout.name) {
-                        let result = services.layoutService.restoreLayout(layout)
-                        services.diagnosticsService.record(result: result, triggerSource: "manual")
+                        Task {
+                            let result = await services.layoutService.restoreLayoutAsync(layout)
+                            services.diagnosticsService.record(result: result, triggerSource: "manual")
+                        }
                     }
                 }
             }

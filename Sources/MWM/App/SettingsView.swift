@@ -461,8 +461,10 @@ struct LayoutsSettingsView: View {
                             .frame(width: 120, height: 22)
                             Spacer()
                             Button(L10n.string("layouts.restoreNow")) {
-                                let result = services.layoutService.restoreLayout(binding.wrappedValue)
-                                services.diagnosticsService.record(result: result, triggerSource: "settings")
+                                Task {
+                                    let result = await services.layoutService.restoreLayoutAsync(binding.wrappedValue)
+                                    services.diagnosticsService.record(result: result, triggerSource: "settings")
+                                }
                             }
                             .controlSize(.small)
                             .help(L10n.string("layouts.restoreNow"))

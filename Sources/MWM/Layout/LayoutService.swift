@@ -8,11 +8,13 @@ final class LayoutService {
     private let store: LayoutStore
     private let screenRegistry: ScreenRegistry
     private let windowQuerying: WindowQuerying
+    private let appLaunchService: AppLaunchService
 
-    init(store: LayoutStore, screenRegistry: ScreenRegistry, windowQuerying: WindowQuerying) {
+    init(store: LayoutStore, screenRegistry: ScreenRegistry, windowQuerying: WindowQuerying, appLaunchService: AppLaunchService = AppLaunchService()) {
         self.store = store
         self.screenRegistry = screenRegistry
         self.windowQuerying = windowQuerying
+        self.appLaunchService = appLaunchService
         seedPresetsIfEmpty()
     }
 
@@ -257,19 +259,45 @@ final class LayoutService {
 
     func restoreLayout(_ layout: WindowLayout, variantWindows: [WindowSnapshot]? = nil) -> RestoreResult {
         let effectiveWindows = variantWindows ?? resolveEffectiveWindows(for: layout)
-        let effectiveVariant = variantWindows != nil ? nil : resolveEffectiveVariant(for: layout)
-        let shouldLaunch = variantWindows != nil
-            ? layout.variants.first(where: { $0.windows == variantWindows })?.launchMissingApps ?? false
-            : effectiveVariant?.launchMissingApps ?? false
-
-        if shouldLaunch && layout.mode == .appSpecific {
-            launchMissingApps(windows: effectiveWindows)
-        }
         switch layout.mode {
         case .appSpecific:
             return restoreAppSpecific(layout, windows: effectiveWindows)
         case .template:
             return restoreTemplate(layout, windows: effectiveWindows)
+        }
+    }
+
+    /// Async restore: launches missing apps (if variant flag is set), waits for windows, then restores.
+    func restoreLayoutAsync(
+        _ layout: WindowLayout,
+        variantWindows: [WindowSnapshot]? = nil,
+        launchApps: Bool? = nil
+    ) async -> RestoreResult {
+        let effectiveWindows = variantWindows ?? resolveEffectiveWindows(for: layout)
+        let effectiveVariant = variantWindows != nil ? nil : resolveEffectiveVariant(for: layout)
+
+        // Use explicit parameter if provided, otherwise check the variant's flag
+        let shouldLaunch: Bool
+        if let launchApps {
+            shouldLaunch = launchApps
+        } else if let variantWindows {
+            shouldLaunch = layout.variants.first(where: { $0.windows == variantWindows })?.launchMissingApps ?? false
+        } else {
+            shouldLaunch = effectiveVariant?.launchMissingApps ?? false
+        }
+
+        Self.logger.info("restoreLayoutAsync: layout='\(layout.name, privacy: .public)' shouldLaunch=\(shouldLaunch, privacy: .public)")
+
+        if shouldLaunch && layout.mode == .appSpecific {
+            let launchResult = await appLaunchService.launchMissingApps(for: layout, windows: effectiveWindows)
+            Self.logger.info("App launch result: \(launchResult.summary, privacy: .public)")
+            if launchResult.needsWait {
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+            }
+        }
+
+        return await MainActor.run {
+            restoreLayout(layout, variantWindows: variantWindows)
         }
     }
 
@@ -328,30 +356,6 @@ final class LayoutService {
         return Double(matches) / Double(total) + countBonus
     }
 
-    /// Launch apps that are referenced but not currently running.
-    private func launchMissingApps(windows: [WindowSnapshot]) {
-        let runningBundleIDs = Set(
-            NSWorkspace.shared.runningApplications
-                .filter { $0.activationPolicy == .regular }
-                .compactMap(\.bundleIdentifier)
-        )
-
-        let missingBundleIDs = Set(
-            windows.map(\.appBundleID)
-                .filter { !$0.hasPrefix("placeholder.") && !runningBundleIDs.contains($0) }
-        )
-
-        for bundleID in missingBundleIDs {
-            guard let appURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else {
-                Self.logger.info("App not installed: \(bundleID)")
-                continue
-            }
-            let config = NSWorkspace.OpenConfiguration()
-            config.activates = false
-            NSWorkspace.shared.openApplication(at: appURL, configuration: config)
-            Self.logger.info("Launched missing app: \(bundleID)")
-        }
-    }
 
     /// Traditional restore: match by app bundle ID.
     private func restoreAppSpecific(_ layout: WindowLayout, windows: [WindowSnapshot]) -> RestoreResult {
@@ -427,7 +431,10 @@ final class LayoutService {
             failed: failed,
             details: details
         )
-        Self.logger.info("\(result.summary)")
+        Self.logger.info("Restore: \(result.summary, privacy: .public)")
+        for detail in details {
+            Self.logger.info("  \(detail.appName, privacy: .public): \(detail.statusDescription, privacy: .public)")
+        }
         return result
     }
 

@@ -32,12 +32,12 @@ final class AppServices {
         dispatcher = WindowActionDispatcher(permissions: permissions, windowManager: windowManager)
         hotkeyManager = HotkeyManager(dispatcher: dispatcher)
         layoutStore = LayoutStore()
-        layoutService = LayoutService(store: layoutStore, screenRegistry: screenRegistry, windowQuerying: windowQuerying)
+        appLaunchService = AppLaunchService()
+        layoutService = LayoutService(store: layoutStore, screenRegistry: screenRegistry, windowQuerying: windowQuerying, appLaunchService: appLaunchService)
         focusModeService = FocusModeService(screenRegistry: screenRegistry)
 
         // v2
         contextResolver = ContextResolver(screenRegistry: screenRegistry)
-        appLaunchService = AppLaunchService()
         restorePlanner = RestorePlanner(appLaunchService: appLaunchService)
         diagnosticsService = DiagnosticsService()
         importExportService = ImportExportService(store: layoutStore)
@@ -55,7 +55,6 @@ final class AppServices {
         autoRestoreService = AutoRestoreService(
             layoutService: layoutService,
             contextResolver: contextResolver,
-            appLaunchService: appLaunchService,
             diagnosticsService: diagnosticsService,
             displayProfileStore: displayProfileStore
         )
