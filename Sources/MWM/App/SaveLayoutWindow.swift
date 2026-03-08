@@ -125,7 +125,7 @@ struct SaveLayoutView: View {
                             .font(.system(size: 10, design: .monospaced))
                             .foregroundStyle(.tertiary)
                     }
-                    .opacity(ignoreObstructed && item.isObstructed ? 0.4 : 1.0)
+                    .opacity(item.isObstructed && !item.isSelected ? 0.4 : 1.0)
                 }
             }
             .frame(minHeight: 200)
@@ -156,7 +156,7 @@ struct SaveLayoutView: View {
     private func save() {
         let name = layoutName.isEmpty ? "Untitled" : layoutName
         let selected = windowSelections
-            .filter { $0.isSelected && !(ignoreObstructed && $0.isObstructed) }
+            .filter(\.isSelected)
             .map(\.snapshot)
         onSave(name, selected, mode)
         dismiss()

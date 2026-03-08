@@ -224,6 +224,12 @@
 "variant.notConfigured" = "○ 未設定";
 "variant.clearWindows" = "清除視窗";
 
+/* Layout Shortcut Override */
+"layouts.shortcutReplaced" = "已替換: %@";
+
+/* Shortcuts - Layout Shortcuts */
+"shortcuts.layoutShortcuts" = "佈局快捷鍵";
+
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "儲存目前佈局";
 "menuBar.enterLayoutName" = "請輸入佈局名稱：";

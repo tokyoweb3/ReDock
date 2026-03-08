@@ -285,12 +285,19 @@ struct LayoutEditorView: View {
     @State private var showingRecapture = false
     @State private var showingAppPicker = false
     let onSave: () -> Void
+    var onReset: (() -> Void)?
     @Binding var hasUnsavedChanges: Bool
 
-    init(layout: Binding<WindowLayout>, onSave: @escaping () -> Void, hasUnsavedChanges: Binding<Bool> = .constant(false)) {
+    init(
+        layout: Binding<WindowLayout>,
+        onSave: @escaping () -> Void,
+        onReset: (() -> Void)? = nil,
+        hasUnsavedChanges: Binding<Bool> = .constant(false)
+    ) {
         self._layout = layout
         self._draft = State(initialValue: layout.wrappedValue)
         self.onSave = onSave
+        self.onReset = onReset
         self._hasUnsavedChanges = hasUnsavedChanges
     }
 
@@ -394,6 +401,8 @@ struct LayoutEditorView: View {
                     windows: []
                 ))
                 activeVariantIndex = draft.variants.count - 1
+                // Persist auto-created variant to prevent false change detection
+                layout = draft
             }
             selectedWindowID = nil
         }
@@ -608,7 +617,9 @@ struct LayoutEditorView: View {
         }
         .onAppear {
             loadProfilesAndMigrate()
-            hasUnsavedChanges = hasChanges
+            // Persist migration to prevent false change detection
+            if hasChanges { layout = draft }
+            hasUnsavedChanges = false
         }
         .onChange(of: layout) { _, newValue in
             draft = newValue
@@ -617,13 +628,16 @@ struct LayoutEditorView: View {
                 activeVariantIndex = 0
             }
             loadProfilesAndMigrate()
-            hasUnsavedChanges = hasChanges
+            // Persist migration to prevent false change detection
+            if hasChanges { layout = draft }
+            hasUnsavedChanges = false
         }
         .onChange(of: draft) { _, _ in
             hasUnsavedChanges = hasChanges
         }
         .sheet(isPresented: $showingAddWindow) {
             AddWindowSheet(
+                existingWindows: draft.variants.isEmpty ? [] : draft.variants[safeIndex].windows,
                 onAdd: { snapshots in
                     guard !draft.variants.isEmpty else { return }
                     draft.variants[safeIndex].windows.append(contentsOf: snapshots)
@@ -707,6 +721,11 @@ struct LayoutEditorView: View {
         // Auto-select profile
         if let firstVariant = draft.variants.first, let pid = firstVariant.displayProfileID {
             selectedProfileID = pid
+        } else if !draft.variants.isEmpty, let firstProfile = profiles.first {
+            // Existing variant without matching profile — link it to current profile
+            // so we don't create an empty variant and lose the actual windows
+            draft.variants[0].displayProfileID = firstProfile.id
+            selectedProfileID = firstProfile.id
         } else if let firstProfile = profiles.first {
             selectedProfileID = firstProfile.id
         }
@@ -724,6 +743,7 @@ struct LayoutEditorView: View {
         draft = layout
         selectedWindowID = nil
         hasUnsavedChanges = false
+        onReset?()
     }
 
     // MARK: - Preset Buttons
@@ -853,10 +873,20 @@ struct AddWindowSheet: View {
     @State private var useCurrentPosition = true
     @State private var selectedPreset: PositionPreset = .leftHalf
 
+    /// Windows already in the layout, used to show "already added" indicator.
+    let existingWindows: [WindowSnapshot]
     let onAdd: ([WindowSnapshot]) -> Void
 
     private var selectedCount: Int {
         windowItems.filter(\.isSelected).count
+    }
+
+    /// Check if a window is already in the layout by matching bundleID + title.
+    private func isAlreadyInLayout(_ snapshot: WindowSnapshot) -> Bool {
+        existingWindows.contains { existing in
+            existing.appBundleID == snapshot.appBundleID
+                && existing.title == snapshot.title
+        }
     }
 
     var body: some View {
@@ -912,10 +942,12 @@ struct AddWindowSheet: View {
             // Window list with checkboxes
             List {
                 ForEach($windowItems) { $item in
+                    let alreadyAdded = isAlreadyInLayout(item.snapshot)
                     HStack(spacing: 8) {
                         Toggle("", isOn: $item.isSelected)
                             .toggleStyle(.checkbox)
                             .labelsHidden()
+                            .disabled(alreadyAdded)
 
                         if let icon = item.icon {
                             Image(nsImage: icon)
@@ -937,12 +969,23 @@ struct AddWindowSheet: View {
 
                         Spacer()
 
+                        if alreadyAdded {
+                            Text(L10n.string("addWindow.alreadyAdded"))
+                                .font(.system(size: 9, weight: .medium))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 4)
+                                .padding(.vertical, 1)
+                                .background(Color.secondary.opacity(0.5))
+                                .clipShape(Capsule())
+                        }
+
                         if let displayName = item.displayName {
                             Text(displayName)
                                 .font(.system(size: 9))
                                 .foregroundStyle(.tertiary)
                         }
                     }
+                    .opacity(alreadyAdded ? 0.5 : 1.0)
                 }
             }
             .frame(height: 240)
@@ -1110,7 +1153,7 @@ struct RecaptureSheet: View {
                             .font(.system(size: 10, design: .monospaced))
                             .foregroundStyle(.tertiary)
                     }
-                    .opacity(ignoreObstructed && item.isObstructed ? 0.4 : 1.0)
+                    .opacity(item.isObstructed && !item.isSelected ? 0.4 : 1.0)
                 }
             }
             .frame(minHeight: 200)
@@ -1143,7 +1186,7 @@ struct RecaptureSheet: View {
 
     private func recapture() {
         let selected = windowSelections
-            .filter { $0.isSelected && !(ignoreObstructed && $0.isObstructed) }
+            .filter(\.isSelected)
             .map(\.snapshot)
         onRecapture(selected)
         dismiss()

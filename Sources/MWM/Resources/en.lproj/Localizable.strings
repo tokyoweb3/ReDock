@@ -169,6 +169,7 @@
 "addWindow.add" = "Add";
 "addWindow.addCount" = "Add %lld Windows";
 "addWindow.windowCount" = "%lld / %lld selected";
+"addWindow.alreadyAdded" = "Added";
 
 /* Change App Sheet */
 "changeApp.title" = "Change App";
@@ -226,6 +227,14 @@
 "variant.configured" = "✓ Configured";
 "variant.notConfigured" = "○ Not configured";
 "variant.clearWindows" = "Clear windows";
+
+/* Layout Shortcut Override */
+"layouts.shortcutReplaced" = "Overrode shortcut from \"%@\"";
+
+/* Shortcuts - Layout Shortcuts */
+"shortcuts.layoutShortcuts" = "Layout Shortcuts";
+"shortcuts.resetAll" = "Reset to Defaults";
+"shortcuts.resetAllHelp" = "Reset all shortcuts to their default key bindings";
 
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "Save Current Layout";

@@ -224,6 +224,12 @@
 "variant.notConfigured" = "○ Nicht konfiguriert";
 "variant.clearWindows" = "Fenster löschen";
 
+/* Layout Shortcut Override */
+"layouts.shortcutReplaced" = "Ersetzt: %@";
+
+/* Shortcuts - Layout Shortcuts */
+"shortcuts.layoutShortcuts" = "Layout-Kurzbefehle";
+
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "Aktuelles Layout sichern";
 "menuBar.enterLayoutName" = "Geben Sie einen Namen für dieses Layout ein:";

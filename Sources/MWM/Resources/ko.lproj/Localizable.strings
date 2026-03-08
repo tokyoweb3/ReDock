@@ -224,6 +224,12 @@
 "variant.notConfigured" = "○ 미구성";
 "variant.clearWindows" = "창 지우기";
 
+/* Layout Shortcut Override */
+"layouts.shortcutReplaced" = "대체됨: %@";
+
+/* Shortcuts - Layout Shortcuts */
+"shortcuts.layoutShortcuts" = "레이아웃 단축키";
+
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "현재 레이아웃 저장";
 "menuBar.enterLayoutName" = "레이아웃 이름을 입력하세요:";

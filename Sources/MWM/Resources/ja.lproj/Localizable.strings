@@ -169,6 +169,7 @@
 "addWindow.add" = "追加";
 "addWindow.addCount" = "%lld 個のウィンドウを追加";
 "addWindow.windowCount" = "%lld / %lld 選択中";
+"addWindow.alreadyAdded" = "追加済み";
 
 /* Change App Sheet */
 "changeApp.title" = "アプリを変更";
@@ -226,6 +227,14 @@
 "variant.configured" = "✓ 設定済み";
 "variant.notConfigured" = "○ 未設定";
 "variant.clearWindows" = "ウィンドウをクリア";
+
+/* Layout Shortcut Override */
+"layouts.shortcutReplaced" = "「%@」のショートカットを上書きしました";
+
+/* Shortcuts - Layout Shortcuts */
+"shortcuts.layoutShortcuts" = "レイアウトショートカット";
+"shortcuts.resetAll" = "デフォルトに戻す";
+"shortcuts.resetAllHelp" = "すべてのショートカットをデフォルトのキー割り当てに戻します";
 
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "現在のレイアウトを保存";

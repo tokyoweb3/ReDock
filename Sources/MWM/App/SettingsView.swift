@@ -31,6 +31,7 @@ struct SettingsView: View {
 struct ShortcutsSettingsView: View {
     @State private var layouts: [WindowLayout] = []
     @State private var slotAssignments: [Int: UUID?] = [:]
+    @State private var shortcutConflict: String?
 
     /// Workspace slots with generic number icons.
     private static let workspaceSlots: [(name: KeyboardShortcuts.Name, index: Int)] = [
@@ -46,53 +47,101 @@ struct ShortcutsSettingsView: View {
 
     var body: some View {
         ScrollView {
-            HStack(alignment: .top, spacing: 24) {
-                // Left column
-                VStack(spacing: 0) {
-                    shortcutSection(L10n.string("shortcuts.halves")) {
-                        shortcutRow(L10n.string("menu.leftHalf"), icon: "rectangle.lefthalf.filled", name: .leftHalf)
-                        shortcutRow(L10n.string("menu.rightHalf"), icon: "rectangle.righthalf.filled", name: .rightHalf)
-                        shortcutRow(L10n.string("menu.topHalf"), icon: "rectangle.tophalf.filled", name: .topHalf)
-                        shortcutRow(L10n.string("menu.bottomHalf"), icon: "rectangle.bottomhalf.filled", name: .bottomHalf)
+            VStack(spacing: 0) {
+                HStack(alignment: .top, spacing: 24) {
+                    // Left column
+                    VStack(spacing: 0) {
+                        shortcutSection(L10n.string("shortcuts.halves")) {
+                            shortcutRow(L10n.string("menu.leftHalf"), icon: "rectangle.lefthalf.filled", name: .leftHalf)
+                            shortcutRow(L10n.string("menu.rightHalf"), icon: "rectangle.righthalf.filled", name: .rightHalf)
+                            shortcutRow(L10n.string("menu.topHalf"), icon: "rectangle.tophalf.filled", name: .topHalf)
+                            shortcutRow(L10n.string("menu.bottomHalf"), icon: "rectangle.bottomhalf.filled", name: .bottomHalf)
+                        }
+
+                        shortcutSection(L10n.string("shortcuts.quarters")) {
+                            shortcutRow(L10n.string("menu.topLeft"), icon: "rectangle.inset.topleft.filled", name: .topLeft)
+                            shortcutRow(L10n.string("menu.topRight"), icon: "rectangle.inset.topright.filled", name: .topRight)
+                            shortcutRow(L10n.string("menu.bottomLeft"), icon: "rectangle.inset.bottomleft.filled", name: .bottomLeft)
+                            shortcutRow(L10n.string("menu.bottomRight"), icon: "rectangle.inset.bottomright.filled", name: .bottomRight)
+                        }
+
+                        shortcutSection(L10n.string("shortcuts.sizing")) {
+                            shortcutRow(L10n.string("menu.maximize"), icon: "rectangle.fill", name: .maximize)
+                            shortcutRow(L10n.string("menu.fullScreen"), icon: "arrow.up.left.and.arrow.down.right", name: .toggleFullScreen)
+                            shortcutRow(L10n.string("menu.center"), icon: "rectangle.center.inset.filled", name: .center)
+                            shortcutRow(L10n.string("menu.makeLarger"), icon: "plus.square", name: .increase)
+                            shortcutRow(L10n.string("menu.makeSmaller"), icon: "minus.square", name: .decrease)
+                        }
                     }
 
-                    shortcutSection(L10n.string("shortcuts.quarters")) {
-                        shortcutRow(L10n.string("menu.topLeft"), icon: "rectangle.inset.topleft.filled", name: .topLeft)
-                        shortcutRow(L10n.string("menu.topRight"), icon: "rectangle.inset.topright.filled", name: .topRight)
-                        shortcutRow(L10n.string("menu.bottomLeft"), icon: "rectangle.inset.bottomleft.filled", name: .bottomLeft)
-                        shortcutRow(L10n.string("menu.bottomRight"), icon: "rectangle.inset.bottomright.filled", name: .bottomRight)
-                    }
-                }
+                    // Right column
+                    VStack(spacing: 0) {
+                        shortcutSection(L10n.string("shortcuts.display")) {
+                            shortcutRow(L10n.string("menu.nextDisplay"), icon: "display.2", name: .nextScreen)
+                            shortcutRow(L10n.string("menu.previousDisplay"), icon: "display", name: .previousScreen)
+                        }
 
-                // Right column
-                VStack(spacing: 0) {
-                    shortcutSection(L10n.string("shortcuts.sizing")) {
-                        shortcutRow(L10n.string("menu.maximize"), icon: "rectangle.fill", name: .maximize)
-                        shortcutRow(L10n.string("menu.fullScreen"), icon: "arrow.up.left.and.arrow.down.right", name: .toggleFullScreen)
-                        shortcutRow(L10n.string("menu.center"), icon: "rectangle.center.inset.filled", name: .center)
-                        shortcutRow(L10n.string("menu.makeLarger"), icon: "plus.square", name: .increase)
-                        shortcutRow(L10n.string("menu.makeSmaller"), icon: "minus.square", name: .decrease)
-                    }
+                        shortcutSection(L10n.string("shortcuts.focus")) {
+                            shortcutRow(L10n.string("menu.focusMode"), icon: "eye", name: .toggleFocusMode)
+                        }
 
-                    shortcutSection(L10n.string("shortcuts.display")) {
-                        shortcutRow(L10n.string("menu.nextDisplay"), icon: "display.2", name: .nextScreen)
-                        shortcutRow(L10n.string("menu.previousDisplay"), icon: "display", name: .previousScreen)
-                    }
+                        shortcutSection(L10n.string("shortcuts.workspaces")) {
+                            ForEach(Array(Self.workspaceSlots.enumerated()), id: \.element.index) { i, slot in
+                                workspaceSlotRow(slot: slot, iconIndex: i)
+                            }
+                        }
 
-                    shortcutSection(L10n.string("shortcuts.focus")) {
-                        shortcutRow(L10n.string("menu.focusMode"), icon: "eye", name: .toggleFocusMode)
-                    }
-
-                    shortcutSection(L10n.string("shortcuts.workspaces")) {
-                        ForEach(Array(Self.workspaceSlots.enumerated()), id: \.element.index) { i, slot in
-                            workspaceSlotRow(slot: slot, iconIndex: i)
+                        // Layout-specific shortcuts (non-workspace-slot)
+                        if !layoutsWithCustomShortcuts.isEmpty {
+                            shortcutSection(L10n.string("shortcuts.layoutShortcuts")) {
+                                ForEach(layoutsWithCustomShortcuts) { layout in
+                                    layoutShortcutRow(layout)
+                                }
+                            }
                         }
                     }
                 }
+                .padding(16)
+
+                // Bottom bar: conflict message + reset button
+                HStack(spacing: 8) {
+                    if let conflict = shortcutConflict {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.triangle.swap")
+                                .font(.system(size: 10))
+                            Text(conflict)
+                                .font(.system(size: 11))
+                        }
+                        .foregroundStyle(.orange)
+                    }
+
+                    Spacer()
+
+                    Button {
+                        resetAllShortcuts()
+                    } label: {
+                        HStack(spacing: 3) {
+                            Image(systemName: "arrow.counterclockwise")
+                                .font(.system(size: 10))
+                            Text(L10n.string("shortcuts.resetAll"))
+                                .font(.system(size: 11))
+                        }
+                    }
+                    .controlSize(.small)
+                    .help(L10n.string("shortcuts.resetAllHelp"))
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 8)
             }
-            .padding(16)
         }
         .onAppear { loadState() }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("KeyboardShortcuts_shortcutByNameDidChange"))) { notification in
+            guard let changedName = notification.userInfo?["name"] as? KeyboardShortcuts.Name else { return }
+            // Small delay to let LayoutsSettingsView's onChange handle its own conflicts first
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                handleShortcutConflict(changedName: changedName)
+            }
+        }
     }
 
     private func loadState() {
@@ -100,6 +149,75 @@ struct ShortcutsSettingsView: View {
         for idx in Self.slotIndices {
             slotAssignments[idx] = WorkspaceSlotManager.layoutID(for: idx)
         }
+    }
+
+    /// Reset all built-in shortcuts to their default values and clear layout shortcuts.
+    private func resetAllShortcuts() {
+        // Reset built-in shortcuts to defaults
+        for name in LayoutShortcutManager.builtInNames {
+            KeyboardShortcuts.reset(name)
+        }
+
+        // Clear layout-specific shortcuts
+        for layout in layouts {
+            let name = LayoutShortcutManager.shortcutName(for: layout.id)
+            KeyboardShortcuts.setShortcut(nil, for: name)
+        }
+
+        shortcutConflict = nil
+        loadState()
+    }
+
+    /// Detect and auto-resolve conflicts when any shortcut changes.
+    private func handleShortcutConflict(changedName: KeyboardShortcuts.Name) {
+        guard let newShortcut = KeyboardShortcuts.getShortcut(for: changedName) else {
+            return
+        }
+
+        // Gather all shortcut names (built-in + layout-specific)
+        let allNames = ShortcutNameResolver.allShortcutNames(layouts: layouts)
+
+        for (otherName, _) in allNames {
+            if otherName == changedName { continue }
+            if let existing = KeyboardShortcuts.getShortcut(for: otherName),
+               existing == newShortcut {
+                let displayName = ShortcutNameResolver.displayName(for: otherName, layouts: layouts)
+                KeyboardShortcuts.setShortcut(nil, for: otherName)
+                shortcutConflict = L10n.string("layouts.shortcutReplaced", displayName)
+                return
+            }
+        }
+    }
+
+    /// Layouts that have a custom shortcut (not assigned via workspace slot).
+    private var layoutsWithCustomShortcuts: [WindowLayout] {
+        let slotLayoutIDs = Set(Self.slotIndices.compactMap { WorkspaceSlotManager.layoutID(for: $0) })
+        return layouts.filter { layout in
+            let name = LayoutShortcutManager.shortcutName(for: layout.id)
+            let hasShortcut = KeyboardShortcuts.getShortcut(for: name) != nil
+            return hasShortcut && !slotLayoutIDs.contains(layout.id)
+        }
+    }
+
+    private func layoutShortcutRow(_ layout: WindowLayout) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: "rectangle.on.rectangle")
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .frame(width: 18)
+
+            Text(layout.name)
+                .font(.system(size: 12))
+                .lineLimit(1)
+
+            Spacer()
+
+            KeyboardShortcuts.Recorder(for: LayoutShortcutManager.shortcutName(for: layout.id))
+                .frame(width: 120)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(Color(nsColor: .controlBackgroundColor))
     }
 
     /// Workspace slot row: number icon + layout picker + shortcut recorder.
@@ -227,7 +345,9 @@ struct LayoutsSettingsView: View {
             }
         }
         .onAppear { refresh() }
-        .onChange(of: selectedLayoutID) { _, _ in shortcutConflict = nil }
+        .onChange(of: selectedLayoutID) { _, _ in
+            shortcutConflict = nil
+        }
         .sheet(isPresented: $showingAddLayout) {
             AddLayoutSheet(
                 onSave: { layout in saveNewLayout(layout) },
@@ -317,7 +437,9 @@ struct LayoutsSettingsView: View {
                     ScrollView {
                         LayoutEditorView(
                             layout: binding,
-                            onSave: { saveSelectedLayout() },
+                            onSave: {
+                                saveSelectedLayout()
+                            },
                             hasUnsavedChanges: $draftHasChanges
                         )
                         .padding(12)
@@ -328,11 +450,15 @@ struct LayoutsSettingsView: View {
                         HStack {
                             Text(L10n.string("layouts.shortcut"))
                                 .font(.system(size: 11))
-                            KeyboardShortcuts.Recorder(
-                                for: effectiveShortcutName(for: binding.wrappedValue.id),
-                                onChange: { _ in handleShortcutChange(layoutID: binding.wrappedValue.id) }
+                            ShortcutRecorderView(
+                                name: effectiveShortcutName(for: binding.wrappedValue.id),
+                                onChange: { _ in
+                                    guard let id = selectedLayoutID else { return }
+                                    handleShortcutChange(layoutID: id)
+                                }
                             )
-                            .frame(width: 120)
+                            .id(binding.wrappedValue.id)
+                            .frame(width: 120, height: 22)
                             Spacer()
                             Button(L10n.string("layouts.restoreNow")) {
                                 let result = services.layoutService.restoreLayout(binding.wrappedValue)
@@ -340,6 +466,18 @@ struct LayoutsSettingsView: View {
                             }
                             .controlSize(.small)
                             .help(L10n.string("layouts.restoreNow"))
+                        }
+
+                        // Show replacement message when shortcut was auto-overridden
+                        if let conflict = shortcutConflict {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.triangle.swap")
+                                    .font(.system(size: 9))
+                                Text(conflict)
+                                    .font(.system(size: 10))
+                                Spacer()
+                            }
+                            .foregroundStyle(.orange)
                         }
                     }
                     .padding(.horizontal, 12)
@@ -481,38 +619,36 @@ struct LayoutsSettingsView: View {
     }
 
     private func handleShortcutChange(layoutID: UUID) {
-        let name = LayoutShortcutManager.shortcutName(for: layoutID)
+        let name = effectiveShortcutName(for: layoutID)
         guard let newShortcut = KeyboardShortcuts.getShortcut(for: name) else {
+            // Shortcut was cleared
             shortcutConflict = nil
             refreshShortcuts()
             return
         }
 
-        let conflictName = LayoutShortcutManager.conflictingAction(for: layoutID, allLayouts: layouts)
-        guard let conflictName else {
-            shortcutConflict = nil
-            refreshShortcuts()
-            return
+        // Check all shortcuts for conflicts using shared resolver
+        let allNames = ShortcutNameResolver.allShortcutNames(layouts: layouts)
+        var conflictDescription: String?
+
+        for (otherName, _) in allNames {
+            if otherName == name { continue }
+            if let existing = KeyboardShortcuts.getShortcut(for: otherName),
+               existing == newShortcut {
+                conflictDescription = ShortcutNameResolver.displayName(for: otherName, layouts: layouts)
+                KeyboardShortcuts.setShortcut(nil, for: otherName)
+                break
+            }
         }
 
-        let alert = NSAlert()
-        alert.messageText = L10n.string("layouts.shortcutConflict", conflictName)
-        alert.informativeText = L10n.string("layouts.shortcutReplaceMessage")
-        alert.addButton(withTitle: L10n.string("layouts.shortcutReplace"))
-        alert.addButton(withTitle: L10n.string("alert.cancel"))
-        alert.alertStyle = .warning
-
-        let response = alert.runModal()
-        if response == .alertFirstButtonReturn {
-            LayoutShortcutManager.removeConflicting(shortcut: newShortcut, except: layoutID, allLayouts: layouts)
-            shortcutConflict = nil
+        if let desc = conflictDescription {
+            shortcutConflict = L10n.string("layouts.shortcutReplaced", desc)
         } else {
-            KeyboardShortcuts.reset(name)
             shortcutConflict = nil
         }
+
         refreshShortcuts()
     }
-
 
     /// Returns the effective shortcut name for a layout.
     /// If the layout is assigned to a workspace slot, use the slot's shortcut name
@@ -1143,5 +1279,117 @@ private extension Bundle {
 
     var buildVersion: String {
         infoDictionary?["CFBundleVersion"] as? String ?? "1"
+    }
+}
+
+// MARK: - Shortcut Name Resolver
+
+/// Maps KeyboardShortcuts.Name to human-readable display names.
+enum ShortcutNameResolver {
+    /// Built-in shortcut name → localized display name.
+    private static let builtInDisplayNames: [String: String] = [
+        "leftHalf": "menu.leftHalf",
+        "rightHalf": "menu.rightHalf",
+        "topHalf": "menu.topHalf",
+        "bottomHalf": "menu.bottomHalf",
+        "topLeft": "menu.topLeft",
+        "topRight": "menu.topRight",
+        "bottomLeft": "menu.bottomLeft",
+        "bottomRight": "menu.bottomRight",
+        "center": "menu.center",
+        "maximize": "menu.maximize",
+        "toggleFullScreen": "menu.fullScreen",
+        "increase": "menu.makeLarger",
+        "decrease": "menu.makeSmaller",
+        "nextScreen": "menu.nextDisplay",
+        "previousScreen": "menu.previousDisplay",
+        "toggleFocusMode": "menu.focusMode",
+    ]
+
+    /// All shortcut names in the system: built-in + workspace slots + layout-specific.
+    static func allShortcutNames(layouts: [WindowLayout]) -> [(KeyboardShortcuts.Name, String)] {
+        var result: [(KeyboardShortcuts.Name, String)] = []
+
+        // Built-in shortcuts
+        for builtIn in LayoutShortcutManager.builtInNames {
+            let display = displayName(for: builtIn, layouts: layouts)
+            result.append((builtIn, display))
+        }
+
+        // Layout-specific shortcuts (not assigned to workspace slots)
+        let slotLayoutIDs = Set((5...9).compactMap { WorkspaceSlotManager.layoutID(for: $0) })
+        for layout in layouts where !slotLayoutIDs.contains(layout.id) {
+            let name = LayoutShortcutManager.shortcutName(for: layout.id)
+            if KeyboardShortcuts.getShortcut(for: name) != nil {
+                result.append((name, layout.name))
+            }
+        }
+
+        return result
+    }
+
+    /// Human-readable name for a shortcut name.
+    static func displayName(for name: KeyboardShortcuts.Name, layouts: [WindowLayout]) -> String {
+        // Check built-in names
+        if let locKey = builtInDisplayNames[name.rawValue] {
+            return L10n.string(locKey)
+        }
+
+        // Workspace slot → show assigned layout name
+        let slots: [(String, Int)] = [
+            ("workspaceSlot5", 5), ("workspaceSlot6", 6), ("workspaceSlot7", 7),
+            ("workspaceSlot8", 8), ("workspaceSlot9", 9),
+        ]
+        for (rawName, idx) in slots where name.rawValue == rawName {
+            if let layoutID = WorkspaceSlotManager.layoutID(for: idx),
+               let layout = layouts.first(where: { $0.id == layoutID }) {
+                return layout.name
+            }
+            return L10n.string("layouts.workspaceSlot", idx)
+        }
+
+        // Layout-specific shortcut
+        if name.rawValue.hasPrefix("layout-"),
+           let uuidString = name.rawValue.split(separator: "-", maxSplits: 1).last,
+           let uuid = UUID(uuidString: String(uuidString)),
+           let layout = layouts.first(where: { $0.id == uuid }) {
+            return layout.name
+        }
+
+        return name.rawValue
+    }
+}
+
+// MARK: - Shortcut Recorder with updatable onChange
+
+/// Wraps KeyboardShortcuts.RecorderCocoa so that the onChange callback
+/// is always up-to-date (the library's SwiftUI Recorder only sets onChange
+/// in makeNSView, never in updateNSView).
+struct ShortcutRecorderView: NSViewRepresentable {
+    let name: KeyboardShortcuts.Name
+    let onChange: (KeyboardShortcuts.Shortcut?) -> Void
+
+    func makeNSView(context: Context) -> KeyboardShortcuts.RecorderCocoa {
+        let recorder = KeyboardShortcuts.RecorderCocoa(for: name) { shortcut in
+            context.coordinator.onChange(shortcut)
+        }
+        return recorder
+    }
+
+    func updateNSView(_ nsView: KeyboardShortcuts.RecorderCocoa, context: Context) {
+        nsView.shortcutName = name
+        context.coordinator.onChange = onChange
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onChange: onChange)
+    }
+
+    final class Coordinator {
+        var onChange: (KeyboardShortcuts.Shortcut?) -> Void
+
+        init(onChange: @escaping (KeyboardShortcuts.Shortcut?) -> Void) {
+            self.onChange = onChange
+        }
     }
 }

@@ -108,17 +108,22 @@ final class LayoutService {
             return []
         }
 
+        let ownPid = ProcessInfo.processInfo.processIdentifier
+
         // Build Z-ordered list of frames (front-to-back)
         let orderedFrames: [(pid: pid_t, frame: CGRect)] = cgList.compactMap { dict in
-            guard let pid = dict[kCGWindowOwnerPID as String] as? pid_t,
-                  let boundsDict = dict[kCGWindowBounds as String] as? [String: CGFloat],
-                  let x = boundsDict["X"], let y = boundsDict["Y"],
-                  let w = boundsDict["Width"], let h = boundsDict["Height"],
-                  w > 0, h > 0 else { return nil }
+            guard let pid = dict[kCGWindowOwnerPID as String] as? pid_t else { return nil }
+            // Skip MWM's own windows (settings, save dialog, etc.)
+            guard pid != ownPid else { return nil }
             // Filter to only layer 0 (normal windows)
-            let layer = dict[kCGWindowLayer as String] as? Int ?? 0
-            guard layer == 0 else { return nil }
-            return (pid, CGRect(x: x, y: y, width: w, height: h))
+            guard let layer = dict[kCGWindowLayer as String] as? Int, layer == 0 else { return nil }
+            // Parse bounds using CGRect(dictionaryRepresentation:) for robustness
+            guard let boundsDict = dict[kCGWindowBounds as String] as? NSDictionary,
+                  let frame = CGRect(dictionaryRepresentation: boundsDict) else { return nil }
+            guard frame.width > 1, frame.height > 1 else { return nil }
+            // Skip windows with zero alpha (invisible overlays)
+            if let alpha = dict[kCGWindowAlpha as String] as? CGFloat, alpha < 0.01 { return nil }
+            return (pid, frame)
         }
 
         // Match AX windows to CG entries by pid + frame proximity

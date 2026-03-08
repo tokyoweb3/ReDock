@@ -143,5 +143,7 @@ final class LayoutShortcutManager {
         }
         let result = services.layoutService.restoreLayout(layout)
         services.diagnosticsService.record(result: result, triggerSource: "shortcut")
+
+        ActionOverlayWindow.showForShortcut(name: shortcutName(for: id), title: layout.name)
     }
 }

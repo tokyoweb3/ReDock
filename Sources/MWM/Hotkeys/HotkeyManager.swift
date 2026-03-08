@@ -130,7 +130,12 @@ final class HotkeyManager {
 
         // Focus Mode has its own handler (not a WindowAction)
         KeyboardShortcuts.onKeyUp(for: .toggleFocusMode) {
-            AppDelegate.services.focusModeService.toggle()
+            let service = AppDelegate.services.focusModeService
+            service.toggle()
+            let title = service.isActive
+                ? L10n.string("menu.focusMode")
+                : L10n.string("menu.exitFocusMode")
+            ActionOverlayWindow.showForShortcut(name: .toggleFocusMode, title: title)
         }
 
         // Workspace slots → restore assigned layout
@@ -150,5 +155,8 @@ final class HotkeyManager {
         }
         let result = services.layoutService.restoreLayout(layout)
         services.diagnosticsService.record(result: result, triggerSource: "workspace-slot-\(slotIndex)")
+
+        let shortcutName = workspaceSlotNames[slotIndex - 5]
+        ActionOverlayWindow.showForShortcut(name: shortcutName, title: layout.name)
     }
 }
