@@ -403,6 +403,7 @@ struct LayoutsSettingsView: View {
                 HStack(spacing: 4) {
                     Button(action: { deleteSelected() }) {
                         Image(systemName: "minus")
+                            .frame(height: 12)
                     }
                     .disabled(selectedLayoutID == nil || (selectedLayout?.isFavorite ?? false))
                     .help(selectedLayout?.isFavorite == true
@@ -748,7 +749,10 @@ struct DisplayProfilesView: View {
             }
             .padding(16)
         }
-        .onAppear { profiles = services.displayProfileStore.loadAll() }
+        .onAppear {
+            profiles = services.displayProfileStore.loadAll()
+                .sorted { ($0.lastSeenAt ?? .distantPast) > ($1.lastSeenAt ?? .distantPast) }
+        }
     }
 
     private var currentDisplaySection: some View {
@@ -902,6 +906,7 @@ struct DisplayProfilesView: View {
         }
         services.displayProfileStore.delete(id: profileID)
         profiles = services.displayProfileStore.loadAll()
+            .sorted { ($0.lastSeenAt ?? .distantPast) > ($1.lastSeenAt ?? .distantPast) }
     }
 }
 
@@ -1265,7 +1270,7 @@ struct GeneralSettingsView: View {
                         }
                     }
                     .labelsHidden()
-                    .frame(width: 200)
+                    .fixedSize()
                 }
                 .onChange(of: localization.currentLanguage) { _, _ in
                     AppDelegate.statusBar.rebuildMenu()
