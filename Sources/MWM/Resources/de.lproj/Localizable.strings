@@ -133,7 +133,9 @@
 "editor.saveHelp" = "Änderungen an diesem Layout sichern";
 "editor.reset" = "Zurücksetzen";
 "editor.resetHelp" = "Änderungen verwerfen und gesicherten Zustand wiederherstellen";
-"editor.unsavedChanges" = "Nicht gesicherte Änderungen";
+"editor.unsavedChanges" = "Nicht gespeicherte Änderungen";
+"editor.unsavedAlertMessage" = "Dieses Layout hat nicht gespeicherte Änderungen. Möchten Sie diese vor dem Wechsel speichern?";
+"editor.discard" = "Verwerfen";
 "editor.noWindows" = "Keine Fenster im Layout";
 "editor.addWindowsHint" = "Fenster mit der Taste + unten hinzufügen";
 "editor.display" = "Bildschirm";
@@ -217,8 +219,10 @@
 "tooltip.mode" = "Wählen, wie Fenster beim Wiederherstellen dieses Layouts zugeordnet werden";
 
 /* Display Variants */
-"variant.add" = "Variante für aktuelle Bildschirme hinzufügen";
-"variant.delete" = "Variante löschen";
+"variant.profile" = "Bildschirmprofil";
+"variant.configured" = "✓ Konfiguriert";
+"variant.notConfigured" = "○ Nicht konfiguriert";
+"variant.clearWindows" = "Fenster löschen";
 
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "Aktuelles Layout sichern";

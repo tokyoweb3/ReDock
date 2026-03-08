@@ -27,10 +27,9 @@ struct AutoRestoreIntegrationTests {
             DisplayFingerprint(displayID: 1, localizedName: "Built-in", bounds: CGRect(x: 0, y: 0, width: 2560, height: 1600)),
         ]
 
-        var layout = WindowLayout(name: "Single Display", windows: [
+        var layout = WindowLayout(name: "Single Display", autoRestore: true, windows: [
             MockWindowQuerying.makeSnapshot(),
         ])
-        layout.autoRestore = true
         layout.trigger = .displayConfiguration(fingerprints: fingerprints)
 
         let context = EnvironmentContext(
@@ -43,8 +42,7 @@ struct AutoRestoreIntegrationTests {
 
     @Test("Layout with Wi-Fi trigger matches current SSID")
     func wifiTriggerMatches() {
-        var layout = WindowLayout(name: "Office", windows: [])
-        layout.autoRestore = true
+        var layout = WindowLayout(name: "Office", autoRestore: true, windows: [])
         layout.trigger = .wifiSSID(ssid: "OfficeWiFi")
 
         let context = EnvironmentContext(
@@ -57,8 +55,7 @@ struct AutoRestoreIntegrationTests {
 
     @Test("Wi-Fi trigger does not match different SSID")
     func wifiTriggerNoMatch() {
-        var layout = WindowLayout(name: "Office", windows: [])
-        layout.autoRestore = true
+        var layout = WindowLayout(name: "Office", autoRestore: true, windows: [])
         layout.trigger = .wifiSSID(ssid: "OfficeWiFi")
 
         let context = EnvironmentContext(
@@ -75,8 +72,7 @@ struct AutoRestoreIntegrationTests {
             DisplayFingerprint(displayID: 1, localizedName: "External", bounds: CGRect(x: 0, y: 0, width: 3840, height: 2160)),
         ]
 
-        var layout = WindowLayout(name: "Docked Office", windows: [])
-        layout.autoRestore = true
+        var layout = WindowLayout(name: "Docked Office", autoRestore: true, windows: [])
         layout.trigger = .compound(conditions: [
             .displayConfiguration(fingerprints: fingerprints),
             .wifiSSID(ssid: "CorpNet"),
@@ -95,68 +91,74 @@ struct AutoRestoreIntegrationTests {
         #expect(layout.trigger?.matches(wifiOnly) == false)
     }
 
-    // MARK: - Conflict Detection
+    // MARK: - Conflict Detection (per-variant)
 
-    @Test("Two layouts with same trigger are conflicts")
-    func conflictDetection() throws {
+    @Test("Two variants with same display profile are conflicts")
+    func variantConflictDetection() throws {
         defer { cleanup() }
 
         let store = LayoutStore(directory: tempDir)
+        let profileID = UUID()
         let fingerprints = [
             DisplayFingerprint(displayID: 1, localizedName: "Main", bounds: CGRect(x: 0, y: 0, width: 1920, height: 1080)),
         ]
 
-        var layout1 = WindowLayout(name: "Layout A", windows: [MockWindowQuerying.makeSnapshot()])
-        layout1.autoRestore = true
-        layout1.trigger = .displayConfiguration(fingerprints: fingerprints)
+        var layout1 = WindowLayout(name: "Layout A", autoRestore: true, windows: [MockWindowQuerying.makeSnapshot()])
+        layout1.variants[0].displayProfileID = profileID
+        layout1.variants[0].displayFingerprints = fingerprints
 
-        var layout2 = WindowLayout(name: "Layout B", windows: [MockWindowQuerying.makeSnapshot()])
-        layout2.autoRestore = true
-        layout2.trigger = .displayConfiguration(fingerprints: fingerprints)
+        var layout2 = WindowLayout(name: "Layout B", autoRestore: true, windows: [MockWindowQuerying.makeSnapshot()])
+        layout2.variants[0].displayProfileID = profileID
+        layout2.variants[0].displayFingerprints = fingerprints
 
         try store.save(layout1)
         try store.save(layout2)
 
         let allLayouts = store.loadAll()
-        let autoRestoreLayouts = allLayouts.filter { $0.autoRestore && $0.trigger != nil }
-        #expect(autoRestoreLayouts.count == 2)
-
-        // Find conflicts for layout1
-        let conflicts = allLayouts.filter { other in
-            other.id != layout1.id
-                && other.autoRestore
-                && other.trigger != nil
-                && layout1.trigger != nil
-                && other.trigger == layout1.trigger
-        }
+        let conflicts = AutoRestoreService.findVariantConflicts(
+            for: layout1,
+            variantIndex: 0,
+            allLayouts: allLayouts
+        )
         #expect(conflicts.count == 1)
-        #expect(conflicts.first?.name == "Layout B")
+        #expect(conflicts.first?.layoutName == "Layout B")
     }
 
-    @Test("Layouts with different triggers are not conflicts")
-    func noConflictDifferentTriggers() throws {
+    @Test("Variants with different profiles are not conflicts")
+    func noConflictDifferentProfiles() throws {
         defer { cleanup() }
 
         let store = LayoutStore(directory: tempDir)
 
-        var layout1 = WindowLayout(name: "Office", windows: [MockWindowQuerying.makeSnapshot()])
-        layout1.autoRestore = true
-        layout1.trigger = .wifiSSID(ssid: "OfficeWiFi")
+        var layout1 = WindowLayout(name: "Office", autoRestore: true, windows: [MockWindowQuerying.makeSnapshot()])
+        layout1.variants[0].displayProfileID = UUID()
 
-        var layout2 = WindowLayout(name: "Home", windows: [MockWindowQuerying.makeSnapshot()])
-        layout2.autoRestore = true
-        layout2.trigger = .wifiSSID(ssid: "HomeWiFi")
+        var layout2 = WindowLayout(name: "Home", autoRestore: true, windows: [MockWindowQuerying.makeSnapshot()])
+        layout2.variants[0].displayProfileID = UUID()
 
         try store.save(layout1)
         try store.save(layout2)
 
         let allLayouts = store.loadAll()
-        let conflicts = allLayouts.filter { other in
-            other.id != layout1.id
-                && other.autoRestore
-                && other.trigger == layout1.trigger
-        }
+        let conflicts = AutoRestoreService.findVariantConflicts(
+            for: layout1,
+            variantIndex: 0,
+            allLayouts: allLayouts
+        )
         #expect(conflicts.isEmpty)
+    }
+
+    // MARK: - Display trigger (legacy trigger-based matching)
+
+    @Test("Display trigger does not match with different display")
+    func displayTriggerNoMatch() {
+        let fp1 = DisplayFingerprint(displayID: 1, localizedName: "Built-in", bounds: CGRect(x: 0, y: 0, width: 2560, height: 1600))
+        let fp2 = DisplayFingerprint(displayID: 2, localizedName: "External", bounds: CGRect(x: 0, y: 0, width: 3840, height: 2160))
+
+        let trigger = ContextTrigger.displayConfiguration(fingerprints: [fp1])
+        let context = EnvironmentContext(displayFingerprints: [fp2], wifiSSID: nil)
+
+        #expect(trigger.matches(context) == false)
     }
 
     // MARK: - Diagnostics Integration

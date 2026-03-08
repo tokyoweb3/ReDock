@@ -211,12 +211,13 @@ struct LayoutSaveRestoreIntegrationTests {
         let (_, service, _) = makeServices()
         defer { try? FileManager.default.removeItem(at: tempDir) }
 
+        let baseline = service.loadAll().count // presets seeded on init
         try _ = service.saveLayout(name: "Layout A", snapshots: [MockWindowQuerying.makeSnapshot()])
         try _ = service.saveLayout(name: "Layout B", snapshots: [MockWindowQuerying.makeSnapshot()])
         try _ = service.saveLayout(name: "Layout C", snapshots: [MockWindowQuerying.makeSnapshot()])
 
         let all = service.loadAll()
-        #expect(all.count == 3)
+        #expect(all.count == baseline + 3)
     }
 
     @Test("Delete removes layout from store")
@@ -224,10 +225,11 @@ struct LayoutSaveRestoreIntegrationTests {
         let (_, service, _) = makeServices()
         defer { try? FileManager.default.removeItem(at: tempDir) }
 
+        let baseline = service.loadAll().count // presets seeded on init
         let saved = try service.saveLayout(name: "To Delete", snapshots: [MockWindowQuerying.makeSnapshot()])
-        #expect(service.loadAll().count == 1)
+        #expect(service.loadAll().count == baseline + 1)
 
         try service.delete(id: saved.id)
-        #expect(service.loadAll().isEmpty)
+        #expect(service.loadAll().count == baseline)
     }
 }

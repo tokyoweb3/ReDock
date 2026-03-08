@@ -192,6 +192,9 @@ struct LayoutsSettingsView: View {
     @State private var shortcutConflict: String?
     @State private var saveLayoutController: SaveLayoutWindowController?
     @State private var activeSegment: LayoutSegment = .layouts
+    @State private var draftHasChanges = false
+    @State private var pendingSelectionID: UUID?
+    @State private var showUnsavedAlert = false
 
     private var services: AppServices { AppDelegate.services }
 
@@ -231,15 +234,47 @@ struct LayoutsSettingsView: View {
                 onCapture: { captureCurrentAsLayout() }
             )
         }
+        .alert(L10n.string("editor.unsavedChanges"), isPresented: $showUnsavedAlert) {
+            Button(L10n.string("editor.save")) {
+                saveSelectedLayout()
+                draftHasChanges = false
+                selectedLayoutID = pendingSelectionID
+                pendingSelectionID = nil
+            }
+            Button(L10n.string("editor.discard"), role: .destructive) {
+                draftHasChanges = false
+                selectedLayoutID = pendingSelectionID
+                pendingSelectionID = nil
+            }
+            Button(L10n.string("alert.cancel"), role: .cancel) {
+                pendingSelectionID = nil
+            }
+        } message: {
+            Text(L10n.string("editor.unsavedAlertMessage"))
+        }
     }
 
     // MARK: - Layouts Content
+
+    private var safeSelectionBinding: Binding<UUID?> {
+        Binding(
+            get: { selectedLayoutID },
+            set: { newValue in
+                if draftHasChanges {
+                    pendingSelectionID = newValue
+                    showUnsavedAlert = true
+                } else {
+                    selectedLayoutID = newValue
+                }
+            }
+        )
+    }
 
     private var layoutsContent: some View {
         HSplitView {
             // Left: layout list
             VStack(spacing: 0) {
-                List(selection: $selectedLayoutID) {
+                List(selection: safeSelectionBinding) {
                     ForEach(layouts) { layout in
                         layoutRow(layout).tag(layout.id)
                     }
@@ -282,7 +317,8 @@ struct LayoutsSettingsView: View {
                     ScrollView {
                         LayoutEditorView(
                             layout: binding,
-                            onSave: { saveSelectedLayout() }
+                            onSave: { saveSelectedLayout() },
+                            hasUnsavedChanges: $draftHasChanges
                         )
                         .padding(12)
                     }
@@ -293,58 +329,17 @@ struct LayoutsSettingsView: View {
                             Text(L10n.string("layouts.shortcut"))
                                 .font(.system(size: 11))
                             KeyboardShortcuts.Recorder(
-                                for: LayoutShortcutManager.shortcutName(for: binding.wrappedValue.id),
+                                for: effectiveShortcutName(for: binding.wrappedValue.id),
                                 onChange: { _ in handleShortcutChange(layoutID: binding.wrappedValue.id) }
                             )
                             .frame(width: 120)
-
-                            // Show workspace slot assignment if any
-                            if let slotLabel = workspaceSlotLabel(for: binding.wrappedValue.id) {
-                                Text(slotLabel)
-                                    .font(.system(size: 10))
-                                    .foregroundStyle(.blue)
-                            }
-                            Spacer()
-                        }
-
-                        // Display profile picker
-                        HStack {
-                            Text(L10n.string("displayProfile.title"))
-                                .font(.system(size: 11))
-                            profilePicker(for: binding)
-                            Spacer()
-                        }
-
-                        HStack {
-                            Toggle(L10n.string("layouts.autoRestore"), isOn: autoRestoreBinding)
-                                .help(L10n.string("tooltip.autoRestore"))
                             Spacer()
                             Button(L10n.string("layouts.restoreNow")) {
                                 let result = services.layoutService.restoreLayout(binding.wrappedValue)
                                 services.diagnosticsService.record(result: result, triggerSource: "settings")
                             }
                             .controlSize(.small)
-                        }
-
-                        HStack {
-                            Toggle(L10n.string("layouts.launchApps"), isOn: launchAppsBinding)
-                                .help(L10n.string("layouts.launchAppsHelp"))
-                            Spacer()
-                        }
-
-                        if binding.wrappedValue.autoRestore {
-                            let conflicts = autoRestoreConflicts(for: binding.wrappedValue)
-                            if !conflicts.isEmpty {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "exclamationmark.triangle.fill")
-                                        .font(.system(size: 10))
-                                        .foregroundStyle(.orange)
-                                    Text(L10n.string("layouts.conflictsWith", conflicts.map(\.name).joined(separator: ", ")))
-                                        .font(.system(size: 10))
-                                        .foregroundStyle(.orange)
-                                    Spacer()
-                                }
-                            }
+                            .help(L10n.string("layouts.restoreNow"))
                         }
                     }
                     .padding(.horizontal, 12)
@@ -387,19 +382,6 @@ struct LayoutsSettingsView: View {
                             .clipShape(Capsule())
                     }
                 }
-                // Show linked display profile name
-                if let profileID = layout.displayProfileID,
-                   let profile = services.displayProfileStore.loadAll().first(where: { $0.id == profileID }) {
-                    HStack(spacing: 3) {
-                        Image(systemName: "display")
-                            .font(.system(size: 8))
-                            .foregroundStyle(.blue.opacity(0.7))
-                        Text(profile.name)
-                            .font(.system(size: 10))
-                            .foregroundStyle(.blue.opacity(0.7))
-                            .lineLimit(1)
-                    }
-                }
             }
             Spacer()
 
@@ -420,40 +402,6 @@ struct LayoutsSettingsView: View {
                     .help(L10n.string("tooltip.autoRestore"))
             }
         }
-    }
-
-    /// Picker to link a display profile to a layout.
-    private func profilePicker(for binding: Binding<WindowLayout>) -> some View {
-        let profiles = services.displayProfileStore.loadAll()
-        return Picker("", selection: profileIDBinding(for: binding.wrappedValue.id)) {
-            Text("--").tag(Optional<UUID>.none)
-            ForEach(profiles) { profile in
-                Text(profile.name).tag(Optional(profile.id))
-            }
-        }
-        .labelsHidden()
-        .frame(maxWidth: 200)
-        .help(L10n.string("tooltip.autoRestore"))
-    }
-
-    private func profileIDBinding(for layoutID: UUID) -> Binding<UUID?> {
-        Binding(
-            get: {
-                layouts.first(where: { $0.id == layoutID })?.displayProfileID
-            },
-            set: { newValue in
-                guard let index = layouts.firstIndex(where: { $0.id == layoutID }) else { return }
-                layouts[index].displayProfileID = newValue
-                // When linking a profile, also update the trigger for auto-restore
-                if let profileID = newValue,
-                   let profile = services.displayProfileStore.loadAll().first(where: { $0.id == profileID }) {
-                    layouts[index].trigger = .displayConfiguration(fingerprints: profile.fingerprints)
-                } else {
-                    layouts[index].trigger = nil
-                }
-                try? services.layoutService.save(layouts[index])
-            }
-        )
     }
 
     // MARK: - Bindings
@@ -565,60 +513,24 @@ struct LayoutsSettingsView: View {
         refreshShortcuts()
     }
 
-    private var autoRestoreBinding: Binding<Bool> {
-        Binding(
-            get: { selectedLayout?.autoRestore ?? false },
-            set: { newValue in
-                guard let id = selectedLayoutID,
-                      var layout = layouts.first(where: { $0.id == id }) else { return }
-                layout.autoRestore = newValue
-                if newValue && layout.trigger == nil {
-                    // Auto-set trigger from linked profile or current displays
-                    if let profileID = layout.displayProfileID,
-                       let profile = services.displayProfileStore.loadAll().first(where: { $0.id == profileID }) {
-                        layout.trigger = .displayConfiguration(fingerprints: profile.fingerprints)
-                    } else {
-                        layout.trigger = .displayConfiguration(fingerprints: services.screenRegistry.fingerprints())
-                    }
-                }
-                try? services.layoutService.save(layout)
-                refresh()
-            }
-        )
-    }
 
-    private var launchAppsBinding: Binding<Bool> {
-        Binding(
-            get: { selectedLayout?.launchMissingApps ?? false },
-            set: { newValue in
-                guard let id = selectedLayoutID,
-                      var layout = layouts.first(where: { $0.id == id }) else { return }
-                layout.launchMissingApps = newValue
-                try? services.layoutService.save(layout)
-                refresh()
-            }
-        )
-    }
-
-    /// Returns a label like "Workspace 5" if this layout is assigned to a workspace slot.
-    private func workspaceSlotLabel(for layoutID: UUID) -> String? {
-        for idx in [5, 6, 7, 8, 9] {
+    /// Returns the effective shortcut name for a layout.
+    /// If the layout is assigned to a workspace slot, use the slot's shortcut name
+    /// so the Recorder displays the actual registered key combo.
+    /// Otherwise, use the layout-specific shortcut name.
+    private func effectiveShortcutName(for layoutID: UUID) -> KeyboardShortcuts.Name {
+        let slots: [(KeyboardShortcuts.Name, Int)] = [
+            (.workspaceSlot5, 5), (.workspaceSlot6, 6), (.workspaceSlot7, 7),
+            (.workspaceSlot8, 8), (.workspaceSlot9, 9),
+        ]
+        for (name, idx) in slots {
             if WorkspaceSlotManager.layoutID(for: idx) == layoutID {
-                return L10n.string("layouts.workspaceSlot", idx)
+                return name
             }
         }
-        return nil
+        return LayoutShortcutManager.shortcutName(for: layoutID)
     }
 
-    private func autoRestoreConflicts(for layout: WindowLayout) -> [WindowLayout] {
-        layouts.filter { other in
-            other.id != layout.id
-                && other.autoRestore
-                && other.trigger != nil
-                && layout.trigger != nil
-                && other.trigger == layout.trigger
-        }
-    }
 
     private func deleteSelected() {
         guard let id = selectedLayoutID else { return }
@@ -789,17 +701,6 @@ struct DisplayProfilesView: View {
 
             Spacer()
 
-            // Linked layout
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(L10n.string("displayProfile.linkedLayout"))
-                    .font(.system(size: 9))
-                    .foregroundStyle(.tertiary)
-                let linked = layouts.first { $0.displayProfileID == profile.id }
-                Text(linked?.name ?? "--")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.secondary)
-            }
-
             // Delete profile
             Button(action: { deleteProfile(profile.id) }) {
                 Image(systemName: "xmark")
@@ -885,7 +786,6 @@ struct AddLayoutSheet: View {
                 case .newEmpty:
                     Button(L10n.string("layouts.create")) { createEmpty() }
                         .keyboardShortcut(.defaultAction)
-                        .disabled(layoutName.trimmingCharacters(in: .whitespaces).isEmpty)
                 case .presetConfig:
                     Button(L10n.string("saveLayout.save")) { savePreset() }
                         .keyboardShortcut(.defaultAction)
@@ -988,11 +888,26 @@ struct AddLayoutSheet: View {
     }
 
     private func createEmpty() {
-        let name = layoutName.trimmingCharacters(in: .whitespaces)
-        guard !name.isEmpty else { return }
+        var name = layoutName.trimmingCharacters(in: .whitespaces)
+        if name.isEmpty {
+            name = L10n.string("saveLayout.namePlaceholder")
+        }
+        name = deduplicateName(name)
         let layout = WindowLayout(name: name, windows: [])
         onSave(layout)
         dismiss()
+    }
+
+    private func deduplicateName(_ name: String) -> String {
+        let existingNames = Set(AppDelegate.services.layoutService.loadAll().map(\.name))
+        guard existingNames.contains(name) else { return name }
+        var suffix = 1
+        var candidate = "\(name) (\(suffix))"
+        while existingNames.contains(candidate) {
+            suffix += 1
+            candidate = "\(name) (\(suffix))"
+        }
+        return candidate
     }
 
     // MARK: - Preset List

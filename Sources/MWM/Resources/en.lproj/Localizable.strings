@@ -101,8 +101,8 @@
 "layouts.addLayout" = "Add Layout";
 "layouts.addFromPreset" = "From Preset";
 "layouts.addFromPresetDescription" = "Choose a predefined window arrangement";
-"layouts.captureCurrentWindows" = "Capture Current Windows";
-"layouts.captureDescription" = "Save a snapshot of your current desktop";
+"layouts.captureCurrentWindows" = "Snapshot Current Windows";
+"layouts.captureDescription" = "Take a snapshot of your current desktop";
 "layouts.newEmpty" = "New Empty Layout";
 "layouts.newEmptyDescription" = "Start with a blank layout and add windows manually";
 "layouts.newEmptyHint" = "You can add windows later using the + button in the editor.";
@@ -136,7 +136,9 @@
 "editor.saveHelp" = "Save changes to this layout";
 "editor.reset" = "Reset";
 "editor.resetHelp" = "Discard changes and revert to saved state";
-"editor.unsavedChanges" = "Unsaved changes";
+"editor.unsavedChanges" = "Unsaved Changes";
+"editor.unsavedAlertMessage" = "You have unsaved changes to this layout. Would you like to save them before switching?";
+"editor.discard" = "Discard";
 "editor.noWindows" = "No windows in layout";
 "editor.addWindowsHint" = "Add windows using the + button below";
 "editor.display" = "Display";
@@ -150,10 +152,10 @@
 "editor.appSpecific" = "App-Specific";
 "editor.templateLabel" = "Template";
 "editor.templateHint" = "Applies to the most recently used windows, regardless of app.";
-"editor.recapture" = "Re-capture";
-"editor.recaptureHelp" = "Replace all windows with a fresh capture of the current desktop";
-"editor.recaptureTitle" = "Re-capture Windows";
-"editor.recaptureDescription" = "Replace all windows in this layout with the current desktop state.";
+"editor.recapture" = "Retake Snapshot";
+"editor.recaptureHelp" = "Replace all windows with a fresh snapshot of the current desktop";
+"editor.recaptureTitle" = "Retake Snapshot";
+"editor.recaptureDescription" = "Replace all windows in this layout with a snapshot of the current desktop.";
 "editor.recaptureConfirm" = "Replace with %lld Windows";
 "editor.addWindowHelp" = "Add windows from current desktop";
 "editor.changeApp" = "Change assigned app";
@@ -220,8 +222,10 @@
 "tooltip.mode" = "Choose how windows are matched when restoring this layout";
 
 /* Display Variants */
-"variant.add" = "Add variant for current displays";
-"variant.delete" = "Delete Variant";
+"variant.profile" = "Display Profile";
+"variant.configured" = "✓ Configured";
+"variant.notConfigured" = "○ Not configured";
+"variant.clearWindows" = "Clear windows";
 
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "Save Current Layout";

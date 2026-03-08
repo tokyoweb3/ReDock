@@ -134,6 +134,8 @@
 "editor.reset" = "重置";
 "editor.resetHelp" = "放弃更改并恢复到已保存状态";
 "editor.unsavedChanges" = "未保存的更改";
+"editor.unsavedAlertMessage" = "此布局有未保存的更改。切换前是否保存？";
+"editor.discard" = "丢弃";
 "editor.noWindows" = "布局中没有窗口";
 "editor.addWindowsHint" = "使用下方的 + 按钮添加窗口";
 "editor.display" = "显示器";
@@ -217,8 +219,10 @@
 "tooltip.mode" = "选择恢复布局时如何匹配窗口";
 
 /* Display Variants */
-"variant.add" = "为当前显示器添加变体";
-"variant.delete" = "删除变体";
+"variant.profile" = "显示器配置";
+"variant.configured" = "✓ 已配置";
+"variant.notConfigured" = "○ 未配置";
+"variant.clearWindows" = "清除窗口";
 
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "保存当前布局";

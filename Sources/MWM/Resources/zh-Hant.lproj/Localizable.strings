@@ -134,6 +134,8 @@
 "editor.reset" = "重置";
 "editor.resetHelp" = "捨棄變更並恢復到已儲存狀態";
 "editor.unsavedChanges" = "未儲存的變更";
+"editor.unsavedAlertMessage" = "此佈局有未儲存的變更。切換前是否儲存？";
+"editor.discard" = "捨棄";
 "editor.noWindows" = "佈局中沒有視窗";
 "editor.addWindowsHint" = "使用下方的 + 按鈕新增視窗";
 "editor.display" = "顯示器";
@@ -217,8 +219,10 @@
 "tooltip.mode" = "選擇回復佈局時如何配對視窗";
 
 /* Display Variants */
-"variant.add" = "為目前顯示器新增變體";
-"variant.delete" = "刪除變體";
+"variant.profile" = "顯示器設定檔";
+"variant.configured" = "✓ 已設定";
+"variant.notConfigured" = "○ 未設定";
+"variant.clearWindows" = "清除視窗";
 
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "儲存目前佈局";

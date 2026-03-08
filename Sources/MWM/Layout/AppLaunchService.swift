@@ -41,8 +41,8 @@ final class AppLaunchService {
     }
 
     /// Launch all missing apps needed for a layout.
-    func launchMissingApps(for layout: WindowLayout) async -> AppLaunchResult {
-        let requiredBundleIDs = Set(layout.windows.map(\.appBundleID))
+    func launchMissingApps(for layout: WindowLayout, windows: [WindowSnapshot]? = nil) async -> AppLaunchResult {
+        let requiredBundleIDs = Set((windows ?? layout.windows).map(\.appBundleID))
         let runningBundleIDs = Set(
             NSWorkspace.shared.runningApplications
                 .compactMap(\.bundleIdentifier)

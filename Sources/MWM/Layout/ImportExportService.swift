@@ -126,7 +126,10 @@ final class ImportExportService {
             imported.createdAt = Date()
             imported.updatedAt = Date()
             // Clear auto-restore triggers on import to avoid conflicts
-            imported.autoRestore = false
+            for i in imported.variants.indices {
+                imported.variants[i].autoRestore = false
+                imported.variants[i].launchMissingApps = false
+            }
 
             // Deduplicate name if it already exists
             if existingNames.contains(imported.name) {

@@ -110,7 +110,7 @@ struct ImportExportTests {
         let service = ImportExportService(store: store)
 
         var layout = makeLayout(name: "Auto")
-        layout.autoRestore = true
+        layout.variants[0].autoRestore = true
         layout.trigger = .displayConfiguration(fingerprints: [])
 
         let data = try service.exportLayouts([layout])

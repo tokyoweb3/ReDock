@@ -113,7 +113,7 @@ struct LayoutEditorPreview: View {
     }
 
     var body: some View {
-        if windows.isEmpty {
+        if windows.isEmpty && allDisplayFingerprints.isEmpty {
             VStack(spacing: 8) {
                 Image(systemName: "plus.rectangle.on.rectangle")
                     .font(.system(size: 28))
@@ -279,23 +279,24 @@ struct LayoutEditorView: View {
     @State private var draft: WindowLayout
     @State private var selectedWindowID: UUID?
     @State private var activeVariantIndex: Int = 0
+    @State private var profiles: [DisplayProfile] = []
+    @State private var selectedProfileID: UUID?
     @State private var showingAddWindow = false
     @State private var showingRecapture = false
     @State private var showingAppPicker = false
     let onSave: () -> Void
+    @Binding var hasUnsavedChanges: Bool
 
-    init(layout: Binding<WindowLayout>, onSave: @escaping () -> Void) {
+    init(layout: Binding<WindowLayout>, onSave: @escaping () -> Void, hasUnsavedChanges: Binding<Bool> = .constant(false)) {
         self._layout = layout
         self._draft = State(initialValue: layout.wrappedValue)
         self.onSave = onSave
+        self._hasUnsavedChanges = hasUnsavedChanges
     }
 
     private var hasChanges: Bool {
         draft.name != layout.name
             || draft.mode != layout.mode
-            || draft.autoRestore != layout.autoRestore
-            || draft.trigger != layout.trigger
-            || draft.launchMissingApps != layout.launchMissingApps
             || draft.variants != layout.variants
     }
 
@@ -324,86 +325,118 @@ struct LayoutEditorView: View {
         )
     }
 
-    // MARK: - Variant Selector
+    // MARK: - Variant Selector (Profile-linked Picker)
 
     @ViewBuilder
     private var variantSelector: some View {
-        HStack(spacing: 4) {
-            ForEach(Array(draft.variants.enumerated()), id: \.element.id) { index, variant in
-                Button {
-                    activeVariantIndex = index
-                    selectedWindowID = nil
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: variantIcon(for: variant))
-                            .font(.system(size: 9))
-                        Text(variant.displayDescription)
-                            .font(.system(size: 10))
-                            .lineLimit(1)
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(
-                        RoundedRectangle(cornerRadius: 5)
-                            .fill(safeIndex == index
-                                ? Color.accentColor.opacity(0.15)
-                                : Color(nsColor: .controlBackgroundColor))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 5)
-                            .strokeBorder(safeIndex == index
-                                ? Color.accentColor.opacity(0.4)
-                                : Color(nsColor: .separatorColor).opacity(0.5),
-                                lineWidth: 1)
-                    )
-                }
-                .buttonStyle(.plain)
-                .contextMenu {
-                    if draft.variants.count > 1 {
-                        Button(L10n.string("variant.delete"), role: .destructive) {
-                            deleteVariant(at: index)
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                Text(L10n.string("variant.profile"))
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+
+                Picker("", selection: $selectedProfileID) {
+                    ForEach(profiles) { profile in
+                        HStack(spacing: 4) {
+                            let isConfigured = draft.variants.contains {
+                                $0.displayProfileID == profile.id && !$0.windows.isEmpty
+                            }
+                            Text("\(profile.name) (\(profile.fingerprints.count))")
+                            Text(isConfigured
+                                ? L10n.string("variant.configured")
+                                : L10n.string("variant.notConfigured"))
+                                .foregroundStyle(.secondary)
                         }
+                        .tag(Optional(profile.id))
+                    }
+                }
+                .labelsHidden()
+                .frame(maxWidth: 320)
+
+                Spacer()
+            }
+
+            // Per-variant auto-restore and launch apps
+            HStack(spacing: 12) {
+                Toggle(L10n.string("layouts.autoRestore"), isOn: variantAutoRestoreBinding)
+                    .help(L10n.string("tooltip.autoRestore"))
+                Toggle(L10n.string("layouts.launchApps"), isOn: variantLaunchAppsBinding)
+                    .help(L10n.string("layouts.launchAppsHelp"))
+                Spacer()
+            }
+            .font(.system(size: 11))
+
+            // Conflict warning per display profile
+            if !draft.variants.isEmpty && draft.variants[safeIndex].autoRestore {
+                let conflicts = variantConflicts()
+                if !conflicts.isEmpty {
+                    HStack(spacing: 4) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 10))
+                            .foregroundStyle(.orange)
+                        Text(L10n.string("layouts.conflictsWith",
+                            conflicts.map { $0.layoutName }.joined(separator: ", ")))
+                            .font(.system(size: 10))
+                            .foregroundStyle(.orange)
+                        Spacer()
                     }
                 }
             }
-
-            Button {
-                addVariant()
-            } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 9))
-                    .padding(4)
+        }
+        .onChange(of: selectedProfileID) { _, newID in
+            guard let profileID = newID else { return }
+            if let idx = draft.variants.firstIndex(where: { $0.displayProfileID == profileID }) {
+                activeVariantIndex = idx
+            } else if let profile = profiles.first(where: { $0.id == profileID }) {
+                draft.variants.append(DisplayVariant(
+                    displayProfileID: profileID,
+                    displayFingerprints: profile.fingerprints,
+                    windows: []
+                ))
+                activeVariantIndex = draft.variants.count - 1
             }
-            .buttonStyle(.plain)
-            .help(L10n.string("variant.add"))
-
-            Spacer()
+            selectedWindowID = nil
         }
     }
 
-    private func variantIcon(for variant: DisplayVariant) -> String {
-        switch variant.displayFingerprints.count {
-        case 0: return "display"
-        case 1: return "display"
-        case 2: return "display.2"
-        default: return "display.2"
-        }
+    private var variantAutoRestoreBinding: Binding<Bool> {
+        Binding(
+            get: {
+                guard !draft.variants.isEmpty else { return false }
+                return draft.variants[safeIndex].autoRestore
+            },
+            set: { newValue in
+                guard !draft.variants.isEmpty else { return }
+                draft.variants[safeIndex].autoRestore = newValue
+            }
+        )
     }
 
-    private func addVariant() {
-        let fingerprints = AppDelegate.services.screenRegistry.fingerprints()
-        let variant = DisplayVariant(displayFingerprints: fingerprints, windows: [])
-        draft.variants.append(variant)
-        activeVariantIndex = draft.variants.count - 1
-        selectedWindowID = nil
+    private var variantLaunchAppsBinding: Binding<Bool> {
+        Binding(
+            get: {
+                guard !draft.variants.isEmpty else { return false }
+                return draft.variants[safeIndex].launchMissingApps
+            },
+            set: { newValue in
+                guard !draft.variants.isEmpty else { return }
+                draft.variants[safeIndex].launchMissingApps = newValue
+            }
+        )
     }
 
-    private func deleteVariant(at index: Int) {
-        guard draft.variants.count > 1 else { return }
-        draft.variants.remove(at: index)
-        if activeVariantIndex >= draft.variants.count {
-            activeVariantIndex = draft.variants.count - 1
-        }
+    private func variantConflicts() -> [(layoutName: String, variantDescription: String)] {
+        let allLayouts = AppDelegate.services.layoutService.loadAll()
+        return AutoRestoreService.findVariantConflicts(
+            for: draft,
+            variantIndex: safeIndex,
+            allLayouts: allLayouts
+        )
+    }
+
+    private func clearCurrentVariantWindows() {
+        guard !draft.variants.isEmpty else { return }
+        draft.variants[safeIndex].windows = []
         selectedWindowID = nil
     }
 
@@ -534,6 +567,15 @@ struct LayoutEditorView: View {
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(.secondary)
                 Spacer()
+
+                Button(role: .destructive, action: { clearCurrentVariantWindows() }) {
+                    Image(systemName: "trash")
+                        .font(.system(size: 10))
+                }
+                .controlSize(.small)
+                .disabled(activeWindows.isEmpty)
+                .help(L10n.string("variant.clearWindows"))
+
                 Button(action: {
                     if selectedWindowID != nil {
                         showingAppPicker = true
@@ -564,12 +606,21 @@ struct LayoutEditorView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 6))
             }
         }
+        .onAppear {
+            loadProfilesAndMigrate()
+            hasUnsavedChanges = hasChanges
+        }
         .onChange(of: layout) { _, newValue in
             draft = newValue
             selectedWindowID = nil
             if activeVariantIndex >= newValue.variants.count {
                 activeVariantIndex = 0
             }
+            loadProfilesAndMigrate()
+            hasUnsavedChanges = hasChanges
+        }
+        .onChange(of: draft) { _, _ in
+            hasUnsavedChanges = hasChanges
         }
         .sheet(isPresented: $showingAddWindow) {
             AddWindowSheet(
@@ -583,10 +634,8 @@ struct LayoutEditorView: View {
             RecaptureSheet(
                 onRecapture: { snapshots in
                     guard !draft.variants.isEmpty else { return }
+                    // Only update windows; keep the selected display profile unchanged
                     draft.variants[safeIndex].windows = snapshots
-                    // Update variant's display fingerprints from recaptured windows
-                    let fps = Array(Set(snapshots.map(\.display)))
-                    draft.variants[safeIndex].displayFingerprints = fps
                 }
             )
         }
@@ -602,31 +651,64 @@ struct LayoutEditorView: View {
         }
     }
 
-    /// All unique display fingerprints from active variant and connected displays
+    /// All unique display fingerprints for the preview.
+    /// Uses the selected display profile's fingerprints as the authoritative source,
+    /// falling back to the variant's stored fingerprints.
     private var allDisplayFingerprints: [DisplayFingerprint] {
         var seen = Set<DisplayFingerprint>()
         var result: [DisplayFingerprint] = []
+        // Windows' displays first
         for window in activeWindows {
             if seen.insert(window.display).inserted {
                 result.append(window.display)
             }
         }
-        // Include active variant's registered fingerprints
-        if !draft.variants.isEmpty {
+        // Use selected profile's fingerprints (authoritative, has all displays)
+        if let profileID = selectedProfileID,
+           let profile = profiles.first(where: { $0.id == profileID }) {
+            for fp in profile.fingerprints {
+                if seen.insert(fp).inserted {
+                    result.append(fp)
+                }
+            }
+        } else if !draft.variants.isEmpty {
             for fp in draft.variants[safeIndex].displayFingerprints {
                 if seen.insert(fp).inserted {
                     result.append(fp)
                 }
             }
         }
-        // Include currently connected displays so all monitors are visible
-        for fp in AppDelegate.services.screenRegistry.fingerprints() {
-            if seen.insert(fp).inserted {
-                result.append(fp)
-            }
-        }
         return result.sorted {
             ($0.bounds.origin.x, $0.bounds.origin.y) < ($1.bounds.origin.x, $1.bounds.origin.y)
+        }
+    }
+
+    // MARK: - Profile Loading & Migration
+
+    private func loadProfilesAndMigrate() {
+        let store = AppDelegate.services.displayProfileStore
+        // Ensure current displays have a profile
+        let currentFPs = AppDelegate.services.screenRegistry.fingerprints()
+        if !currentFPs.isEmpty {
+            _ = store.findOrCreate(fingerprints: currentFPs)
+        }
+        profiles = store.loadAll()
+
+        // Migrate existing variants without displayProfileID
+        for i in draft.variants.indices {
+            if draft.variants[i].displayProfileID == nil {
+                let fps = draft.variants[i].displayFingerprints
+                if let match = profiles.first(where: { $0.matches(fps) }) {
+                    draft.variants[i].displayProfileID = match.id
+                }
+            }
+        }
+
+        // Auto-select profile
+        if let firstVariant = draft.variants.first, let pid = firstVariant.displayProfileID {
+            selectedProfileID = pid
+        } else if let firstProfile = profiles.first {
+            selectedProfileID = firstProfile.id
         }
     }
 
@@ -635,11 +717,13 @@ struct LayoutEditorView: View {
     private func save() {
         layout = draft
         onSave()
+        hasUnsavedChanges = false
     }
 
     private func reset() {
         draft = layout
         selectedWindowID = nil
+        hasUnsavedChanges = false
     }
 
     // MARK: - Preset Buttons

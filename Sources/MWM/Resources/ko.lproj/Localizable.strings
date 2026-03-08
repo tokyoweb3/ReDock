@@ -133,7 +133,9 @@
 "editor.saveHelp" = "이 레이아웃에 대한 변경 사항 저장";
 "editor.reset" = "재설정";
 "editor.resetHelp" = "변경 사항을 취소하고 저장된 상태로 되돌리기";
-"editor.unsavedChanges" = "저장되지 않은 변경 사항";
+"editor.unsavedChanges" = "저장되지 않은 변경사항";
+"editor.unsavedAlertMessage" = "이 레이아웃에 저장되지 않은 변경사항이 있습니다. 전환하기 전에 저장하시겠습니까?";
+"editor.discard" = "버리기";
 "editor.noWindows" = "레이아웃에 윈도우 없음";
 "editor.addWindowsHint" = "아래 + 버튼으로 윈도우 추가";
 "editor.display" = "디스플레이";
@@ -217,8 +219,10 @@
 "tooltip.mode" = "레이아웃 복원 시 윈도우를 어떻게 매칭할지 선택합니다";
 
 /* Display Variants */
-"variant.add" = "현재 디스플레이용 변형 추가";
-"variant.delete" = "변형 삭제";
+"variant.profile" = "디스플레이 프로필";
+"variant.configured" = "✓ 구성됨";
+"variant.notConfigured" = "○ 미구성";
+"variant.clearWindows" = "창 지우기";
 
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "현재 레이아웃 저장";

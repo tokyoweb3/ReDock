@@ -13,6 +13,17 @@ final class LayoutService {
         self.store = store
         self.screenRegistry = screenRegistry
         self.windowQuerying = windowQuerying
+        seedPresetsIfEmpty()
+    }
+
+    /// Seed default workspace presets on first launch.
+    private func seedPresetsIfEmpty() {
+        guard store.loadAll().isEmpty else { return }
+        for preset in WorkspacePreset.allCases {
+            let layout = preset.toLayout(screenRegistry: screenRegistry)
+            try? store.save(layout)
+        }
+        Self.logger.info("Seeded \(WorkspacePreset.allCases.count) default presets")
     }
 
     // MARK: - Snapshot (without saving)
@@ -239,10 +250,14 @@ final class LayoutService {
 
     // MARK: - Restore
 
-    func restoreLayout(_ layout: WindowLayout) -> RestoreResult {
-        let effectiveWindows = resolveEffectiveWindows(for: layout)
+    func restoreLayout(_ layout: WindowLayout, variantWindows: [WindowSnapshot]? = nil) -> RestoreResult {
+        let effectiveWindows = variantWindows ?? resolveEffectiveWindows(for: layout)
+        let effectiveVariant = variantWindows != nil ? nil : resolveEffectiveVariant(for: layout)
+        let shouldLaunch = variantWindows != nil
+            ? layout.variants.first(where: { $0.windows == variantWindows })?.launchMissingApps ?? false
+            : effectiveVariant?.launchMissingApps ?? false
 
-        if layout.launchMissingApps && layout.mode == .appSpecific {
+        if shouldLaunch && layout.mode == .appSpecific {
             launchMissingApps(windows: effectiveWindows)
         }
         switch layout.mode {
@@ -251,6 +266,15 @@ final class LayoutService {
         case .template:
             return restoreTemplate(layout, windows: effectiveWindows)
         }
+    }
+
+    /// Select the best variant for the current display configuration.
+    private func resolveEffectiveVariant(for layout: WindowLayout) -> DisplayVariant? {
+        guard layout.variants.count > 1 else {
+            return layout.variants.first
+        }
+        let currentFingerprints = screenRegistry.fingerprints()
+        return Self.bestVariant(from: layout.variants, for: currentFingerprints)
     }
 
     /// Select the best variant's windows for the current display configuration.
@@ -283,7 +307,7 @@ final class LayoutService {
     }
 
     /// Score how well a variant's display fingerprints match the current displays.
-    private static func variantMatchScore(variant: DisplayVariant, currentFingerprints: [DisplayFingerprint]) -> Double {
+    static func variantMatchScore(variant: DisplayVariant, currentFingerprints: [DisplayFingerprint]) -> Double {
         guard !variant.displayFingerprints.isEmpty else { return 0 }
 
         var matches = 0

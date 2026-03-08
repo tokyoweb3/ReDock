@@ -101,13 +101,13 @@
 "layouts.addLayout" = "レイアウトを追加";
 "layouts.addFromPreset" = "プリセットから作成";
 "layouts.addFromPresetDescription" = "定義済みのウィンドウ配置から選択";
-"layouts.captureCurrentWindows" = "現在のウィンドウをキャプチャ";
+"layouts.captureCurrentWindows" = "現在のウィンドウのスナップショット";
 "layouts.captureDescription" = "現在のデスクトップのスナップショットを保存";
 "layouts.newEmpty" = "新規空レイアウト";
 "layouts.newEmptyDescription" = "空のレイアウトを作成し、後からウィンドウを追加";
 "layouts.newEmptyHint" = "エディタの＋ボタンで後からウィンドウを追加できます。";
 "layouts.create" = "作成";
-"layouts.capturedLayout" = "キャプチャしたレイアウト";
+"layouts.capturedLayout" = "スナップショットレイアウト";
 "layouts.configurePreset" = "プリセットの設定";
 "layouts.anyApp" = "任意のアプリ";
 "layouts.back" = "戻る";
@@ -136,7 +136,9 @@
 "editor.saveHelp" = "このレイアウトへの変更を保存";
 "editor.reset" = "リセット";
 "editor.resetHelp" = "変更を破棄して保存済みの状態に戻す";
-"editor.unsavedChanges" = "未保存の変更があります";
+"editor.unsavedChanges" = "未保存の変更";
+"editor.unsavedAlertMessage" = "このレイアウトに未保存の変更があります。切り替える前に保存しますか？";
+"editor.discard" = "破棄";
 "editor.noWindows" = "レイアウトにウィンドウがありません";
 "editor.addWindowsHint" = "下の＋ボタンでウィンドウを追加";
 "editor.display" = "ディスプレイ";
@@ -150,10 +152,10 @@
 "editor.appSpecific" = "アプリ固有";
 "editor.templateLabel" = "テンプレート";
 "editor.templateHint" = "アプリに関係なく、最近使用したウィンドウに位置を適用します。";
-"editor.recapture" = "再キャプチャ";
+"editor.recapture" = "スナップショットを再取得";
 "editor.recaptureHelp" = "現在のデスクトップ状態で全ウィンドウを差し替え";
-"editor.recaptureTitle" = "ウィンドウの再キャプチャ";
-"editor.recaptureDescription" = "このレイアウトの全ウィンドウを現在のデスクトップ状態で差し替えます。";
+"editor.recaptureTitle" = "スナップショットの再取得";
+"editor.recaptureDescription" = "このレイアウトの全ウィンドウを現在のデスクトップのスナップショットで差し替えます。";
 "editor.recaptureConfirm" = "%lld 個のウィンドウで差し替え";
 "editor.addWindowHelp" = "現在のデスクトップからウィンドウを追加";
 "editor.changeApp" = "割り当てアプリを変更";
@@ -220,8 +222,10 @@
 "tooltip.mode" = "レイアウト復元時にウィンドウをどう照合するかを選択します";
 
 /* Display Variants */
-"variant.add" = "現在のディスプレイ用のバリアントを追加";
-"variant.delete" = "バリアントを削除";
+"variant.profile" = "ディスプレイプロファイル";
+"variant.configured" = "✓ 設定済み";
+"variant.notConfigured" = "○ 未設定";
+"variant.clearWindows" = "ウィンドウをクリア";
 
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "現在のレイアウトを保存";

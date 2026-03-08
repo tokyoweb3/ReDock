@@ -13,13 +13,28 @@ enum LayoutMode: String, Codable, CaseIterable {
 /// display configuration (e.g. 3-monitor desk, single MacBook screen).
 struct DisplayVariant: Codable, Identifiable, Equatable {
     var id: UUID
+    var displayProfileID: UUID?
     var displayFingerprints: [DisplayFingerprint]
     var windows: [WindowSnapshot]
+    /// Whether this variant triggers auto-restore when its display config is detected.
+    var autoRestore: Bool
+    /// Whether to launch missing apps when restoring this variant.
+    var launchMissingApps: Bool
 
-    init(id: UUID = UUID(), displayFingerprints: [DisplayFingerprint], windows: [WindowSnapshot]) {
+    init(
+        id: UUID = UUID(),
+        displayProfileID: UUID? = nil,
+        displayFingerprints: [DisplayFingerprint],
+        windows: [WindowSnapshot],
+        autoRestore: Bool = false,
+        launchMissingApps: Bool = false
+    ) {
         self.id = id
+        self.displayProfileID = displayProfileID
         self.displayFingerprints = displayFingerprints
         self.windows = windows
+        self.autoRestore = autoRestore
+        self.launchMissingApps = launchMissingApps
     }
 
     /// Human-readable description of the display configuration.
@@ -37,25 +52,32 @@ struct DisplayVariant: Codable, Identifiable, Equatable {
 
 /// A saved window layout containing one or more display variants.
 struct WindowLayout: Codable, Identifiable, Equatable {
-    static let currentSchemaVersion = 3
+    static let currentSchemaVersion = 4
 
     var id: UUID
     var schemaVersion: Int
     var name: String
     var trigger: ContextTrigger?
-    var autoRestore: Bool
     var mode: LayoutMode
     var isFavorite: Bool
     /// Linked display profile ID for display-aware restore.
     var displayProfileID: UUID?
-    /// Launch apps that aren't running when restoring this layout.
-    var launchMissingApps: Bool
     var createdAt: Date
     var updatedAt: Date
     /// Display-specific window arrangements.
     var variants: [DisplayVariant]
 
-    /// Convenience accessor for the first variant's windows (backward compat).
+    /// True if any variant has auto-restore enabled.
+    var autoRestore: Bool {
+        variants.contains { $0.autoRestore }
+    }
+
+    /// True if any variant has launch-missing-apps enabled.
+    var launchMissingApps: Bool {
+        variants.contains { $0.launchMissingApps }
+    }
+
+    /// Convenience accessor for the first variant's windows.
     var windows: [WindowSnapshot] {
         get { variants.first?.windows ?? [] }
         set {
@@ -82,62 +104,17 @@ struct WindowLayout: Codable, Identifiable, Equatable {
         self.schemaVersion = Self.currentSchemaVersion
         self.name = name
         self.trigger = trigger
-        self.autoRestore = autoRestore
         self.mode = mode
         self.isFavorite = isFavorite
         self.displayProfileID = displayProfileID
-        self.launchMissingApps = launchMissingApps
         self.createdAt = Date()
         self.updatedAt = Date()
         let fingerprints = Array(Set(windows.map(\.display)))
-        self.variants = [DisplayVariant(displayFingerprints: fingerprints, windows: windows)]
-    }
-
-    // Support decoding older layouts (v2) and newer (v3+)
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = try container.decode(UUID.self, forKey: .id)
-        schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)
-        name = try container.decode(String.self, forKey: .name)
-        trigger = try container.decodeIfPresent(ContextTrigger.self, forKey: .trigger)
-        autoRestore = try container.decode(Bool.self, forKey: .autoRestore)
-        mode = try container.decodeIfPresent(LayoutMode.self, forKey: .mode) ?? .appSpecific
-        isFavorite = try container.decodeIfPresent(Bool.self, forKey: .isFavorite) ?? false
-        displayProfileID = try container.decodeIfPresent(UUID.self, forKey: .displayProfileID)
-        launchMissingApps = try container.decodeIfPresent(Bool.self, forKey: .launchMissingApps) ?? false
-        createdAt = try container.decode(Date.self, forKey: .createdAt)
-        updatedAt = try container.decode(Date.self, forKey: .updatedAt)
-
-        // v3+: decode variants directly
-        if let variants = try container.decodeIfPresent([DisplayVariant].self, forKey: .variants) {
-            self.variants = variants
-        } else {
-            // v2 migration: wrap windows array into a single default variant
-            let windows = try container.decode([WindowSnapshot].self, forKey: .windows)
-            let fingerprints = Array(Set(windows.map(\.display)))
-            self.variants = [DisplayVariant(displayFingerprints: fingerprints, windows: windows)]
-        }
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(id, forKey: .id)
-        try container.encode(Self.currentSchemaVersion, forKey: .schemaVersion)
-        try container.encode(name, forKey: .name)
-        try container.encodeIfPresent(trigger, forKey: .trigger)
-        try container.encode(autoRestore, forKey: .autoRestore)
-        try container.encode(mode, forKey: .mode)
-        try container.encode(isFavorite, forKey: .isFavorite)
-        try container.encodeIfPresent(displayProfileID, forKey: .displayProfileID)
-        try container.encode(launchMissingApps, forKey: .launchMissingApps)
-        try container.encode(createdAt, forKey: .createdAt)
-        try container.encode(updatedAt, forKey: .updatedAt)
-        try container.encode(variants, forKey: .variants)
-    }
-
-    enum CodingKeys: String, CodingKey {
-        case id, schemaVersion, name, trigger, autoRestore, mode, isFavorite
-        case displayProfileID, launchMissingApps, createdAt, updatedAt
-        case windows, variants
+        self.variants = [DisplayVariant(
+            displayFingerprints: fingerprints,
+            windows: windows,
+            autoRestore: autoRestore,
+            launchMissingApps: launchMissingApps
+        )]
     }
 }

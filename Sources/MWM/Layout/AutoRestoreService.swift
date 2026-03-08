@@ -14,9 +14,6 @@ final class AutoRestoreService {
     private var isObserving = false
     private var isRestoring = false
 
-    /// Whether to auto-launch missing apps during restore.
-    var autoLaunchApps: Bool = false
-
     init(
         layoutService: LayoutService,
         contextResolver: ContextResolver,
@@ -79,37 +76,68 @@ final class AutoRestoreService {
         }
     }
 
+    /// Find all (layout, variant) pairs with autoRestore enabled that match a given display profile.
+    static func findVariantConflicts(
+        for layout: WindowLayout,
+        variantIndex: Int,
+        allLayouts: [WindowLayout]
+    ) -> [(layoutName: String, variantDescription: String)] {
+        guard variantIndex < layout.variants.count else { return [] }
+        let variant = layout.variants[variantIndex]
+        guard variant.autoRestore, let profileID = variant.displayProfileID else { return [] }
+
+        var conflicts: [(String, String)] = []
+        for other in allLayouts {
+            for otherVariant in other.variants {
+                // Skip self
+                if otherVariant.id == variant.id { continue }
+                guard otherVariant.autoRestore,
+                      otherVariant.displayProfileID == profileID else { continue }
+                conflicts.append((other.name, otherVariant.displayDescription))
+            }
+        }
+        return conflicts
+    }
+
     private func evaluateTriggers() {
-        // Guard against concurrent restore operations
         guard !isRestoring else {
             Self.logger.debug("Skipping trigger evaluation: restore already in progress")
             return
         }
 
-        let context = contextResolver.resolve()
+        let currentFingerprints = contextResolver.resolve().displayFingerprints
         let layouts = layoutService.loadAll()
 
-        let matching = layouts.filter { layout in
-            guard layout.autoRestore, let trigger = layout.trigger else { return false }
-            return trigger.matches(context)
+        // Find the best matching layout+variant pair with autoRestore enabled
+        var bestMatch: (layout: WindowLayout, variant: DisplayVariant, score: Double)?
+
+        for layout in layouts {
+            for variant in layout.variants {
+                guard variant.autoRestore, !variant.displayFingerprints.isEmpty else { continue }
+                let score = LayoutService.variantMatchScore(
+                    variant: variant,
+                    currentFingerprints: Array(currentFingerprints)
+                )
+                if score > 0, score > (bestMatch?.score ?? -1) {
+                    bestMatch = (layout, variant, score)
+                }
+            }
         }
 
-        if matching.count > 1 {
-            let names = matching.map(\.name).joined(separator: ", ")
-            Self.logger.warning("Multiple auto-restore layouts match: \(names). Using most recently updated.")
-        }
-
-        guard let layout = matching.first, let trigger = layout.trigger else {
-            Self.logger.debug("No matching auto-restore layout for current context")
+        guard let match = bestMatch else {
+            Self.logger.debug("No matching auto-restore variant for current display config")
             return
         }
 
-        Self.logger.info("Auto-restoring layout '\(layout.name)' (trigger: \(trigger.displayDescription))")
+        Self.logger.info("Auto-restoring layout '\(match.layout.name)' variant '\(match.variant.displayDescription)'")
         isRestoring = true
 
-        if autoLaunchApps {
+        if match.variant.launchMissingApps {
             Task {
-                let launchResult = await appLaunchService.launchMissingApps(for: layout)
+                let launchResult = await appLaunchService.launchMissingApps(
+                    for: match.layout,
+                    windows: match.variant.windows
+                )
                 Self.logger.info("App launch: \(launchResult.summary)")
 
                 if !launchResult.launched.isEmpty {
@@ -117,14 +145,14 @@ final class AutoRestoreService {
                 }
 
                 await MainActor.run {
-                    let result = layoutService.restoreLayout(layout)
-                    diagnosticsService.record(result: result, triggerSource: "auto-\(trigger.displayDescription)")
+                    let result = layoutService.restoreLayout(match.layout, variantWindows: match.variant.windows)
+                    diagnosticsService.record(result: result, triggerSource: "auto-\(match.variant.displayDescription)")
                     isRestoring = false
                 }
             }
         } else {
-            let result = layoutService.restoreLayout(layout)
-            diagnosticsService.record(result: result, triggerSource: "auto-\(trigger.displayDescription)")
+            let result = layoutService.restoreLayout(match.layout, variantWindows: match.variant.windows)
+            diagnosticsService.record(result: result, triggerSource: "auto-\(match.variant.displayDescription)")
             isRestoring = false
         }
     }

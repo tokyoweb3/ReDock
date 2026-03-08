@@ -111,68 +111,9 @@ struct DisplayVariantTests {
         #expect(variant.displayDescription == "1 display(s)")
     }
 
-    // MARK: - Codable: v2 Migration
+    // MARK: - Codable Round-trip
 
-    @Test("v2 JSON with windows migrates to single variant")
-    func v2Migration() throws {
-        let json = """
-        {
-            "id": "12345678-1234-1234-1234-123456789012",
-            "schemaVersion": 2,
-            "name": "V2 Layout",
-            "autoRestore": false,
-            "createdAt": "2025-01-01T00:00:00Z",
-            "updatedAt": "2025-01-01T00:00:00Z",
-            "windows": [
-                {
-                    "id": "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA",
-                    "appBundleID": "com.apple.finder",
-                    "appName": "Finder",
-                    "role": "AXWindow",
-                    "subrole": "AXStandardWindow",
-                    "relativeFrame": {"x": 0, "y": 0, "width": 0.5, "height": 1},
-                    "display": {"displayID": 1, "localizedName": "Main", "bounds": [[0,0],[1920,1080]]},
-                    "isMinimized": false,
-                    "wasFullscreen": false
-                }
-            ]
-        }
-        """
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        let layout = try decoder.decode(WindowLayout.self, from: Data(json.utf8))
-
-        #expect(layout.variants.count == 1)
-        #expect(layout.windows.count == 1)
-        #expect(layout.windows[0].appBundleID == "com.apple.finder")
-        #expect(layout.name == "V2 Layout")
-    }
-
-    @Test("v2 JSON without mode field defaults to appSpecific")
-    func v2MigrationDefaultMode() throws {
-        let json = """
-        {
-            "id": "12345678-1234-1234-1234-123456789012",
-            "schemaVersion": 2,
-            "name": "Old Layout",
-            "autoRestore": false,
-            "createdAt": "2025-01-01T00:00:00Z",
-            "updatedAt": "2025-01-01T00:00:00Z",
-            "windows": []
-        }
-        """
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        let layout = try decoder.decode(WindowLayout.self, from: Data(json.utf8))
-
-        #expect(layout.mode == .appSpecific)
-        #expect(layout.variants.count == 1)
-        #expect(layout.launchMissingApps == false)
-    }
-
-    // MARK: - Codable: v3 Round-trip
-
-    @Test("v3 encode/decode round-trip preserves variants")
+    @Test("Encode/decode round-trip preserves variants")
     func v3RoundTrip() throws {
         let variant1 = DisplayVariant(
             displayFingerprints: [mainDisplay],
@@ -204,8 +145,8 @@ struct DisplayVariantTests {
         #expect(decoded.variants[1].displayFingerprints.count == 2)
     }
 
-    @Test("v3 JSON does not include top-level windows key")
-    func v3NoTopLevelWindows() throws {
+    @Test("Encoded JSON does not include top-level windows key")
+    func noTopLevelWindows() throws {
         let layout = WindowLayout(name: "V3", windows: [makeSnapshot()])
 
         let encoder = JSONEncoder()
@@ -418,9 +359,9 @@ struct DisplayVariantTests {
         #expect(layout1 == layout2)
     }
 
-    @Test("Schema version is 3")
+    @Test("Schema version is 4")
     func schemaVersion() {
-        #expect(WindowLayout.currentSchemaVersion == 3)
+        #expect(WindowLayout.currentSchemaVersion == 4)
     }
 
     @Test("Layout init deduplicates display fingerprints across windows")

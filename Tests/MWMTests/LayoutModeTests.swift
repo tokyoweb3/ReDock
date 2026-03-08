@@ -41,31 +41,9 @@ struct LayoutModeTests {
         #expect(decoded.mode == .template)
     }
 
-    @Test("V1 layout without mode field decodes as appSpecific")
-    func v1Compatibility() throws {
-        // Simulate a v1 JSON without the "mode" field
-        let json = """
-        {
-            "id": "12345678-1234-1234-1234-123456789012",
-            "schemaVersion": 1,
-            "name": "V1 Layout",
-            "autoRestore": false,
-            "createdAt": "2025-01-01T00:00:00Z",
-            "updatedAt": "2025-01-01T00:00:00Z",
-            "windows": []
-        }
-        """
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        let layout = try decoder.decode(WindowLayout.self, from: Data(json.utf8))
-
-        #expect(layout.mode == .appSpecific)
-        #expect(layout.name == "V1 Layout")
-    }
-
-    @Test("Schema version is 3")
+    @Test("Schema version is 4")
     func schemaVersion() {
-        #expect(WindowLayout.currentSchemaVersion == 3)
+        #expect(WindowLayout.currentSchemaVersion == 4)
     }
 
     @Test("Layout store round-trip with template mode")
