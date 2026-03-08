@@ -617,6 +617,7 @@ struct LayoutEditorView: View {
         }
         .onAppear {
             loadProfilesAndMigrate()
+            selectInitialProfile()
             // Persist migration to prevent false change detection
             if hasChanges { layout = draft }
             hasUnsavedChanges = false
@@ -628,6 +629,10 @@ struct LayoutEditorView: View {
                 activeVariantIndex = 0
             }
             loadProfilesAndMigrate()
+            // Keep selectedProfileID in sync with the current activeVariantIndex
+            if !draft.variants.isEmpty {
+                selectedProfileID = draft.variants[safeIndex].displayProfileID
+            }
             // Persist migration to prevent false change detection
             if hasChanges { layout = draft }
             hasUnsavedChanges = false
@@ -717,8 +722,10 @@ struct LayoutEditorView: View {
                 }
             }
         }
+    }
 
-        // Auto-select profile
+    /// Select initial profile on first appearance only.
+    private func selectInitialProfile() {
         if let firstVariant = draft.variants.first, let pid = firstVariant.displayProfileID {
             selectedProfileID = pid
         } else if !draft.variants.isEmpty, let firstProfile = profiles.first {

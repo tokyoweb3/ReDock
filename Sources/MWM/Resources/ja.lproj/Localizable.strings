@@ -82,7 +82,8 @@
 
 /* Settings - Layouts */
 "layouts.windowCount" = "%lld 個のウィンドウ";
-"layouts.template" = "テンプレート";
+"layouts.template" = "フリー配置";
+"layouts.appSpecificBadge" = "アプリ配置";
 "layouts.deleteSelected" = "選択したレイアウトを削除";
 "layouts.export" = "レイアウトを書き出す";
 "layouts.import" = "レイアウトを読み込む";
@@ -120,9 +121,9 @@
 "saveLayout.name" = "名前:";
 "saveLayout.namePlaceholder" = "マイレイアウト";
 "saveLayout.mode" = "モード:";
-"saveLayout.appSpecific" = "アプリ固有";
-"saveLayout.template" = "テンプレート (任意のウィンドウ)";
-"saveLayout.templateDescription" = "テンプレートモードは、アプリに関係なく最近使用したウィンドウに位置を適用します。";
+"saveLayout.appSpecific" = "アプリ配置";
+"saveLayout.template" = "フリー配置 (任意のウィンドウ)";
+"saveLayout.templateDescription" = "フリー配置モードは、アプリに関係なく最近使用したウィンドウに位置を適用します。";
 "saveLayout.windows" = "ウィンドウ (%lld/%lld)";
 "saveLayout.selectAll" = "すべて選択";
 "saveLayout.deselectAll" = "すべて解除";
@@ -149,8 +150,8 @@
 "editor.created" = "作成日";
 "editor.modeLabel" = "モード";
 "editor.trigger" = "トリガー";
-"editor.appSpecific" = "アプリ固有";
-"editor.templateLabel" = "テンプレート";
+"editor.appSpecific" = "アプリ配置";
+"editor.templateLabel" = "フリー配置";
 "editor.templateHint" = "アプリに関係なく、最近使用したウィンドウに位置を適用します。";
 "editor.recapture" = "スナップショットを再取得";
 "editor.recaptureHelp" = "現在のデスクトップ状態で全ウィンドウを差し替え";
@@ -220,6 +221,8 @@
 "tooltip.autoRestore" = "紐付けたディスプレイ構成が検出されると、このレイアウトを自動的に復元します（例: モニターの接続・切断時）";
 "tooltip.appSpecific" = "アプリごとにウィンドウを照合 — 保存時と同じアプリのウィンドウに復元します";
 "tooltip.template" = "アプリを無視 — 現在最前面にあるウィンドウに保存した位置を適用します";
+"tooltip.appSpecificBadge" = "アプリごとにウィンドウを照合して復元します";
+"tooltip.templateBadge" = "アプリに関係なく位置だけを適用します";
 "tooltip.mode" = "レイアウト復元時にウィンドウをどう照合するかを選択します";
 
 /* Display Variants */

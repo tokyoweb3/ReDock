@@ -512,15 +512,14 @@ struct LayoutsSettingsView: View {
                     Text(L10n.string("layouts.windowCount", layout.windows.count))
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
-                    if layout.mode == .template {
-                        Text(L10n.string("layouts.template"))
-                            .font(.system(size: 9, weight: .medium))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 4)
-                            .padding(.vertical, 1)
-                            .background(Color.orange.opacity(0.7))
-                            .clipShape(Capsule())
-                    }
+                    Text(L10n.string(layout.mode == .appSpecific ? "layouts.appSpecificBadge" : "layouts.template"))
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 1)
+                        .background(layout.mode == .appSpecific ? Color.blue.opacity(0.7) : Color.orange.opacity(0.7))
+                        .clipShape(Capsule())
+                        .help(L10n.string(layout.mode == .appSpecific ? "tooltip.appSpecificBadge" : "tooltip.templateBadge"))
                 }
             }
             Spacer()

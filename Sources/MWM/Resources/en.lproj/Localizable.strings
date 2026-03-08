@@ -82,7 +82,8 @@
 
 /* Settings - Layouts */
 "layouts.windowCount" = "%lld windows";
-"layouts.template" = "Template";
+"layouts.template" = "Free Layout";
+"layouts.appSpecificBadge" = "App Layout";
 "layouts.deleteSelected" = "Delete selected layout";
 "layouts.export" = "Export layouts";
 "layouts.import" = "Import layouts";
@@ -120,9 +121,9 @@
 "saveLayout.name" = "Name:";
 "saveLayout.namePlaceholder" = "My Layout";
 "saveLayout.mode" = "Mode:";
-"saveLayout.appSpecific" = "App-Specific";
-"saveLayout.template" = "Template (Any Window)";
-"saveLayout.templateDescription" = "Template mode applies positions to the most recently used windows, regardless of app.";
+"saveLayout.appSpecific" = "App Layout";
+"saveLayout.template" = "Free Layout (Any Window)";
+"saveLayout.templateDescription" = "Free Layout mode applies positions to the most recently used windows, regardless of app.";
 "saveLayout.windows" = "Windows (%lld/%lld)";
 "saveLayout.selectAll" = "Select All";
 "saveLayout.deselectAll" = "Deselect All";
@@ -149,8 +150,8 @@
 "editor.created" = "Created";
 "editor.modeLabel" = "Mode";
 "editor.trigger" = "Trigger";
-"editor.appSpecific" = "App-Specific";
-"editor.templateLabel" = "Template";
+"editor.appSpecific" = "App Layout";
+"editor.templateLabel" = "Free Layout";
 "editor.templateHint" = "Applies to the most recently used windows, regardless of app.";
 "editor.recapture" = "Retake Snapshot";
 "editor.recaptureHelp" = "Replace all windows with a fresh snapshot of the current desktop";
@@ -220,6 +221,8 @@
 "tooltip.autoRestore" = "Automatically restore this layout when the linked display configuration is detected (e.g. connecting/disconnecting a monitor)";
 "tooltip.appSpecific" = "Match windows by app — each window restores to the same app it was saved from";
 "tooltip.template" = "Ignore apps — apply saved positions to whichever windows are currently in front";
+"tooltip.appSpecificBadge" = "Matches windows by app for restoration";
+"tooltip.templateBadge" = "Applies positions regardless of app";
 "tooltip.mode" = "Choose how windows are matched when restoring this layout";
 
 /* Display Variants */
