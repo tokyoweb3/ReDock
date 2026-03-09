@@ -124,7 +124,10 @@ final class HotkeyManager {
 
         for (name, action) in bindings {
             KeyboardShortcuts.onKeyUp(for: name) { [weak self] in
-                self?.dispatcher.dispatch(action)
+                guard let self else { return }
+                guard let resolvedAction = self.dispatcher.dispatch(action) else { return }
+                guard ActionCycle.sequence(for: action).count > 1 else { return }
+                ActionOverlayWindow.showForShortcut(name: name, action: resolvedAction)
             }
         }
 
@@ -160,5 +163,9 @@ final class HotkeyManager {
 
         let shortcutName = workspaceSlotNames[slotIndex - 5]
         ActionOverlayWindow.showForShortcut(name: shortcutName, title: layout.name)
+    }
+
+    static func displayTitle(for action: WindowAction) -> String {
+        action.displayName
     }
 }

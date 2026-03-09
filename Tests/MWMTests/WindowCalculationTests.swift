@@ -48,6 +48,24 @@ struct WindowCalculationTests {
         #expect(result.height == 527)
     }
 
+    @Test("Left two-thirds fills the left 66 percent")
+    func leftTwoThirds() {
+        let result = FractionCalculation().calculate(params(action: .leftTwoThirds))
+        #expect(result.origin.x == 0)
+        #expect(result.origin.y == 25)
+        #expect(result.width == 1280)
+        #expect(result.height == 1055)
+    }
+
+    @Test("Bottom third fills the lower 33 percent")
+    func bottomThird() {
+        let result = FractionCalculation().calculate(params(action: .bottomThird))
+        #expect(result.origin.x == 0)
+        #expect(result.width == 1920)
+        #expect(result.height == 351)
+        #expect(result.origin.y == 729)
+    }
+
     // MARK: - Quarter calculations
 
     @Test("Top left fills upper-left quarter")
@@ -136,6 +154,7 @@ struct WindowCalculationTests {
     @Test("Factory returns correct calculation for each action")
     func factoryMapping() {
         #expect(CalculationFactory.calculation(for: .leftHalf) is HalfCalculation)
+        #expect(CalculationFactory.calculation(for: .leftTwoThirds) is FractionCalculation)
         #expect(CalculationFactory.calculation(for: .topLeft) is QuarterCalculation)
         #expect(CalculationFactory.calculation(for: .center) is CenterCalculation)
         #expect(CalculationFactory.calculation(for: .maximize) is MaximizeCalculation)

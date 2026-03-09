@@ -53,12 +53,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         services.hotkeyManager.registerAll()
         services.layoutShortcutManager.registerAll(layouts: layouts)
         services.autoRestoreService.startObserving()
+        services.windowDragMonitor.start()
 
         // Auto-detect current display profile
         let fingerprints = services.screenRegistry.fingerprints()
         _ = services.displayProfileStore.findOrCreate(fingerprints: fingerprints)
 
-        Self.logger.info("Ready: hotkeys registered, auto-restore active")
+        Self.logger.info("Ready: hotkeys registered, drag monitor active, auto-restore active")
     }
 
     static let statusBar = StatusBarController(services: AppDelegate.services)

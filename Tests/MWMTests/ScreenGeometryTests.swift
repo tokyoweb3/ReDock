@@ -45,4 +45,12 @@ struct ScreenGeometryTests {
         #expect(converted.width == rect.width)
         #expect(converted.height == rect.height)
     }
+
+    @Test("Global mouse points convert into CG-space consistently")
+    func mousePointConversion() {
+        let point = CGPoint(x: 2400, y: 300)
+        let converted = ScreenGeometry.globalMousePointToCG(point, mainScreenHeight: 1440)
+        #expect(converted.x == 2400)
+        #expect(converted.y == 1140)
+    }
 }

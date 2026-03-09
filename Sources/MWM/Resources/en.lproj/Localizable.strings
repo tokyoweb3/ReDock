@@ -3,6 +3,15 @@
 "menu.rightHalf" = "Right Half";
 "menu.topHalf" = "Top Half";
 "menu.bottomHalf" = "Bottom Half";
+"menu.leftThird" = "Left Third";
+"menu.leftTwoThirds" = "Left Two Thirds";
+"menu.rightThird" = "Right Third";
+"menu.rightTwoThirds" = "Right Two Thirds";
+"menu.topThird" = "Top Third";
+"menu.topTwoThirds" = "Top Two Thirds";
+"menu.bottomThird" = "Bottom Third";
+"menu.bottomTwoThirds" = "Bottom Two Thirds";
+"dropZone.activationBand" = "Drag here for snap targets";
 
 /* Menu - Quarters */
 "menu.topLeft" = "Top Left";
@@ -71,6 +80,9 @@
 /* Settings - General */
 "general.startup" = "Startup";
 "general.launchAtLogin" = "Launch at Login";
+"general.windowManagement" = "Window Management";
+"general.repeatPressCycleTimeout" = "Repeat-press cycle timeout";
+"general.repeatPressCycleTimeoutHelp" = "Used for half-screen repeat cycling.";
 "general.about" = "About";
 "general.version" = "Version";
 "general.build" = "Build";

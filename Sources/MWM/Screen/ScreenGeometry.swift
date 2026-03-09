@@ -8,6 +8,11 @@ import AppKit
 ///
 /// MWM uses CG global coordinates internally. All conversion goes through this type.
 enum ScreenGeometry {
+    static func globalMousePointToCG(_ point: CGPoint, mainScreenHeight: CGFloat? = nil) -> CGPoint {
+        let height = mainScreenHeight ?? self.mainScreenHeight
+        return CGPoint(x: point.x, y: height - point.y)
+    }
+
     /// Convert an AppKit `visibleFrame` to CG global coordinates.
     /// The visibleFrame excludes the menu bar and Dock.
     static func visibleFrameInCG(for screen: NSScreen) -> CGRect {

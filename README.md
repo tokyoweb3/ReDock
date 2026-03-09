@@ -56,6 +56,13 @@ Use keyboard shortcuts to snap the focused window:
 
 All shortcuts are customizable in **Settings > Shortcuts**.
 
+**Repeat-press cycling:**
+- Repeating the same half shortcut within 1 second cycles the placement for that edge
+- Left / Right / Top / Bottom use `1/2 → 2/3 → 1/3`
+- Pressing a different action, or waiting longer than the timeout, resets the cycle back to `1/2`
+- The HUD shows the resolved placement name for these cycled hotkeys
+- The timeout is adjustable in **Settings > General**
+
 ### Layout Save & Restore
 
 Save the current arrangement of all windows and restore it later.
@@ -96,6 +103,13 @@ Save the current arrangement of all windows and restore it later.
 - Mark a layout as a favorite in **Settings > Layouts** to pin it directly in the menu bar
 - Favorite layouts can keep their own dedicated shortcuts in addition to workspace slot assignments
 - Shortcut conflicts are auto-resolved in the UI by clearing the older binding and showing a notice
+
+### Drag Drop Zones
+
+- Dragging a window into the top-edge activation band shows runtime drop zones
+- Basic snap targets are always available in the overlay
+- The current implementation is intentionally limited to built-in snap targets only
+- While dragging, the active display shows a visible top-edge activation band before snap cards appear
 
 ### Display Variants & Profiles
 

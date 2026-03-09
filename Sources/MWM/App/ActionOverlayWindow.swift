@@ -18,6 +18,10 @@ final class ActionOverlayWindow {
         shared.show(title: title, subtitle: subtitle)
     }
 
+    static func showForShortcut(name: KeyboardShortcuts.Name, action: WindowAction) {
+        showForShortcut(name: name, title: action.displayName)
+    }
+
     /// Show the overlay with the given action name and optional shortcut description.
     func show(title: String, subtitle: String? = nil) {
         DispatchQueue.main.async { [weak self] in

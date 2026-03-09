@@ -3,6 +3,15 @@
 "menu.rightHalf" = "右半分";
 "menu.topHalf" = "上半分";
 "menu.bottomHalf" = "下半分";
+"menu.leftThird" = "左1/3";
+"menu.leftTwoThirds" = "左2/3";
+"menu.rightThird" = "右1/3";
+"menu.rightTwoThirds" = "右2/3";
+"menu.topThird" = "上1/3";
+"menu.topTwoThirds" = "上2/3";
+"menu.bottomThird" = "下1/3";
+"menu.bottomTwoThirds" = "下2/3";
+"dropZone.activationBand" = "ここまでドラッグするとスナップ候補を表示";
 
 /* Menu - Quarters */
 "menu.topLeft" = "左上";
@@ -71,6 +80,9 @@
 /* Settings - General */
 "general.startup" = "起動";
 "general.launchAtLogin" = "ログイン時に起動";
+"general.windowManagement" = "ウィンドウ管理";
+"general.repeatPressCycleTimeout" = "連打切替の待ち時間";
+"general.repeatPressCycleTimeoutHelp" = "半分系ショートカットの連打切替に使われます。";
 "general.about" = "情報";
 "general.version" = "バージョン";
 "general.build" = "ビルド";

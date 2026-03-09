@@ -1259,6 +1259,7 @@ struct SlotAssignment: Identifiable {
 struct GeneralSettingsView: View {
     @State private var launchAtLogin = LaunchAtLogin.isEnabled
     @ObservedObject private var localization = LocalizationManager.shared
+    @ObservedObject private var appSettings = AppDelegate.services.appSettings
 
     var body: some View {
         Form {
@@ -1285,6 +1286,35 @@ struct GeneralSettingsView: View {
                     .onChange(of: launchAtLogin) { _, newValue in
                         LaunchAtLogin.setEnabled(newValue)
                     }
+            }
+
+            Section(L10n.string("general.windowManagement")) {
+                VStack(alignment: .leading, spacing: 8) {
+                    LabeledContent(L10n.string("general.repeatPressCycleTimeout")) {
+                        HStack(spacing: 12) {
+                            Text(String(format: "%.1fs", appSettings.actionCycleTimeout))
+                                .foregroundStyle(.secondary)
+                                .monospacedDigit()
+                                .frame(width: 52, alignment: .trailing)
+
+                            Stepper(
+                                "",
+                                value: Binding(
+                                    get: { appSettings.actionCycleTimeout },
+                                    set: { appSettings.actionCycleTimeout = $0 }
+                                ),
+                                in: AppSettings.actionCycleTimeoutRange,
+                                step: 0.1
+                            )
+                            .labelsHidden()
+                            .fixedSize()
+                        }
+                    }
+
+                    Text(L10n.string("general.repeatPressCycleTimeoutHelp"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Section(L10n.string("general.about")) {
