@@ -1,0 +1,235 @@
+/* Menu - Window Halves */
+"menu.leftHalf" = "Mitad izquierda";
+"menu.rightHalf" = "Mitad derecha";
+"menu.topHalf" = "Mitad superior";
+"menu.bottomHalf" = "Mitad inferior";
+
+/* Menu - Quarters */
+"menu.topLeft" = "Superior izquierda";
+"menu.topRight" = "Superior derecha";
+"menu.bottomLeft" = "Inferior izquierda";
+"menu.bottomRight" = "Inferior derecha";
+
+/* Menu - Sizing */
+"menu.center" = "Centrar";
+"menu.maximize" = "Maximizar";
+"menu.fullScreen" = "Pantalla completa";
+"menu.makeLarger" = "Ampliar";
+"menu.makeSmaller" = "Reducir";
+
+/* Menu - Display */
+"menu.nextDisplay" = "Pantalla siguiente";
+"menu.previousDisplay" = "Pantalla anterior";
+
+/* Menu - Zen */
+"menu.focusMode" = "Modo Zen";
+"menu.exitFocusMode" = "Salir del modo Zen";
+
+/* Menu - Layout */
+"menu.saveLayout" = "Guardar disposición...";
+"menu.restoreLayout" = "Restaurar disposición";
+"menu.restoreWithLaunch" = "Restaurar (abrir apps)";
+"menu.exportLayouts" = "Exportar disposiciones...";
+"menu.importLayouts" = "Importar disposiciones...";
+"menu.recentRestores" = "Restauraciones recientes";
+
+/* Menu - App */
+"menu.settings" = "Ajustes...";
+"menu.quit" = "Salir de ReDock";
+
+/* Alerts */
+"alert.accessibilityRequired.title" = "Se requiere permiso de accesibilidad";
+"alert.accessibilityRequired.message" = "ReDock necesita permiso de accesibilidad para leer las posiciones de las ventanas. Concédelo en Ajustes del Sistema e inténtalo de nuevo.\n\nDespués de recompilar, puede que necesites desactivar y activar el permiso.";
+"alert.openSystemSettings" = "Abrir Ajustes del Sistema";
+"alert.cancel" = "Cancelar";
+"alert.ok" = "Aceptar";
+
+"alert.noWindowsFound.title" = "No se encontraron ventanas";
+"alert.noWindowsFound.message" = "No se detectaron ventanas. Esto puede ocurrir si:\n\n• El permiso de accesibilidad se cambió recientemente — intenta desactivarlo y activarlo\n• No hay apps con ventanas estándar abiertas";
+
+"alert.importComplete.title" = "Importación completada";
+"alert.importComplete.message" = "Se importaron %lld disposición(es).";
+"alert.importComplete.warnings" = "\n\nAdvertencias:\n%@";
+
+/* File Dialogs */
+"dialog.exportLayouts" = "Exportar disposiciones";
+"dialog.importLayouts" = "Importar disposiciones";
+
+/* Settings Tabs */
+"settings.shortcuts" = "Atajos";
+"settings.layouts" = "Disposiciones";
+"settings.general" = "General";
+
+/* Settings - Shortcuts Sections */
+"shortcuts.halves" = "Mitades";
+"shortcuts.quarters" = "Cuartos";
+"shortcuts.sizing" = "Tamaño";
+"shortcuts.display" = "Pantalla";
+"shortcuts.focus" = "Zen";
+"shortcuts.slotEmpty" = "Ranura %lld (vacia)";
+
+/* Settings - General */
+"general.startup" = "Inicio";
+"general.launchAtLogin" = "Abrir al iniciar sesión";
+"general.about" = "Acerca de";
+"general.version" = "Versión";
+"general.build" = "Compilación";
+"general.language" = "Idioma";
+
+/* Language Options */
+"language.english" = "English";
+"language.japanese" = "日本語";
+
+/* Settings - Layouts */
+"layouts.windowCount" = "%lld ventanas";
+"layouts.template" = "Plantilla";
+"layouts.deleteSelected" = "Eliminar disposición seleccionada";
+"layouts.export" = "Exportar disposiciones";
+"layouts.import" = "Importar disposiciones";
+"layouts.selectToEdit" = "Selecciona una disposición para editar";
+"layouts.autoRestoreEnabled" = "Restauración automática activada";
+"layouts.autoRestore" = "Restauración automática";
+"layouts.launchApps" = "Abrir apps si no están en ejecución";
+"layouts.launchAppsHelp" = "Abrir automáticamente las apps que forman parte de esta disposición pero que no están abiertas actualmente";
+"layouts.workspaceSlot" = "Espacio de trabajo %lld";
+"layouts.restoreNow" = "Restaurar ahora";
+"layouts.conflictsWith" = "Conflicto con: %@";
+"layouts.shortcut" = "Atajo";
+"layouts.favorite" = "Agregar a favoritos";
+"layouts.unfavorite" = "Quitar de favoritos";
+"layouts.cannotDeleteFavorite" = "No se puede eliminar una disposicion favorita";
+"layouts.addLayout" = "Agregar disposición";
+"layouts.addFromPreset" = "Desde preajuste";
+"layouts.addFromPresetDescription" = "Elige una disposición de ventanas predefinida";
+"layouts.captureCurrentWindows" = "Capturar ventanas actuales";
+"layouts.captureDescription" = "Guardar una instantánea de tu escritorio actual";
+"layouts.newEmpty" = "Nueva disposición vacía";
+"layouts.newEmptyDescription" = "Comienza con una disposición en blanco y agrega ventanas manualmente";
+"layouts.newEmptyHint" = "Puedes agregar ventanas más tarde usando el botón + en el editor.";
+"layouts.create" = "Crear";
+"layouts.capturedLayout" = "Disposicion capturada";
+"layouts.configurePreset" = "Configurar preajuste";
+"layouts.anyApp" = "Cualquier app";
+"layouts.back" = "Atras";
+"layouts.shortcutConflict" = "Este atajo ya esta asignado a: %@";
+"layouts.shortcutReplaceMessage" = "Desea reemplazar el atajo existente? Se eliminara la asignacion anterior.";
+"layouts.shortcutReplace" = "Reemplazar";
+
+/* Save Layout Dialog */
+"saveLayout.title" = "Guardar disposición";
+"saveLayout.name" = "Nombre:";
+"saveLayout.namePlaceholder" = "Mi disposición";
+"saveLayout.mode" = "Modo:";
+"saveLayout.appSpecific" = "Específico de app";
+"saveLayout.template" = "Plantilla (cualquier ventana)";
+"saveLayout.templateDescription" = "El modo plantilla aplica posiciones a las ventanas más recientes, sin importar la app.";
+"saveLayout.windows" = "Ventanas (%lld/%lld)";
+"saveLayout.selectAll" = "Seleccionar todo";
+"saveLayout.deselectAll" = "Deseleccionar todo";
+"saveLayout.save" = "Guardar";
+
+/* Layout Editor */
+"editor.save" = "Guardar";
+"editor.saveHelp" = "Guardar cambios en esta disposición";
+"editor.reset" = "Restablecer";
+"editor.resetHelp" = "Descartar cambios y volver al estado guardado";
+"editor.unsavedChanges" = "Cambios sin guardar";
+"editor.unsavedAlertMessage" = "Este diseño tiene cambios sin guardar. ¿Desea guardarlos antes de cambiar?";
+"editor.discard" = "Descartar";
+"editor.noWindows" = "No hay ventanas en la disposición";
+"editor.addWindowsHint" = "Añade ventanas con el botón + de abajo";
+"editor.display" = "Pantalla";
+"editor.snap" = "Ajustar:";
+"editor.name" = "Nombre";
+"editor.layoutName" = "Nombre de la disposición";
+"editor.windowsLabel" = "Ventanas";
+"editor.created" = "Creado";
+"editor.modeLabel" = "Modo";
+"editor.trigger" = "Disparador";
+"editor.appSpecific" = "Específico de app";
+"editor.templateLabel" = "Plantilla";
+"editor.templateHint" = "Aplica posiciones a las ventanas más recientes, sin importar la app.";
+"editor.recapture" = "Recapturar";
+"editor.recaptureHelp" = "Reemplazar todas las ventanas con una captura nueva del escritorio actual";
+"editor.recaptureTitle" = "Recapturar ventanas";
+"editor.recaptureDescription" = "Reemplazar todas las ventanas de esta disposición con el estado actual del escritorio.";
+"editor.recaptureConfirm" = "Reemplazar con %lld ventanas";
+"editor.addWindowHelp" = "Añadir ventanas del escritorio actual";
+"editor.changeApp" = "Cambiar app asignada";
+"editor.removeFromLayout" = "Eliminar de la disposición";
+
+/* Add Window Sheet */
+"addWindow.title" = "Añadir ventanas a la disposición";
+"addWindow.position" = "Posición:";
+"addWindow.currentPosition" = "Posición actual";
+"addWindow.cancel" = "Cancelar";
+"addWindow.add" = "Añadir";
+"addWindow.addCount" = "Añadir %lld ventanas";
+"addWindow.windowCount" = "%lld / %lld seleccionadas";
+
+/* Change App Sheet */
+"changeApp.title" = "Cambiar app";
+"changeApp.current" = "Actual: %@";
+"changeApp.change" = "Cambiar";
+
+/* Position Presets */
+"preset.leftHalf" = "Mitad izquierda";
+"preset.rightHalf" = "Mitad derecha";
+"preset.topHalf" = "Mitad superior";
+"preset.bottomHalf" = "Mitad inferior";
+"preset.topLeft" = "Superior izquierda";
+"preset.topRight" = "Superior derecha";
+"preset.bottomLeft" = "Inferior izquierda";
+"preset.bottomRight" = "Inferior derecha";
+"preset.maximize" = "Maximizar";
+"preset.center" = "Centrar (60%)";
+
+/* Window Title */
+"window.reDockSettings" = "Ajustes de ReDock";
+"window.saveLayout" = "Guardar disposición";
+
+/* Workspaces */
+"menu.workspaces" = "Espacios de trabajo";
+"shortcuts.workspaces" = "Espacios de trabajo";
+"workspace.coding" = "Programación";
+"workspace.research" = "Investigación";
+"workspace.review" = "Revisión";
+"workspace.meeting" = "Reunión";
+"workspace.writing" = "Escritura + Zen";
+
+/* Display Profile */
+"displayProfile.title" = "Perfiles de pantalla";
+"displayProfile.current" = "Pantallas actuales";
+"displayProfile.displayCount" = "%lld pantalla(s)";
+"displayProfile.updateTrigger" = "Recapturar pantallas";
+"displayProfile.updateTriggerHelp" = "Actualizar el disparador de restauración automática a las pantallas actualmente conectadas al Mac";
+"displayProfile.noTrigger" = "Activa la restauración automática para configurar un disparador de pantalla";
+"displayProfile.autoSwitchHint" = "Esta disposición se restaurará automáticamente cuando se detecte esta configuración de pantalla.";
+"displayProfile.profileName" = "Nombre del perfil";
+"displayProfile.profileNamePlaceholder" = "Ej: Casa 3 pantallas, Café MacBook";
+"displayProfile.noProfiles" = "No hay perfiles de pantalla configurados";
+"displayProfile.noProfilesHint" = "Activa la restauración automática en una disposición para crear un perfil. Las disposiciones cambiarán automáticamente al conectar o desconectar monitores.";
+"displayProfile.connectedDisplays" = "Pantallas conectadas";
+"displayProfile.linkedLayout" = "Disposición vinculada";
+
+/* Tooltip descriptions */
+"tooltip.autoRestore" = "Restaurar automáticamente esta disposición cuando se detecte la configuración de pantalla vinculada (ej: al conectar/desconectar un monitor)";
+"tooltip.appSpecific" = "Emparejar ventanas por app — cada ventana se restaura a la misma app de la que se guardó";
+"tooltip.template" = "Ignorar apps — aplicar las posiciones guardadas a las ventanas actualmente en primer plano";
+"tooltip.mode" = "Elegir cómo se emparejan las ventanas al restaurar esta disposición";
+
+/* Display Variants */
+"variant.profile" = "Perfil de pantalla";
+"variant.configured" = "✓ Configurado";
+"variant.notConfigured" = "○ No configurado";
+"variant.clearWindows" = "Limpiar ventanas";
+
+/* Layout Shortcut Override */
+"layouts.shortcutReplaced" = "Reemplazado: %@";
+
+/* Shortcuts - Layout Shortcuts */
+"shortcuts.layoutShortcuts" = "Atajos de diseño";
+
+/* MenuBarView */
+"menuBar.saveCurrentLayout" = "Guardar disposición actual";
+"menuBar.enterLayoutName" = "Introduce un nombre para esta disposición:";

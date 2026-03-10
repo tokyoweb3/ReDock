@@ -1,0 +1,235 @@
+/* Menu - Window Halves */
+"menu.leftHalf" = "Metade esquerda";
+"menu.rightHalf" = "Metade direita";
+"menu.topHalf" = "Metade superior";
+"menu.bottomHalf" = "Metade inferior";
+
+/* Menu - Quarters */
+"menu.topLeft" = "Superior esquerdo";
+"menu.topRight" = "Superior direito";
+"menu.bottomLeft" = "Inferior esquerdo";
+"menu.bottomRight" = "Inferior direito";
+
+/* Menu - Sizing */
+"menu.center" = "Centralizar";
+"menu.maximize" = "Maximizar";
+"menu.fullScreen" = "Tela cheia";
+"menu.makeLarger" = "Aumentar";
+"menu.makeSmaller" = "Diminuir";
+
+/* Menu - Display */
+"menu.nextDisplay" = "Próxima tela";
+"menu.previousDisplay" = "Tela anterior";
+
+/* Menu - Zen */
+"menu.focusMode" = "Modo Zen";
+"menu.exitFocusMode" = "Sair do modo Zen";
+
+/* Menu - Layout */
+"menu.saveLayout" = "Salvar layout...";
+"menu.restoreLayout" = "Restaurar layout";
+"menu.restoreWithLaunch" = "Restaurar (abrir apps)";
+"menu.exportLayouts" = "Exportar layouts...";
+"menu.importLayouts" = "Importar layouts...";
+"menu.recentRestores" = "Restaurações recentes";
+
+/* Menu - App */
+"menu.settings" = "Ajustes...";
+"menu.quit" = "Encerrar ReDock";
+
+/* Alerts */
+"alert.accessibilityRequired.title" = "Permissão de acessibilidade necessária";
+"alert.accessibilityRequired.message" = "O ReDock precisa de permissão de acessibilidade para ler as posições das janelas. Conceda-a nos Ajustes do Sistema e tente novamente.\n\nApós recompilar, pode ser necessário desativar e reativar a permissão.";
+"alert.openSystemSettings" = "Abrir Ajustes do Sistema";
+"alert.cancel" = "Cancelar";
+"alert.ok" = "OK";
+
+"alert.noWindowsFound.title" = "Nenhuma janela encontrada";
+"alert.noWindowsFound.message" = "Nenhuma janela foi detectada. Isso pode acontecer se:\n\n• A permissão de acessibilidade foi alterada recentemente — tente desativá-la e reativá-la\n• Não há apps com janelas padrão abertos";
+
+"alert.importComplete.title" = "Importação concluída";
+"alert.importComplete.message" = "%lld layout(s) importado(s).";
+"alert.importComplete.warnings" = "\n\nAvisos:\n%@";
+
+/* File Dialogs */
+"dialog.exportLayouts" = "Exportar layouts";
+"dialog.importLayouts" = "Importar layouts";
+
+/* Settings Tabs */
+"settings.shortcuts" = "Atalhos";
+"settings.layouts" = "Layouts";
+"settings.general" = "Geral";
+
+/* Settings - Shortcuts Sections */
+"shortcuts.halves" = "Metades";
+"shortcuts.quarters" = "Quartos";
+"shortcuts.sizing" = "Tamanho";
+"shortcuts.display" = "Tela";
+"shortcuts.focus" = "Zen";
+"shortcuts.slotEmpty" = "Slot %lld (vazio)";
+
+/* Settings - General */
+"general.startup" = "Inicialização";
+"general.launchAtLogin" = "Abrir ao fazer login";
+"general.about" = "Sobre";
+"general.version" = "Versão";
+"general.build" = "Build";
+"general.language" = "Idioma";
+
+/* Language Options */
+"language.english" = "English";
+"language.japanese" = "日本語";
+
+/* Settings - Layouts */
+"layouts.windowCount" = "%lld janelas";
+"layouts.template" = "Modelo";
+"layouts.deleteSelected" = "Excluir layout selecionado";
+"layouts.export" = "Exportar layouts";
+"layouts.import" = "Importar layouts";
+"layouts.selectToEdit" = "Selecione um layout para editar";
+"layouts.autoRestoreEnabled" = "Restauração automática ativada";
+"layouts.autoRestore" = "Restauração automática";
+"layouts.launchApps" = "Abrir apps se não estiverem em execução";
+"layouts.launchAppsHelp" = "Abrir automaticamente os apps que fazem parte deste layout mas que não estão abertos no momento";
+"layouts.workspaceSlot" = "Área de trabalho %lld";
+"layouts.restoreNow" = "Restaurar agora";
+"layouts.conflictsWith" = "Conflito com: %@";
+"layouts.shortcut" = "Atalho";
+"layouts.favorite" = "Adicionar aos favoritos";
+"layouts.unfavorite" = "Remover dos favoritos";
+"layouts.cannotDeleteFavorite" = "Nao e possivel excluir layout favorito";
+"layouts.addLayout" = "Adicionar layout";
+"layouts.addFromPreset" = "De predefinição";
+"layouts.addFromPresetDescription" = "Escolha um arranjo de janelas predefinido";
+"layouts.captureCurrentWindows" = "Capturar janelas atuais";
+"layouts.captureDescription" = "Salvar um instantâneo da sua área de trabalho atual";
+"layouts.newEmpty" = "Novo layout vazio";
+"layouts.newEmptyDescription" = "Comece com um layout em branco e adicione janelas manualmente";
+"layouts.newEmptyHint" = "Você pode adicionar janelas depois usando o botão + no editor.";
+"layouts.create" = "Criar";
+"layouts.capturedLayout" = "Layout capturado";
+"layouts.configurePreset" = "Configurar predefinicao";
+"layouts.anyApp" = "Qualquer app";
+"layouts.back" = "Voltar";
+"layouts.shortcutConflict" = "Este atalho ja esta atribuido a: %@";
+"layouts.shortcutReplaceMessage" = "Deseja substituir o atalho existente? A atribuicao anterior sera removida.";
+"layouts.shortcutReplace" = "Substituir";
+
+/* Save Layout Dialog */
+"saveLayout.title" = "Salvar layout";
+"saveLayout.name" = "Nome:";
+"saveLayout.namePlaceholder" = "Meu layout";
+"saveLayout.mode" = "Modo:";
+"saveLayout.appSpecific" = "Específico do app";
+"saveLayout.template" = "Modelo (qualquer janela)";
+"saveLayout.templateDescription" = "O modo modelo aplica posições às janelas mais recentes, independentemente do app.";
+"saveLayout.windows" = "Janelas (%lld/%lld)";
+"saveLayout.selectAll" = "Selecionar tudo";
+"saveLayout.deselectAll" = "Desmarcar tudo";
+"saveLayout.save" = "Salvar";
+
+/* Layout Editor */
+"editor.save" = "Salvar";
+"editor.saveHelp" = "Salvar alterações neste layout";
+"editor.reset" = "Redefinir";
+"editor.resetHelp" = "Descartar alterações e voltar ao estado salvo";
+"editor.unsavedChanges" = "Alterações não salvas";
+"editor.unsavedAlertMessage" = "Este layout tem alterações não salvas. Deseja salvá-las antes de trocar?";
+"editor.discard" = "Descartar";
+"editor.noWindows" = "Nenhuma janela no layout";
+"editor.addWindowsHint" = "Adicione janelas usando o botão + abaixo";
+"editor.display" = "Tela";
+"editor.snap" = "Ajustar:";
+"editor.name" = "Nome";
+"editor.layoutName" = "Nome do layout";
+"editor.windowsLabel" = "Janelas";
+"editor.created" = "Criado";
+"editor.modeLabel" = "Modo";
+"editor.trigger" = "Gatilho";
+"editor.appSpecific" = "Específico do app";
+"editor.templateLabel" = "Modelo";
+"editor.templateHint" = "Aplica posições às janelas mais recentes, independentemente do app.";
+"editor.recapture" = "Recapturar";
+"editor.recaptureHelp" = "Substituir todas as janelas por uma nova captura da área de trabalho atual";
+"editor.recaptureTitle" = "Recapturar janelas";
+"editor.recaptureDescription" = "Substituir todas as janelas deste layout pelo estado atual da área de trabalho.";
+"editor.recaptureConfirm" = "Substituir por %lld janelas";
+"editor.addWindowHelp" = "Adicionar janelas da área de trabalho atual";
+"editor.changeApp" = "Alterar app atribuído";
+"editor.removeFromLayout" = "Remover do layout";
+
+/* Add Window Sheet */
+"addWindow.title" = "Adicionar janelas ao layout";
+"addWindow.position" = "Posição:";
+"addWindow.currentPosition" = "Posição atual";
+"addWindow.cancel" = "Cancelar";
+"addWindow.add" = "Adicionar";
+"addWindow.addCount" = "Adicionar %lld janelas";
+"addWindow.windowCount" = "%lld / %lld selecionadas";
+
+/* Change App Sheet */
+"changeApp.title" = "Alterar app";
+"changeApp.current" = "Atual: %@";
+"changeApp.change" = "Alterar";
+
+/* Position Presets */
+"preset.leftHalf" = "Metade esquerda";
+"preset.rightHalf" = "Metade direita";
+"preset.topHalf" = "Metade superior";
+"preset.bottomHalf" = "Metade inferior";
+"preset.topLeft" = "Superior esquerdo";
+"preset.topRight" = "Superior direito";
+"preset.bottomLeft" = "Inferior esquerdo";
+"preset.bottomRight" = "Inferior direito";
+"preset.maximize" = "Maximizar";
+"preset.center" = "Centralizar (60%)";
+
+/* Window Title */
+"window.reDockSettings" = "Ajustes do ReDock";
+"window.saveLayout" = "Salvar layout";
+
+/* Workspaces */
+"menu.workspaces" = "Áreas de trabalho";
+"shortcuts.workspaces" = "Áreas de trabalho";
+"workspace.coding" = "Programação";
+"workspace.research" = "Pesquisa";
+"workspace.review" = "Revisão de código";
+"workspace.meeting" = "Reunião";
+"workspace.writing" = "Escrita + Zen";
+
+/* Display Profile */
+"displayProfile.title" = "Perfis de tela";
+"displayProfile.current" = "Telas atuais";
+"displayProfile.displayCount" = "%lld tela(s)";
+"displayProfile.updateTrigger" = "Recapturar telas";
+"displayProfile.updateTriggerHelp" = "Atualizar o gatilho de restauração automática para as telas atualmente conectadas ao Mac";
+"displayProfile.noTrigger" = "Ative a restauração automática para definir um gatilho de tela";
+"displayProfile.autoSwitchHint" = "Este layout será restaurado automaticamente quando esta configuração de tela for detectada.";
+"displayProfile.profileName" = "Nome do perfil";
+"displayProfile.profileNamePlaceholder" = "Ex: Casa 3 telas, Café MacBook";
+"displayProfile.noProfiles" = "Nenhum perfil de tela configurado";
+"displayProfile.noProfilesHint" = "Ative a restauração automática em um layout para criar um perfil. Os layouts mudarão automaticamente ao conectar ou desconectar monitores.";
+"displayProfile.connectedDisplays" = "Telas conectadas";
+"displayProfile.linkedLayout" = "Layout vinculado";
+
+/* Tooltip descriptions */
+"tooltip.autoRestore" = "Restaurar automaticamente este layout quando a configuração de tela vinculada for detectada (ex: ao conectar/desconectar um monitor)";
+"tooltip.appSpecific" = "Combinar janelas por app — cada janela é restaurada no mesmo app em que foi salva";
+"tooltip.template" = "Ignorar apps — aplicar as posições salvas às janelas atualmente em primeiro plano";
+"tooltip.mode" = "Escolher como as janelas são combinadas ao restaurar este layout";
+
+/* Display Variants */
+"variant.profile" = "Perfil de tela";
+"variant.configured" = "✓ Configurado";
+"variant.notConfigured" = "○ Não configurado";
+"variant.clearWindows" = "Limpar janelas";
+
+/* Layout Shortcut Override */
+"layouts.shortcutReplaced" = "Substituído: %@";
+
+/* Shortcuts - Layout Shortcuts */
+"shortcuts.layoutShortcuts" = "Atalhos de Layout";
+
+/* MenuBarView */
+"menuBar.saveCurrentLayout" = "Salvar layout atual";
+"menuBar.enterLayoutName" = "Digite um nome para este layout:";

@@ -1,4 +1,4 @@
-# MWM — Mac Window Manager
+# ReDock — Mac Window Manager
 
 A lightweight macOS window manager inspired by ShiftIt and Moom Classic. Snap windows to halves, quarters, and more with keyboard shortcuts. Save and restore multi-display layouts with context-aware auto-restore and workspace presets.
 
@@ -7,6 +7,24 @@ A lightweight macOS window manager inspired by ShiftIt and Moom Classic. Snap wi
 - macOS 14 (Sonoma) or later
 - Accessibility permission (prompted on first launch)
 
+## Open Source Status
+
+- The repository is intended for public OSS release under the [MIT License](LICENSE).
+- Current platform target is macOS 14 or later.
+- Release artifacts should be treated as preview-quality until Developer ID signing and notarization are fully automated.
+
+## Install
+
+At the moment, the primary supported path is building locally:
+
+```bash
+swift build
+bash scripts/bundle.sh
+open build/ReDock.app
+```
+
+If you download a release build later, expect macOS security prompts unless the release has been signed and notarized.
+
 ## Build & Run
 
 ```bash
@@ -14,20 +32,20 @@ A lightweight macOS window manager inspired by ShiftIt and Moom Classic. Snap wi
 bash scripts/bundle.sh
 
 # Launch
-open build/MWM.app
+open build/ReDock.app
 
 # Stop
-pkill -f MWM.app
+pkill -f ReDock.app
 ```
 
 ## First Launch Setup
 
-1. Run `open build/MWM.app`
+1. Run `open build/ReDock.app`
 2. macOS will prompt for **Accessibility permission** — grant it in System Settings > Privacy & Security > Accessibility
-3. MWM appears as a menu bar icon (grid icon)
+3. ReDock appears as a menu bar icon (grid icon)
 4. Five workspace presets (Coding, Research, Review, Meeting, Writing) are created automatically
 
-> **After rebuilding:** The binary hash changes, so macOS invalidates the permission. Toggle MWM **off then on** in Accessibility settings.
+> **After rebuilding:** The binary hash changes, so macOS invalidates the permission. Toggle ReDock **off then on** in Accessibility settings.
 
 ## Features
 
@@ -69,12 +87,12 @@ Save the current arrangement of all windows and restore it later.
 
 **Save:**
 1. Arrange your windows as desired
-2. Click the MWM menu bar icon > **Save Layout...**
+2. Click the ReDock menu bar icon > **Save Layout...**
 3. Select windows to include, choose a mode (App-Specific or Template), and click Save
 
 **Restore:**
-1. Click MWM menu bar icon > **Restore Layout** > select a layout
-2. If **Launch Apps** is enabled for the active variant, MWM can open missing apps before restoring
+1. Click ReDock menu bar icon > **Restore Layout** > select a layout
+2. If **Launch Apps** is enabled for the active variant, ReDock can open missing apps before restoring
 
 **Layout Modes:**
 - **App-Specific** — Matches windows by app bundle ID. Restores each app to its saved position.
@@ -173,11 +191,11 @@ Recent restore results are shown in the menu bar under **Recent Restores** (up t
 
 ### Stage Manager Compatibility
 
-MWM detects Stage Manager and automatically filters out its strip windows during layout save and restore, preventing interference with window management operations.
+ReDock detects Stage Manager and automatically filters out its strip windows during layout save and restore, preventing interference with window management operations.
 
 ### Multi-Language Support
 
-MWM supports 9 languages:
+ReDock supports 9 languages:
 
 | Language | |
 |----------|---|
@@ -206,7 +224,7 @@ Open via menu bar > **Settings...** (Cmd+,)
 ## Architecture
 
 ```
-Sources/MWM/
+Sources/ReDock/
   App/              App lifecycle, menu bar (NSStatusItem+NSMenu), settings UI, localization
   Accessibility/    AXUIElement wrapper, permissions checking
   WindowManagement/ Window actions (strategy pattern), dispatcher, Stage Manager detection
@@ -228,7 +246,7 @@ Sources/MWM/
 
 **Storage:**
 ```
-~/Library/Application Support/MWM/
+~/Library/Application Support/ReDock/
   layouts/              Individual layout JSON files
   display-profiles.json Display profile configurations
   diagnostics.json      Restore history (last 50 records)
@@ -241,7 +259,7 @@ Sources/MWM/
 Accessibility permission is not active. Fix:
 
 1. Open System Settings > Privacy & Security > Accessibility
-2. Find MWM in the list
+2. Find ReDock in the list
 3. Toggle it **off**, then **on** again
 4. Try saving again
 
@@ -257,8 +275,22 @@ Shortcuts are set to defaults on first launch. If they appear blank, open Settin
 
 ### Restore says "failed" for some windows
 
-Some apps (e.g., Electron-based apps) may not respond to Accessibility setFrame commands. MWM verifies each window position after restore and reports failures individually in the Recent Restores menu.
+Some apps (e.g., Electron-based apps) may not respond to Accessibility setFrame commands. ReDock verifies each window position after restore and reports failures individually in the Recent Restores menu.
+
+## Known Limitations
+
+- ReDock depends on macOS Accessibility APIs, so OS privacy settings can block core features.
+- Some applications do not fully cooperate with scripted window movement, especially when using fullscreen or custom window chrome.
+- Public release packaging is not yet fully automated for Developer ID signing and notarization.
+
+## Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening pull requests. For large behavior changes, open an issue first to agree on scope.
+
+## Security
+
+Please do not disclose vulnerabilities in public issues. Follow [SECURITY.md](SECURITY.md).
 
 ## License
 
-Private project.
+Distributed under the [MIT License](LICENSE).

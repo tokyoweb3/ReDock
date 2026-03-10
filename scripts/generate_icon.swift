@@ -1,5 +1,5 @@
 #!/usr/bin/env swift
-// Generate MWM app icon — a 2x2 window grid on a blue rounded-rect background
+// Generate ReDock app icon — a 2x2 window grid on a blue rounded-rect background
 import AppKit
 
 func makeIcon(size: CGFloat) -> NSImage {
@@ -50,7 +50,7 @@ func savePNG(_ image: NSImage, to path: String) {
 let projectDir = URL(fileURLWithPath: CommandLine.arguments.count > 1
     ? CommandLine.arguments[1]
     : FileManager.default.currentDirectoryPath)
-let iconsetDir = projectDir.appendingPathComponent("build/MWM.iconset")
+let iconsetDir = projectDir.appendingPathComponent("build/ReDock.iconset")
 try? FileManager.default.createDirectory(at: iconsetDir, withIntermediateDirectories: true)
 
 let sizes: [(CGFloat, String)] = [

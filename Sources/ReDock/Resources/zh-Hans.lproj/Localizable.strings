@@ -1,0 +1,235 @@
+/* Menu - Window Halves */
+"menu.leftHalf" = "左半";
+"menu.rightHalf" = "右半";
+"menu.topHalf" = "上半";
+"menu.bottomHalf" = "下半";
+
+/* Menu - Quarters */
+"menu.topLeft" = "左上";
+"menu.topRight" = "右上";
+"menu.bottomLeft" = "左下";
+"menu.bottomRight" = "右下";
+
+/* Menu - Sizing */
+"menu.center" = "居中";
+"menu.maximize" = "最大化";
+"menu.fullScreen" = "全屏";
+"menu.makeLarger" = "放大";
+"menu.makeSmaller" = "缩小";
+
+/* Menu - Display */
+"menu.nextDisplay" = "下一个显示器";
+"menu.previousDisplay" = "上一个显示器";
+
+/* Menu - Zen */
+"menu.focusMode" = "Zen 模式";
+"menu.exitFocusMode" = "退出 Zen 模式";
+
+/* Menu - Layout */
+"menu.saveLayout" = "保存布局...";
+"menu.restoreLayout" = "恢复布局";
+"menu.restoreWithLaunch" = "恢复 (启动应用)";
+"menu.exportLayouts" = "导出布局...";
+"menu.importLayouts" = "导入布局...";
+"menu.recentRestores" = "最近恢复";
+
+/* Menu - App */
+"menu.settings" = "设置...";
+"menu.quit" = "退出 ReDock";
+
+/* Alerts */
+"alert.accessibilityRequired.title" = "需要辅助功能权限";
+"alert.accessibilityRequired.message" = "ReDock 需要辅助功能权限来读取窗口位置。请在系统设置中授权，然后重试。\n\n重新构建后，您可能需要关闭再打开权限。";
+"alert.openSystemSettings" = "打开系统设置";
+"alert.cancel" = "取消";
+"alert.ok" = "好";
+
+"alert.noWindowsFound.title" = "未找到窗口";
+"alert.noWindowsFound.message" = "未检测到窗口。可能的原因：\n\n• 辅助功能权限刚刚切换 — 请尝试关闭再打开\n• 没有打开具有标准窗口的应用";
+
+"alert.importComplete.title" = "导入完成";
+"alert.importComplete.message" = "已导入 %lld 个布局。";
+"alert.importComplete.warnings" = "\n\n警告：\n%@";
+
+/* File Dialogs */
+"dialog.exportLayouts" = "导出布局";
+"dialog.importLayouts" = "导入布局";
+
+/* Settings Tabs */
+"settings.shortcuts" = "快捷键";
+"settings.layouts" = "布局";
+"settings.general" = "通用";
+
+/* Settings - Shortcuts Sections */
+"shortcuts.halves" = "半屏";
+"shortcuts.quarters" = "四分之一";
+"shortcuts.sizing" = "大小";
+"shortcuts.display" = "显示器";
+"shortcuts.focus" = "Zen";
+"shortcuts.slotEmpty" = "插槽 %lld (空)";
+
+/* Settings - General */
+"general.startup" = "启动";
+"general.launchAtLogin" = "登录时启动";
+"general.about" = "关于";
+"general.version" = "版本";
+"general.build" = "构建";
+"general.language" = "语言";
+
+/* Language Options */
+"language.english" = "English";
+"language.japanese" = "日本語";
+
+/* Settings - Layouts */
+"layouts.windowCount" = "%lld 个窗口";
+"layouts.template" = "模板";
+"layouts.deleteSelected" = "删除所选布局";
+"layouts.export" = "导出布局";
+"layouts.import" = "导入布局";
+"layouts.selectToEdit" = "选择要编辑的布局";
+"layouts.autoRestoreEnabled" = "自动恢复已启用";
+"layouts.autoRestore" = "自动恢复";
+"layouts.launchApps" = "未运行时启动应用";
+"layouts.launchAppsHelp" = "自动启动属于此布局但当前未打开的应用";
+"layouts.workspaceSlot" = "工作区 %lld";
+"layouts.restoreNow" = "立即恢复";
+"layouts.conflictsWith" = "冲突：%@";
+"layouts.shortcut" = "快捷键";
+"layouts.favorite" = "添加到收藏";
+"layouts.unfavorite" = "从收藏中移除";
+"layouts.cannotDeleteFavorite" = "无法删除已收藏的布局";
+"layouts.addLayout" = "添加布局";
+"layouts.addFromPreset" = "从预设";
+"layouts.addFromPresetDescription" = "选择一个预定义的窗口排列";
+"layouts.captureCurrentWindows" = "捕获当前窗口";
+"layouts.captureDescription" = "保存当前桌面的快照";
+"layouts.newEmpty" = "新建空白布局";
+"layouts.newEmptyDescription" = "从空白布局开始，手动添加窗口";
+"layouts.newEmptyHint" = "您可以稍后使用编辑器中的 + 按钮添加窗口。";
+"layouts.create" = "创建";
+"layouts.capturedLayout" = "捕获的布局";
+"layouts.configurePreset" = "配置预设";
+"layouts.anyApp" = "任意应用";
+"layouts.back" = "返回";
+"layouts.shortcutConflict" = "此快捷键已分配给：%@";
+"layouts.shortcutReplaceMessage" = "是否替换现有快捷键？原有绑定将被移除。";
+"layouts.shortcutReplace" = "替换";
+
+/* Save Layout Dialog */
+"saveLayout.title" = "保存布局";
+"saveLayout.name" = "名称：";
+"saveLayout.namePlaceholder" = "我的布局";
+"saveLayout.mode" = "模式：";
+"saveLayout.appSpecific" = "应用专属";
+"saveLayout.template" = "模板 (任意窗口)";
+"saveLayout.templateDescription" = "模板模式将位置应用到最近使用的窗口，与应用无关。";
+"saveLayout.windows" = "窗口 (%lld/%lld)";
+"saveLayout.selectAll" = "全选";
+"saveLayout.deselectAll" = "取消全选";
+"saveLayout.save" = "保存";
+
+/* Layout Editor */
+"editor.save" = "保存";
+"editor.saveHelp" = "保存对此布局的更改";
+"editor.reset" = "重置";
+"editor.resetHelp" = "放弃更改并恢复到已保存状态";
+"editor.unsavedChanges" = "未保存的更改";
+"editor.unsavedAlertMessage" = "此布局有未保存的更改。切换前是否保存？";
+"editor.discard" = "丢弃";
+"editor.noWindows" = "布局中没有窗口";
+"editor.addWindowsHint" = "使用下方的 + 按钮添加窗口";
+"editor.display" = "显示器";
+"editor.snap" = "吸附：";
+"editor.name" = "名称";
+"editor.layoutName" = "布局名称";
+"editor.windowsLabel" = "窗口";
+"editor.created" = "创建时间";
+"editor.modeLabel" = "模式";
+"editor.trigger" = "触发器";
+"editor.appSpecific" = "应用专属";
+"editor.templateLabel" = "模板";
+"editor.templateHint" = "将位置应用到最近使用的窗口，与应用无关。";
+"editor.recapture" = "重新捕获";
+"editor.recaptureHelp" = "用当前桌面的最新捕获替换所有窗口";
+"editor.recaptureTitle" = "重新捕获窗口";
+"editor.recaptureDescription" = "将此布局中的所有窗口替换为当前桌面状态。";
+"editor.recaptureConfirm" = "替换为 %lld 个窗口";
+"editor.addWindowHelp" = "从当前桌面添加窗口";
+"editor.changeApp" = "更改指定应用";
+"editor.removeFromLayout" = "从布局中移除";
+
+/* Add Window Sheet */
+"addWindow.title" = "添加窗口到布局";
+"addWindow.position" = "位置：";
+"addWindow.currentPosition" = "当前位置";
+"addWindow.cancel" = "取消";
+"addWindow.add" = "添加";
+"addWindow.addCount" = "添加 %lld 个窗口";
+"addWindow.windowCount" = "%lld / %lld 已选择";
+
+/* Change App Sheet */
+"changeApp.title" = "更换应用";
+"changeApp.current" = "当前：%@";
+"changeApp.change" = "更换";
+
+/* Position Presets */
+"preset.leftHalf" = "左半";
+"preset.rightHalf" = "右半";
+"preset.topHalf" = "上半";
+"preset.bottomHalf" = "下半";
+"preset.topLeft" = "左上";
+"preset.topRight" = "右上";
+"preset.bottomLeft" = "左下";
+"preset.bottomRight" = "右下";
+"preset.maximize" = "最大化";
+"preset.center" = "居中 (60%)";
+
+/* Window Title */
+"window.reDockSettings" = "ReDock 设置";
+"window.saveLayout" = "保存布局";
+
+/* Workspaces */
+"menu.workspaces" = "工作区";
+"shortcuts.workspaces" = "工作区";
+"workspace.coding" = "编程";
+"workspace.research" = "研究";
+"workspace.review" = "审查";
+"workspace.meeting" = "会议";
+"workspace.writing" = "写作 + Zen";
+
+/* Display Profile */
+"displayProfile.title" = "显示器配置";
+"displayProfile.current" = "当前显示器";
+"displayProfile.displayCount" = "%lld 个显示器";
+"displayProfile.updateTrigger" = "重新捕获显示器";
+"displayProfile.updateTriggerHelp" = "将自动恢复触发器更新为当前连接到 Mac 的显示器配置";
+"displayProfile.noTrigger" = "启用自动恢复以设置显示器触发器";
+"displayProfile.autoSwitchHint" = "检测到此显示器配置时，将自动恢复此布局。";
+"displayProfile.profileName" = "配置名称";
+"displayProfile.profileNamePlaceholder" = "例如：家里 3 屏、咖啡厅 MacBook";
+"displayProfile.noProfiles" = "尚未配置显示器配置";
+"displayProfile.noProfilesHint" = "在布局上启用自动恢复即可创建显示器配置。连接或断开显示器时，布局将自动切换。";
+"displayProfile.connectedDisplays" = "已连接的显示器";
+"displayProfile.linkedLayout" = "关联布局";
+
+/* Tooltip descriptions */
+"tooltip.autoRestore" = "检测到关联的显示器配置时自动恢复此布局（例如连接/断开显示器时）";
+"tooltip.appSpecific" = "按应用匹配窗口 — 每个窗口恢复到保存时的应用";
+"tooltip.template" = "忽略应用 — 将保存的位置应用到当前最前面的窗口";
+"tooltip.mode" = "选择恢复布局时如何匹配窗口";
+
+/* Display Variants */
+"variant.profile" = "显示器配置";
+"variant.configured" = "✓ 已配置";
+"variant.notConfigured" = "○ 未配置";
+"variant.clearWindows" = "清除窗口";
+
+/* Layout Shortcut Override */
+"layouts.shortcutReplaced" = "已替换: %@";
+
+/* Shortcuts - Layout Shortcuts */
+"shortcuts.layoutShortcuts" = "布局快捷键";
+
+/* MenuBarView */
+"menuBar.saveCurrentLayout" = "保存当前布局";
+"menuBar.enterLayoutName" = "请输入布局名称：";

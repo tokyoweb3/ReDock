@@ -1,0 +1,257 @@
+/* Menu - Window Halves */
+"menu.leftHalf" = "左半分";
+"menu.rightHalf" = "右半分";
+"menu.topHalf" = "上半分";
+"menu.bottomHalf" = "下半分";
+"menu.leftThird" = "左1/3";
+"menu.leftTwoThirds" = "左2/3";
+"menu.rightThird" = "右1/3";
+"menu.rightTwoThirds" = "右2/3";
+"menu.topThird" = "上1/3";
+"menu.topTwoThirds" = "上2/3";
+"menu.bottomThird" = "下1/3";
+"menu.bottomTwoThirds" = "下2/3";
+"dropZone.activationBand" = "ここまでドラッグするとスナップ候補を表示";
+
+/* Menu - Quarters */
+"menu.topLeft" = "左上";
+"menu.topRight" = "右上";
+"menu.bottomLeft" = "左下";
+"menu.bottomRight" = "右下";
+
+/* Menu - Sizing */
+"menu.center" = "中央";
+"menu.maximize" = "最大化";
+"menu.fullScreen" = "フルスクリーン";
+"menu.makeLarger" = "拡大";
+"menu.makeSmaller" = "縮小";
+
+/* Menu - Display */
+"menu.nextDisplay" = "次のディスプレイ";
+"menu.previousDisplay" = "前のディスプレイ";
+
+/* Menu - Zen */
+"menu.focusMode" = "Zenモード";
+"menu.exitFocusMode" = "Zenモードを解除";
+
+/* Menu - Layout */
+"menu.saveLayout" = "レイアウトを保存...";
+"menu.restoreLayout" = "レイアウトを復元";
+"menu.restoreWithLaunch" = "復元 (アプリを起動)";
+"menu.exportLayouts" = "レイアウトを書き出す...";
+"menu.importLayouts" = "レイアウトを読み込む...";
+"menu.recentRestores" = "最近の復元";
+
+/* Menu - App */
+"menu.settings" = "設定...";
+"menu.quit" = "ReDock を終了";
+
+/* Alerts */
+"alert.accessibilityRequired.title" = "アクセシビリティの許可が必要です";
+"alert.accessibilityRequired.message" = "ReDock がウィンドウの位置を読み取るにはアクセシビリティの許可が必要です。システム設定で許可してから再試行してください。\n\nビルドし直した後は、許可をオフ→オンに切り替える必要がある場合があります。";
+"alert.openSystemSettings" = "システム設定を開く";
+"alert.cancel" = "キャンセル";
+"alert.ok" = "OK";
+
+"alert.noWindowsFound.title" = "ウィンドウが見つかりません";
+"alert.noWindowsFound.message" = "ウィンドウが検出されませんでした。以下の原因が考えられます:\n\n• アクセシビリティの許可を切り替えた直後 — オフ→オンに切り替えてください\n• 標準ウィンドウを持つアプリが開かれていない";
+
+"alert.importComplete.title" = "読み込み完了";
+"alert.importComplete.message" = "%lld 件のレイアウトを読み込みました。";
+"alert.importComplete.warnings" = "\n\n警告:\n%@";
+
+/* File Dialogs */
+"dialog.exportLayouts" = "レイアウトを書き出す";
+"dialog.importLayouts" = "レイアウトを読み込む";
+
+/* Settings Tabs */
+"settings.shortcuts" = "ショートカット";
+"settings.layouts" = "レイアウト";
+"settings.general" = "一般";
+
+/* Settings - Shortcuts Sections */
+"shortcuts.halves" = "半分";
+"shortcuts.quarters" = "4分割";
+"shortcuts.sizing" = "サイズ";
+"shortcuts.display" = "ディスプレイ";
+"shortcuts.focus" = "Zen";
+"shortcuts.slotEmpty" = "スロット %lld (未割当)";
+
+/* Settings - General */
+"general.startup" = "起動";
+"general.launchAtLogin" = "ログイン時に起動";
+"general.windowManagement" = "ウィンドウ管理";
+"general.repeatPressCycleTimeout" = "連打切替の待ち時間";
+"general.repeatPressCycleTimeoutHelp" = "半分系ショートカットの連打切替に使われます。";
+"general.about" = "情報";
+"general.version" = "バージョン";
+"general.build" = "ビルド";
+"general.language" = "言語";
+
+/* Language Options */
+"language.english" = "English";
+"language.japanese" = "日本語";
+
+/* Settings - Layouts */
+"layouts.windowCount" = "%lld 個のウィンドウ";
+"layouts.template" = "フリー配置";
+"layouts.appSpecificBadge" = "アプリ配置";
+"layouts.deleteSelected" = "選択したレイアウトを削除";
+"layouts.export" = "レイアウトを書き出す";
+"layouts.import" = "レイアウトを読み込む";
+"layouts.selectToEdit" = "編集するレイアウトを選択";
+"layouts.autoRestoreEnabled" = "自動復元が有効";
+"layouts.autoRestore" = "自動復元";
+"layouts.launchApps" = "未起動のアプリを起動";
+"layouts.launchAppsHelp" = "レイアウトに含まれるアプリが起動していない場合、自動的に起動します";
+"layouts.workspaceSlot" = "ワークスペース %lld";
+"layouts.restoreNow" = "今すぐ復元";
+"layouts.shortcut" = "ショートカット";
+"layouts.favorite" = "お気に入りに追加";
+"layouts.unfavorite" = "お気に入りから削除";
+"layouts.cannotDeleteFavorite" = "お気に入りのレイアウトは削除できません";
+"layouts.addLayout" = "レイアウトを追加";
+"layouts.addFromPreset" = "プリセットから作成";
+"layouts.addFromPresetDescription" = "定義済みのウィンドウ配置から選択";
+"layouts.captureCurrentWindows" = "現在のウィンドウのスナップショット";
+"layouts.captureDescription" = "現在のデスクトップのスナップショットを保存";
+"layouts.newEmpty" = "新規空レイアウト";
+"layouts.newEmptyDescription" = "空のレイアウトを作成し、後からウィンドウを追加";
+"layouts.newEmptyHint" = "エディタの＋ボタンで後からウィンドウを追加できます。";
+"layouts.create" = "作成";
+"layouts.capturedLayout" = "スナップショットレイアウト";
+"layouts.configurePreset" = "プリセットの設定";
+"layouts.anyApp" = "任意のアプリ";
+"layouts.back" = "戻る";
+"layouts.shortcutConflict" = "このショートカットは既に使用されています: %@";
+"layouts.shortcutReplaceMessage" = "既存のショートカットを置き換えますか？元の割り当ては解除されます。";
+"layouts.shortcutReplace" = "置き換える";
+
+/* Save Layout Dialog */
+"saveLayout.title" = "レイアウトを保存";
+"saveLayout.name" = "名前:";
+"saveLayout.namePlaceholder" = "マイレイアウト";
+"saveLayout.mode" = "モード:";
+"saveLayout.appSpecific" = "アプリ配置";
+"saveLayout.template" = "フリー配置 (任意のウィンドウ)";
+"saveLayout.templateDescription" = "フリー配置モードは、アプリに関係なく最近使用したウィンドウに位置を適用します。";
+"saveLayout.windows" = "ウィンドウ (%lld/%lld)";
+"saveLayout.selectAll" = "すべて選択";
+"saveLayout.deselectAll" = "すべて解除";
+"saveLayout.save" = "保存";
+"saveLayout.ignoreObstructed" = "隠れたウィンドウを除外";
+"saveLayout.ignoreObstructedHint" = "他のウィンドウに完全に隠れているウィンドウを除外します。";
+"saveLayout.obstructedBadge" = "隠れ";
+
+/* Layout Editor */
+"editor.save" = "保存";
+"editor.saveHelp" = "このレイアウトへの変更を保存";
+"editor.reset" = "リセット";
+"editor.resetHelp" = "変更を破棄して保存済みの状態に戻す";
+"editor.unsavedChanges" = "未保存の変更";
+"editor.unsavedAlertMessage" = "このレイアウトに未保存の変更があります。切り替える前に保存しますか？";
+"editor.discard" = "破棄";
+"editor.noWindows" = "レイアウトにウィンドウがありません";
+"editor.addWindowsHint" = "下の＋ボタンでウィンドウを追加";
+"editor.display" = "ディスプレイ";
+"editor.snap" = "スナップ:";
+"editor.name" = "名前";
+"editor.layoutName" = "レイアウト名";
+"editor.windowsLabel" = "ウィンドウ";
+"editor.created" = "作成日";
+"editor.modeLabel" = "モード";
+"editor.trigger" = "トリガー";
+"editor.appSpecific" = "アプリ配置";
+"editor.templateLabel" = "フリー配置";
+"editor.templateHint" = "アプリに関係なく、最近使用したウィンドウに位置を適用します。";
+"editor.recapture" = "スナップショットを再取得";
+"editor.recaptureHelp" = "現在のデスクトップ状態で全ウィンドウを差し替え";
+"editor.recaptureTitle" = "スナップショットの再取得";
+"editor.recaptureDescription" = "このレイアウトの全ウィンドウを現在のデスクトップのスナップショットで差し替えます。";
+"editor.recaptureConfirm" = "%lld 個のウィンドウで差し替え";
+"editor.addWindowHelp" = "現在のデスクトップからウィンドウを追加";
+"editor.changeApp" = "割り当てアプリを変更";
+"editor.removeFromLayout" = "レイアウトから削除";
+
+/* Add Window Sheet */
+"addWindow.title" = "ウィンドウをレイアウトに追加";
+"addWindow.position" = "位置:";
+"addWindow.currentPosition" = "現在の位置";
+"addWindow.cancel" = "キャンセル";
+"addWindow.add" = "追加";
+"addWindow.addCount" = "%lld 個のウィンドウを追加";
+"addWindow.windowCount" = "%lld / %lld 選択中";
+"addWindow.alreadyAdded" = "追加済み";
+
+/* Change App Sheet */
+"changeApp.title" = "アプリを変更";
+"changeApp.current" = "現在: %@";
+"changeApp.change" = "変更";
+
+/* Position Presets */
+"preset.leftHalf" = "左半分";
+"preset.rightHalf" = "右半分";
+"preset.topHalf" = "上半分";
+"preset.bottomHalf" = "下半分";
+"preset.topLeft" = "左上";
+"preset.topRight" = "右上";
+"preset.bottomLeft" = "左下";
+"preset.bottomRight" = "右下";
+"preset.maximize" = "最大化";
+"preset.center" = "中央 (60%)";
+
+/* Window Title */
+"window.reDockSettings" = "ReDock 設定";
+"window.saveLayout" = "レイアウトを保存";
+
+/* Workspaces */
+"menu.workspaces" = "ワークスペース";
+"shortcuts.workspaces" = "ワークスペース";
+"workspace.coding" = "コーディング";
+"workspace.research" = "リサーチ";
+"workspace.review" = "レビュー";
+"workspace.meeting" = "ミーティング";
+"workspace.writing" = "ライティング + Zen";
+
+/* Display Profile */
+"displayProfile.title" = "ディスプレイプロファイル";
+"displayProfile.current" = "現在のディスプレイ";
+"displayProfile.displayCount" = "%lld台のディスプレイ";
+"displayProfile.updateTrigger" = "ディスプレイを再取得";
+"displayProfile.updateTriggerHelp" = "現在Macに接続されているディスプレイ構成に自動復元トリガーを更新します";
+"displayProfile.noTrigger" = "ディスプレイトリガーを設定するには自動復元を有効にしてください";
+"displayProfile.autoSwitchHint" = "このディスプレイ構成が検出されると、このレイアウトが自動的に復元されます。";
+"displayProfile.profileName" = "プロファイル名";
+"displayProfile.profileNamePlaceholder" = "例: 自宅 3画面、カフェ MacBook";
+"displayProfile.noProfiles" = "ディスプレイプロファイルはまだありません";
+"displayProfile.noProfilesHint" = "レイアウトの自動復元を有効にするとプロファイルが作成されます。モニターの接続・切断時にレイアウトが自動で切り替わります。";
+"displayProfile.connectedDisplays" = "接続中のディスプレイ";
+"displayProfile.linkedLayout" = "紐付けレイアウト";
+"displayProfile.autoRestoreLayout" = "自動復元: %@";
+"displayProfile.lastSeen" = "最終検知: %@";
+
+/* Tooltip descriptions */
+"tooltip.autoRestore" = "紐付けたディスプレイ構成が検出されると、このレイアウトを自動的に復元します（例: モニターの接続・切断時）";
+"tooltip.appSpecific" = "アプリごとにウィンドウを照合 — 保存時と同じアプリのウィンドウに復元します";
+"tooltip.template" = "アプリを無視 — 現在最前面にあるウィンドウに保存した位置を適用します";
+"tooltip.appSpecificBadge" = "アプリごとにウィンドウを照合して復元します";
+"tooltip.templateBadge" = "アプリに関係なく位置だけを適用します";
+"tooltip.mode" = "レイアウト復元時にウィンドウをどう照合するかを選択します";
+
+/* Display Variants */
+"variant.profile" = "ディスプレイプロファイル";
+"variant.configured" = "✓ 設定済み";
+"variant.notConfigured" = "○ 未設定";
+"variant.clearWindows" = "ウィンドウをクリア";
+
+/* Layout Shortcut Override */
+"layouts.shortcutReplaced" = "「%@」のショートカットを上書きしました";
+
+/* Shortcuts - Layout Shortcuts */
+"shortcuts.layoutShortcuts" = "レイアウトショートカット";
+"shortcuts.resetAll" = "デフォルトに戻す";
+"shortcuts.resetAllHelp" = "すべてのショートカットをデフォルトのキー割り当てに戻します";
+
+/* MenuBarView */
+"menuBar.saveCurrentLayout" = "現在のレイアウトを保存";
+"menuBar.enterLayoutName" = "レイアウトの名前を入力してください:";

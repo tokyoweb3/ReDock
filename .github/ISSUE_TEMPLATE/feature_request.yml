@@ -1,0 +1,30 @@
+name: Feature request
+description: Suggest a user-visible improvement for redock
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What user problem are you trying to solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior you want
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches or workarounds you evaluated
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and constraints
+      description: Related apps, display setups, workflows, or limitations that matter

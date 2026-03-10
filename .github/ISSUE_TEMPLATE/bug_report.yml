@@ -1,0 +1,63 @@
+name: Bug report
+description: Report a reproducible defect in redock
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. Please provide a minimal, reproducible report.
+  - type: input
+    id: version
+    attributes:
+      label: redock version
+      description: Release version or commit SHA
+      placeholder: v2.0.0 or abc1234
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: macOS 14.7.1
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Press ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: dropdown
+    id: accessibility
+    attributes:
+      label: Accessibility permission status
+      options:
+        - Granted and re-enabled after rebuild
+        - Granted once, not re-enabled after rebuild
+        - Not granted
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context
+      description: Crash logs, screenshots, videos, and related details

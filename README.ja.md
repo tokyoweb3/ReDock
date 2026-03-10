@@ -1,4 +1,4 @@
-# MWM — Mac Window Manager
+# ReDock — Mac Window Manager
 
 ShiftIt と Moom Classic にインスパイアされた軽量 macOS ウィンドウマネージャーです。キーボードショートカットでウィンドウを半分・4分割などにスナップでき、マルチディスプレイ対応のレイアウト保存・復元、ディスプレイプロファイル連動の自動復元、ワークスペースプリセットまで備えています。
 
@@ -7,6 +7,24 @@ ShiftIt と Moom Classic にインスパイアされた軽量 macOS ウィンド
 - macOS 14（Sonoma）以降
 - アクセシビリティ権限（初回起動時にプロンプト表示）
 
+## OSS 公開ステータス
+
+- このリポジトリは [MIT License](LICENSE) での公開を前提としています。
+- 現在の対応プラットフォームは macOS 14 以降です。
+- Developer ID 署名と notarization の自動化が完了するまでは、配布物はプレビュー品質として扱ってください。
+
+## インストール
+
+現時点で主にサポートしている導線はローカルビルドです。
+
+```bash
+swift build
+bash scripts/bundle.sh
+open build/ReDock.app
+```
+
+今後リリース成果物を配布する場合でも、署名と notarization が整うまでは macOS の警告が出る可能性があります。
+
 ## ビルド & 実行
 
 ```bash
@@ -14,20 +32,20 @@ ShiftIt と Moom Classic にインスパイアされた軽量 macOS ウィンド
 bash scripts/bundle.sh
 
 # 起動
-open build/MWM.app
+open build/ReDock.app
 
 # 停止
-pkill -f MWM.app
+pkill -f ReDock.app
 ```
 
 ## 初回セットアップ
 
-1. `open build/MWM.app` を実行
+1. `open build/ReDock.app` を実行
 2. macOS が **アクセシビリティ権限** を求めるので、システム設定 > プライバシーとセキュリティ > アクセシビリティ で許可
-3. MWM がメニューバーにアイコンとして表示される
+3. ReDock がメニューバーにアイコンとして表示される
 4. ワークスペース用の標準レイアウト 5 種類（Coding / Research / Review / Meeting / Writing）が自動作成される
 
-> **リビルド後の注意:** バイナリのハッシュが変わるため、macOS が権限を無効化します。アクセシビリティ設定で MWM を **オフ → オン** に切り替えてください。
+> **リビルド後の注意:** バイナリのハッシュが変わるため、macOS が権限を無効化します。アクセシビリティ設定で ReDock を **オフ → オン** に切り替えてください。
 
 ## 機能
 
@@ -69,11 +87,11 @@ pkill -f MWM.app
 
 **保存:**
 1. ウィンドウを希望の位置に並べる
-2. メニューバーの MWM アイコン > **レイアウトを保存...**
+2. メニューバーの ReDock アイコン > **レイアウトを保存...**
 3. 保存対象のウィンドウを選び、モードを選択して保存
 
 **復元:**
-1. メニューバーの MWM アイコン > **レイアウトを復元**
+1. メニューバーの ReDock アイコン > **レイアウトを復元**
 2. 保存済みレイアウトを選ぶ
 
 **レイアウトモード:**
@@ -183,7 +201,7 @@ Stage Manager が有効な場合、ストリップ用ウィンドウを自動で
 
 ### 多言語対応
 
-MWM は以下の 9 言語に対応しています。
+ReDock は以下の 9 言語に対応しています。
 
 | 言語 | 備考 |
 |------|------|
@@ -212,7 +230,7 @@ MWM は以下の 9 言語に対応しています。
 ## アーキテクチャ
 
 ```text
-Sources/MWM/
+Sources/ReDock/
   App/              アプリライフサイクル、メニューバー、設定 UI、ローカライゼーション
   Accessibility/    AXUIElement ラッパー、権限確認
   WindowManagement/ ウィンドウ操作、計算ロジック、ディスパッチャー、Stage Manager 検出
@@ -233,7 +251,7 @@ Sources/MWM/
 **保存先:**
 
 ```text
-~/Library/Application Support/MWM/
+~/Library/Application Support/ReDock/
   layouts/              レイアウト JSON
   display-profiles.json ディスプレイプロファイル
   diagnostics.json      復元履歴（最大 50 件）
@@ -246,7 +264,7 @@ Sources/MWM/
 アクセシビリティ権限が無効です。
 
 1. システム設定 > プライバシーとセキュリティ > アクセシビリティ を開く
-2. 一覧から MWM を探す
+2. 一覧から ReDock を探す
 3. **オフ → オン** に切り替える
 4. 再度保存を試す
 
@@ -262,8 +280,22 @@ Sources/MWM/
 
 ### 一部ウィンドウの復元が失敗する
 
-Electron 系など一部アプリは Accessibility の `setFrame` に完全対応していないことがあります。MWM は復元後の位置を検証し、失敗理由を診断メニューに記録します。
+Electron 系など一部アプリは Accessibility の `setFrame` に完全対応していないことがあります。ReDock は復元後の位置を検証し、失敗理由を診断メニューに記録します。
+
+## 既知の制約
+
+- ReDock は macOS のアクセシビリティ API に依存するため、プライバシー設定の影響を強く受けます。
+- フルスクリーンや独自ウィンドウ装飾を使う一部アプリでは、ウィンドウ移動が安定しないことがあります。
+- Developer ID 署名と notarization を含む公開配布フローは、まだ完全自動化されていません。
+
+## コントリビュート
+
+Pull Request の前に [CONTRIBUTING.md](CONTRIBUTING.md) を確認してください。大きな挙動変更は、先に Issue でスコープを合意する運用を推奨します。
+
+## セキュリティ
+
+脆弱性は public issue で公開せず、[SECURITY.md](SECURITY.md) の手順に従ってください。
 
 ## ライセンス
 
-プライベートプロジェクトです。
+[MIT License](LICENSE) で提供します。

@@ -30,14 +30,14 @@ jobs:
       - name: Create .app bundle
         run: |
           VERSION="${{ steps.version.outputs.VERSION }}"
-          APP_BUNDLE="build/release/MWM.app"
+          APP_BUNDLE="build/release/redock.app"
           CONTENTS="$APP_BUNDLE/Contents"
           MACOS="$CONTENTS/MacOS"
           RESOURCES="$CONTENTS/Resources"
 
           mkdir -p "$MACOS" "$RESOURCES"
-          cp ".build/release/MWM" "$MACOS/MWM"
-          strip "$MACOS/MWM"
+          cp ".build/release/redock" "$MACOS/redock"
+          strip "$MACOS/redock"
 
           # Copy SPM resource bundles
           for bundle in .build/release/*.bundle; do
@@ -48,8 +48,8 @@ jobs:
 
           # Generate icon
           swift scripts/generate_icon.swift "$(pwd)"
-          iconutil -c icns build/MWM.iconset -o "$RESOURCES/AppIcon.icns"
-          rm -rf build/MWM.iconset
+          iconutil -c icns build/redock.iconset -o "$RESOURCES/AppIcon.icns"
+          rm -rf build/redock.iconset
 
           cat > "$CONTENTS/Info.plist" << EOF
           <?xml version="1.0" encoding="UTF-8"?>
@@ -57,13 +57,13 @@ jobs:
           <plist version="1.0">
           <dict>
               <key>CFBundleIdentifier</key>
-              <string>com.mwm.app</string>
+              <string>com.redock.app</string>
               <key>CFBundleName</key>
-              <string>MWM</string>
+              <string>redock</string>
               <key>CFBundleDisplayName</key>
-              <string>MWM</string>
+              <string>redock</string>
               <key>CFBundleExecutable</key>
-              <string>MWM</string>
+              <string>redock</string>
               <key>CFBundleVersion</key>
               <string>${VERSION}</string>
               <key>CFBundleShortVersionString</key>
@@ -87,20 +87,20 @@ jobs:
           VERSION="${{ steps.version.outputs.VERSION }}"
           DMG_STAGING="build/release/dmg-staging"
           mkdir -p "$DMG_STAGING"
-          cp -R "build/release/MWM.app" "$DMG_STAGING/"
+          cp -R "build/release/redock.app" "$DMG_STAGING/"
           ln -s /Applications "$DMG_STAGING/Applications"
 
-          hdiutil create -volname "MWM ${VERSION}" \
+          hdiutil create -volname "redock ${VERSION}" \
             -srcfolder "$DMG_STAGING" \
             -ov -format UDZO \
-            "build/release/MWM-${VERSION}.dmg"
+            "build/release/redock-${VERSION}.dmg"
 
           rm -rf "$DMG_STAGING"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: build/release/MWM-*.dmg
+          files: build/release/redock-*.dmg
           body_path: CHANGELOG.md
           draft: false
           prerelease: false

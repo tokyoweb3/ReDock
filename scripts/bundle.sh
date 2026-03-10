@@ -1,9 +1,9 @@
 #!/bin/bash
-# Build and create a minimal .app bundle for MWM
+# Build and create a minimal .app bundle for ReDock
 set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-APP_NAME="MWM"
+APP_NAME="ReDock"
 APP_BUNDLE="$PROJECT_DIR/build/$APP_NAME.app"
 CONTENTS="$APP_BUNDLE/Contents"
 MACOS="$CONTENTS/MacOS"
@@ -24,8 +24,8 @@ ICNS="$RESOURCES/AppIcon.icns"
 if [ ! -f "$ICNS" ] || [ "$0" -nt "$ICNS" ]; then
     echo "Generating app icon..."
     swift "$PROJECT_DIR/scripts/generate_icon.swift" "$PROJECT_DIR"
-    iconutil -c icns "$PROJECT_DIR/build/MWM.iconset" -o "$ICNS"
-    rm -rf "$PROJECT_DIR/build/MWM.iconset"
+    iconutil -c icns "$PROJECT_DIR/build/ReDock.iconset" -o "$ICNS"
+    rm -rf "$PROJECT_DIR/build/ReDock.iconset"
 fi
 
 cat > "$CONTENTS/Info.plist" << 'PLIST'
@@ -34,13 +34,13 @@ cat > "$CONTENTS/Info.plist" << 'PLIST'
 <plist version="1.0">
 <dict>
     <key>CFBundleIdentifier</key>
-    <string>com.mwm.app</string>
+    <string>com.ReDock.app</string>
     <key>CFBundleName</key>
-    <string>MWM</string>
+    <string>ReDock</string>
     <key>CFBundleDisplayName</key>
-    <string>MWM</string>
+    <string>ReDock</string>
     <key>CFBundleExecutable</key>
-    <string>MWM</string>
+    <string>ReDock</string>
     <key>CFBundleVersion</key>
     <string>2.0.0</string>
     <key>CFBundleShortVersionString</key>
@@ -63,4 +63,4 @@ codesign --force --sign - "$APP_BUNDLE"
 echo "Done: $APP_BUNDLE"
 echo ""
 echo "To run: open '$APP_BUNDLE'"
-echo "To stop: pkill -f MWM.app"
+echo "To stop: pkill -f ReDock.app"

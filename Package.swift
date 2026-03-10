@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "MWM",
+    name: "ReDock",
     defaultLocalization: "en",
     platforms: [
         .macOS(.v14)
@@ -13,19 +13,19 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "MWM",
+            name: "ReDock",
             dependencies: [
                 "KeyboardShortcuts",
             ],
-            path: "Sources/MWM",
+            path: "Sources/ReDock",
             resources: [
                 .process("Resources"),
             ]
         ),
         .testTarget(
-            name: "MWMTests",
-            dependencies: ["MWM"],
-            path: "Tests/MWMTests"
+            name: "ReDockTests",
+            dependencies: ["ReDock"],
+            path: "Tests/ReDockTests"
         ),
     ]
 )
