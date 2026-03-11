@@ -78,4 +78,65 @@ struct DisplayFingerprintTests {
         )
         #expect(a.approximatelyMatches(b))
     }
+
+    @Test("Empty localizedName does not match by name")
+    func emptyNameNoMatch() {
+        let a = DisplayFingerprint(
+            displayID: 10,
+            localizedName: "",
+            bounds: CGRect(x: 0, y: 0, width: 1920, height: 1080)
+        )
+        let b = DisplayFingerprint(
+            displayID: 2,
+            localizedName: "",
+            bounds: CGRect(x: 0, y: 0, width: 1920, height: 1080)
+        )
+        // Empty names should not match via name-based fallback
+        #expect(!a.approximatelyMatches(b))
+    }
+
+    @Test("Empty localizedName with matching displayID still matches")
+    func emptyNameExactIDMatch() {
+        let a = DisplayFingerprint(
+            displayID: 10,
+            localizedName: "",
+            bounds: CGRect(x: 0, y: 0, width: 1920, height: 1080)
+        )
+        let b = DisplayFingerprint(
+            displayID: 10,
+            localizedName: "",
+            bounds: CGRect(x: 0, y: 0, width: 1920, height: 1080)
+        )
+        #expect(a.approximatelyMatches(b))
+    }
+
+    @Test("isValid returns false for empty localizedName")
+    func isValidEmpty() {
+        let fp = DisplayFingerprint(
+            displayID: 10,
+            localizedName: "",
+            bounds: CGRect(x: 0, y: 0, width: 1920, height: 1080)
+        )
+        #expect(!fp.isValid)
+    }
+
+    @Test("isValid returns false for nil localizedName")
+    func isValidNil() {
+        let fp = DisplayFingerprint(
+            displayID: 10,
+            localizedName: nil,
+            bounds: CGRect(x: 0, y: 0, width: 1920, height: 1080)
+        )
+        #expect(!fp.isValid)
+    }
+
+    @Test("isValid returns true for normal display")
+    func isValidNormal() {
+        let fp = DisplayFingerprint(
+            displayID: 1,
+            localizedName: "Built-in Retina Display",
+            bounds: CGRect(x: 0, y: 0, width: 1512, height: 982)
+        )
+        #expect(fp.isValid)
+    }
 }

@@ -313,6 +313,7 @@ struct LayoutsSettingsView: View {
     @State private var draftHasChanges = false
     @State private var pendingSelectionID: UUID?
     @State private var showUnsavedAlert = false
+    @State private var externalSaveTrigger = false
 
     private var services: AppServices { AppDelegate.services }
 
@@ -356,10 +357,14 @@ struct LayoutsSettingsView: View {
         }
         .alert(L10n.string("editor.unsavedChanges"), isPresented: $showUnsavedAlert) {
             Button(L10n.string("editor.save")) {
-                saveSelectedLayout()
+                externalSaveTrigger.toggle()
                 draftHasChanges = false
-                selectedLayoutID = pendingSelectionID
-                pendingSelectionID = nil
+                // Defer selection change so LayoutEditorView's onChange(of: externalSaveTrigger)
+                // fires before the view is destroyed by the selection change.
+                DispatchQueue.main.async {
+                    selectedLayoutID = pendingSelectionID
+                    pendingSelectionID = nil
+                }
             }
             Button(L10n.string("editor.discard"), role: .destructive) {
                 draftHasChanges = false
@@ -441,7 +446,8 @@ struct LayoutsSettingsView: View {
                             onSave: {
                                 saveSelectedLayout()
                             },
-                            hasUnsavedChanges: $draftHasChanges
+                            hasUnsavedChanges: $draftHasChanges,
+                            externalSaveTrigger: $externalSaveTrigger
                         )
                         .padding(12)
                     }

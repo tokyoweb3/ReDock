@@ -287,18 +287,21 @@ struct LayoutEditorView: View {
     let onSave: () -> Void
     var onReset: (() -> Void)?
     @Binding var hasUnsavedChanges: Bool
+    @Binding var externalSaveTrigger: Bool
 
     init(
         layout: Binding<WindowLayout>,
         onSave: @escaping () -> Void,
         onReset: (() -> Void)? = nil,
-        hasUnsavedChanges: Binding<Bool> = .constant(false)
+        hasUnsavedChanges: Binding<Bool> = .constant(false),
+        externalSaveTrigger: Binding<Bool> = .constant(false)
     ) {
         self._layout = layout
         self._draft = State(initialValue: layout.wrappedValue)
         self.onSave = onSave
         self.onReset = onReset
         self._hasUnsavedChanges = hasUnsavedChanges
+        self._externalSaveTrigger = externalSaveTrigger
     }
 
     private var hasChanges: Bool {
@@ -651,6 +654,9 @@ struct LayoutEditorView: View {
         .onChange(of: draft) { _, _ in
             hasUnsavedChanges = hasChanges
         }
+        .onChange(of: externalSaveTrigger) { _, _ in
+            save()
+        }
         .sheet(isPresented: $showingAddWindow) {
             AddWindowSheet(
                 existingWindows: draft.variants.isEmpty ? [] : draft.variants[safeIndex].windows,
@@ -702,7 +708,7 @@ struct LayoutEditorView: View {
                 }
             }
         } else if !draft.variants.isEmpty {
-            for fp in draft.variants[safeIndex].displayFingerprints {
+            for fp in draft.variants[safeIndex].displayFingerprints where fp.isValid {
                 if seen.insert(fp).inserted {
                     result.append(fp)
                 }
@@ -717,21 +723,42 @@ struct LayoutEditorView: View {
 
     private func loadProfilesAndMigrate() {
         let store = AppDelegate.services.displayProfileStore
+        // Clean up invalid (phantom) profiles
+        store.removeInvalidProfiles()
         // Ensure current displays have a profile
         let currentFPs = AppDelegate.services.screenRegistry.fingerprints()
         if !currentFPs.isEmpty {
             _ = store.findOrCreate(fingerprints: currentFPs)
         }
-        profiles = store.loadAll()
+        profiles = store.loadAll().filter(\.isValid)
 
-        // Migrate existing variants without displayProfileID
+        let validProfileIDs = Set(profiles.map(\.id))
+
         for i in draft.variants.indices {
-            if draft.variants[i].displayProfileID == nil {
+            if let pid = draft.variants[i].displayProfileID {
+                if !validProfileIDs.contains(pid) {
+                    // Profile was deleted/invalid — try to re-link by fingerprints
+                    let fps = draft.variants[i].displayFingerprints.filter(\.isValid)
+                    if let match = profiles.first(where: { $0.matches(fps) }) {
+                        draft.variants[i].displayProfileID = match.id
+                        draft.variants[i].displayFingerprints = match.fingerprints
+                    } else {
+                        // No matching profile — clear the orphaned reference
+                        draft.variants[i].displayProfileID = nil
+                    }
+                }
+            } else {
+                // Migrate existing variants without displayProfileID
                 let fps = draft.variants[i].displayFingerprints
                 if let match = profiles.first(where: { $0.matches(fps) }) {
                     draft.variants[i].displayProfileID = match.id
                 }
             }
+        }
+
+        // Remove empty variants with no profile and no windows (orphaned)
+        draft.variants.removeAll { variant in
+            variant.displayProfileID == nil && variant.windows.isEmpty
         }
     }
 
