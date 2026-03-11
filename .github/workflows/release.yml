@@ -97,10 +97,15 @@ jobs:
 
           rm -rf "$DMG_STAGING"
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: build/release/redock-*.dmg
-          body_path: CHANGELOG.md
-          draft: false
-          prerelease: false
+      - name: Create or update GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          gh release create "v${VERSION}" \
+            "build/release/redock-${VERSION}.dmg" \
+            --title "ReDock v${VERSION}" \
+            --notes-file CHANGELOG.md \
+          || gh release upload "v${VERSION}" \
+            "build/release/redock-${VERSION}.dmg" \
+            --clobber
