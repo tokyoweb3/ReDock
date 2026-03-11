@@ -15,15 +15,25 @@ A lightweight macOS window manager inspired by ShiftIt and Moom Classic. Snap wi
 
 ## Install
 
-At the moment, the primary supported path is building locally:
+### Download (recommended)
+
+1. Download `ReDock-x.x.x.dmg` from [Releases](https://github.com/tokyoweb3/ReDock/releases)
+2. Open the DMG and drag **ReDock** to **Applications**
+3. Remove the quarantine attribute (required for unsigned apps):
+   ```bash
+   xattr -cr /Applications/ReDock.app
+   ```
+4. Open ReDock and grant **Accessibility** permission when prompted
+
+> **Why is this needed?** ReDock is not yet signed with an Apple Developer ID. macOS blocks unsigned apps by default. The `xattr -cr` command removes the quarantine flag so macOS allows it to run.
+
+### Build from source
 
 ```bash
 swift build
 bash scripts/bundle.sh
 open build/ReDock.app
 ```
-
-If you download a release build later, expect macOS security prompts unless the release has been signed and notarized.
 
 ## Build & Run
 
