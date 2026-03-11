@@ -252,6 +252,24 @@
 "shortcuts.resetAll" = "デフォルトに戻す";
 "shortcuts.resetAllHelp" = "すべてのショートカットをデフォルトのキー割り当てに戻します";
 
+/* Diagnostics */
+"diagnose.title" = "診断";
+"diagnose.runAll" = "チェックを実行";
+"diagnose.hint" = "「チェックを実行」を押して権限とシステム状態を確認します。";
+"diagnose.accessibility" = "アクセシビリティ";
+"diagnose.displays" = "ディスプレイ";
+"diagnose.windows" = "ウィンドウ";
+"diagnose.layouts" = "保存済みレイアウト";
+"diagnose.granted" = "許可済み";
+"diagnose.notGranted" = "未許可 — ウィンドウ管理に必要です";
+"diagnose.notGrantedToggleHint" = "未許可 — システム設定でReDockのアクセシビリティをオフ→オンに切り替えるか、権限をリクエストしてください";
+"diagnose.requestPermission" = "権限をリクエスト";
+"diagnose.displaysDetail" = "%lld 台のディスプレイを検出";
+"diagnose.windowsDetail" = "%lld 個のウィンドウを検出";
+"diagnose.noWindows" = "ウィンドウが検出されません";
+"diagnose.layoutsDetail" = "%lld 件のレイアウトを保存済み";
+"diagnose.openSettings" = "設定を開く";
+
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "現在のレイアウトを保存";
 "menuBar.enterLayoutName" = "レイアウトの名前を入力してください:";

@@ -230,6 +230,22 @@
 /* Shortcuts - Layout Shortcuts */
 "shortcuts.layoutShortcuts" = "佈局快捷鍵";
 
+/* Diagnostics */
+"diagnose.title" = "診斷";
+"diagnose.runAll" = "執行檢查";
+"diagnose.hint" = "點選「執行檢查」以驗證權限和系統狀態。";
+"diagnose.accessibility" = "輔助使用";
+"diagnose.displays" = "顯示器";
+"diagnose.windows" = "視窗";
+"diagnose.layouts" = "已儲存的佈局";
+"diagnose.granted" = "已授權";
+"diagnose.notGranted" = "未授權 — 視窗管理需要此權限";
+"diagnose.displaysDetail" = "偵測到 %lld 台顯示器";
+"diagnose.windowsDetail" = "偵測到 %lld 個視窗";
+"diagnose.noWindows" = "未偵測到視窗";
+"diagnose.layoutsDetail" = "已儲存 %lld 個佈局";
+"diagnose.openSettings" = "開啟設定";
+
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "儲存目前佈局";
 "menuBar.enterLayoutName" = "請輸入佈局名稱：";

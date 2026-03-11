@@ -14,16 +14,19 @@ cd "$PROJECT_DIR"
 swift build -c debug
 
 echo "Creating .app bundle..."
-rm -rf "$APP_BUNDLE"
 mkdir -p "$MACOS" "$RESOURCES"
 
-cp ".build/debug/$APP_NAME" "$MACOS/$APP_NAME"
+# Symlink to the build binary so the .app shares the same TCC (Accessibility)
+# permission as the direct binary. Copying creates a separate identity that
+# macOS tracks independently, causing permission mismatches.
+ln -sf "$PROJECT_DIR/.build/debug/$APP_NAME" "$MACOS/$APP_NAME"
 
 # Generate app icon
 ICNS="$RESOURCES/AppIcon.icns"
-if [ ! -f "$ICNS" ] || [ "$0" -nt "$ICNS" ]; then
+ICON_SCRIPT="$PROJECT_DIR/scripts/generate_icon.swift"
+if [ ! -f "$ICNS" ] || [ "$ICON_SCRIPT" -nt "$ICNS" ]; then
     echo "Generating app icon..."
-    swift "$PROJECT_DIR/scripts/generate_icon.swift" "$PROJECT_DIR"
+    swift "$ICON_SCRIPT" "$PROJECT_DIR"
     iconutil -c icns "$PROJECT_DIR/build/ReDock.iconset" -o "$ICNS"
     rm -rf "$PROJECT_DIR/build/ReDock.iconset"
 fi
@@ -42,9 +45,9 @@ cat > "$CONTENTS/Info.plist" << 'PLIST'
     <key>CFBundleExecutable</key>
     <string>ReDock</string>
     <key>CFBundleVersion</key>
-    <string>2.0.0</string>
+    <string>1.0.0</string>
     <key>CFBundleShortVersionString</key>
-    <string>2.0.0</string>
+    <string>1.0.0</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleIconFile</key>
@@ -57,8 +60,11 @@ cat > "$CONTENTS/Info.plist" << 'PLIST'
 </plist>
 PLIST
 
-echo "Signing with ad-hoc identity..."
-codesign --force --sign - "$APP_BUNDLE"
+# Skip codesigning for debug builds to preserve macOS TCC permissions.
+# Each ad-hoc codesign generates a new cdHash, invalidating Accessibility grants.
+# The binary already has an ad-hoc signature from swift build.
+# For release builds, use scripts/release.sh which signs properly.
+echo "Skipping codesign (debug build) to preserve Accessibility permissions."
 
 echo "Done: $APP_BUNDLE"
 echo ""

@@ -28,7 +28,7 @@ ReDock is a lightweight macOS window manager inspired by ShiftIt and Moom Classi
 
 ### Title
 
-ReDock v2.0.0 - First public OSS release
+ReDock v1.0.0 - First public OSS release
 
 ### Body
 

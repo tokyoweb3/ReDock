@@ -14,7 +14,8 @@ final class StatusBarController {
 
     func setup() {
         let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusItem.button?.image = NSImage(systemSymbolName: "rectangle.split.2x2", accessibilityDescription: "ReDock")
+        statusItem.button?.image = StatusBarIcon.makeImage()
+        statusItem.button?.image?.accessibilityDescription = "ReDock"
         statusItem.menu = buildMenu()
         self.statusItem = statusItem
     }

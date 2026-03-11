@@ -230,6 +230,22 @@
 /* Shortcuts - Layout Shortcuts */
 "shortcuts.layoutShortcuts" = "布局快捷键";
 
+/* Diagnostics */
+"diagnose.title" = "诊断";
+"diagnose.runAll" = "运行检查";
+"diagnose.hint" = "点击「运行检查」以验证权限和系统状态。";
+"diagnose.accessibility" = "辅助功能";
+"diagnose.displays" = "显示器";
+"diagnose.windows" = "窗口";
+"diagnose.layouts" = "已保存的布局";
+"diagnose.granted" = "已授权";
+"diagnose.notGranted" = "未授权 — 窗口管理需要此权限";
+"diagnose.displaysDetail" = "检测到 %lld 台显示器";
+"diagnose.windowsDetail" = "检测到 %lld 个窗口";
+"diagnose.noWindows" = "未检测到窗口";
+"diagnose.layoutsDetail" = "已保存 %lld 个布局";
+"diagnose.openSettings" = "打开设置";
+
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "保存当前布局";
 "menuBar.enterLayoutName" = "请输入布局名称：";

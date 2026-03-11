@@ -1321,6 +1321,10 @@ struct GeneralSettingsView: View {
                 LabeledContent(L10n.string("general.version"), value: Bundle.main.shortVersion)
                 LabeledContent(L10n.string("general.build"), value: Bundle.main.buildVersion)
             }
+
+            Section(L10n.string("diagnose.title")) {
+                DiagnoseView()
+            }
         }
         .formStyle(.grouped)
         .padding()

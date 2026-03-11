@@ -1,10 +1,10 @@
 #!/bin/bash
 # Build a release .app bundle and create a DMG for distribution.
 # Usage: bash scripts/release.sh [version]
-# Example: bash scripts/release.sh 2.0.0
+# Example: bash scripts/release.sh 1.0.0
 set -euo pipefail
 
-VERSION="${1:-2.0.0}"
+VERSION="${1:-1.0.0}"
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 APP_NAME="ReDock"
 BUILD_DIR="$PROJECT_DIR/build/release"
@@ -40,8 +40,9 @@ strip "$MACOS/$APP_NAME"
 
 # Generate app icon
 ICNS="$RESOURCES/AppIcon.icns"
+ICON_SCRIPT="$PROJECT_DIR/scripts/generate_icon.swift"
 echo "Generating app icon..."
-swift "$PROJECT_DIR/scripts/generate_icon.swift" "$PROJECT_DIR"
+swift "$ICON_SCRIPT" "$PROJECT_DIR"
 iconutil -c icns "$PROJECT_DIR/build/ReDock.iconset" -o "$ICNS"
 rm -rf "$PROJECT_DIR/build/ReDock.iconset"
 

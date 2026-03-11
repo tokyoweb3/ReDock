@@ -230,6 +230,22 @@
 /* Shortcuts - Layout Shortcuts */
 "shortcuts.layoutShortcuts" = "Atajos de diseño";
 
+/* Diagnostics */
+"diagnose.title" = "Diagnóstico";
+"diagnose.runAll" = "Ejecutar verificaciones";
+"diagnose.hint" = "Presiona \"Ejecutar verificaciones\" para verificar permisos y estado del sistema.";
+"diagnose.accessibility" = "Accesibilidad";
+"diagnose.displays" = "Pantallas";
+"diagnose.windows" = "Ventanas";
+"diagnose.layouts" = "Diseños guardados";
+"diagnose.granted" = "Otorgado";
+"diagnose.notGranted" = "No otorgado — necesario para la gestión de ventanas";
+"diagnose.displaysDetail" = "%lld pantalla(s) detectada(s)";
+"diagnose.windowsDetail" = "%lld ventana(s) detectada(s)";
+"diagnose.noWindows" = "No se detectaron ventanas";
+"diagnose.layoutsDetail" = "%lld diseño(s) guardado(s)";
+"diagnose.openSettings" = "Abrir Ajustes";
+
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "Guardar disposición actual";
 "menuBar.enterLayoutName" = "Introduce un nombre para esta disposición:";

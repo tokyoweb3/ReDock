@@ -230,6 +230,22 @@
 /* Shortcuts - Layout Shortcuts */
 "shortcuts.layoutShortcuts" = "레이아웃 단축키";
 
+/* Diagnostics */
+"diagnose.title" = "진단";
+"diagnose.runAll" = "검사 실행";
+"diagnose.hint" = "\"검사 실행\"을 눌러 권한과 시스템 상태를 확인합니다.";
+"diagnose.accessibility" = "손쉬운 사용";
+"diagnose.displays" = "디스플레이";
+"diagnose.windows" = "윈도우";
+"diagnose.layouts" = "저장된 레이아웃";
+"diagnose.granted" = "허용됨";
+"diagnose.notGranted" = "허용되지 않음 — 윈도우 관리에 필요합니다";
+"diagnose.displaysDetail" = "%lld개의 디스플레이 감지됨";
+"diagnose.windowsDetail" = "%lld개의 윈도우 감지됨";
+"diagnose.noWindows" = "윈도우가 감지되지 않음";
+"diagnose.layoutsDetail" = "%lld개의 레이아웃 저장됨";
+"diagnose.openSettings" = "설정 열기";
+
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "현재 레이아웃 저장";
 "menuBar.enterLayoutName" = "레이아웃 이름을 입력하세요:";

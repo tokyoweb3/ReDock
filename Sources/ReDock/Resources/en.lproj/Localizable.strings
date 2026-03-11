@@ -252,6 +252,24 @@
 "shortcuts.resetAll" = "Reset to Defaults";
 "shortcuts.resetAllHelp" = "Reset all shortcuts to their default key bindings";
 
+/* Diagnostics */
+"diagnose.title" = "Diagnostics";
+"diagnose.runAll" = "Run Checks";
+"diagnose.hint" = "Press \"Run Checks\" to verify permissions and system status.";
+"diagnose.accessibility" = "Accessibility";
+"diagnose.displays" = "Displays";
+"diagnose.windows" = "Windows";
+"diagnose.layouts" = "Saved Layouts";
+"diagnose.granted" = "Granted";
+"diagnose.notGranted" = "Not granted — required for window management";
+"diagnose.notGrantedToggleHint" = "Not granted — toggle Accessibility off and on for ReDock in System Settings, or click Request Permission";
+"diagnose.requestPermission" = "Request Permission";
+"diagnose.displaysDetail" = "%lld display(s) detected";
+"diagnose.windowsDetail" = "%lld window(s) detected";
+"diagnose.noWindows" = "No windows detected";
+"diagnose.layoutsDetail" = "%lld layout(s) saved";
+"diagnose.openSettings" = "Open Settings";
+
 /* MenuBarView */
 "menuBar.saveCurrentLayout" = "Save Current Layout";
 "menuBar.enterLayoutName" = "Enter a name for this layout:";
