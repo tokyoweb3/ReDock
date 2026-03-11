@@ -242,6 +242,7 @@
 "variant.profile" = "ディスプレイプロファイル";
 "variant.configured" = "✓ 設定済み";
 "variant.notConfigured" = "○ 未設定";
+"variant.disconnected" = "⊘ 未接続";
 "variant.clearWindows" = "ウィンドウをクリア";
 
 /* Layout Shortcut Override */

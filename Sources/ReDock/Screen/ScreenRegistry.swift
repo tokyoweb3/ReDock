@@ -33,8 +33,9 @@ final class ScreenRegistry {
     }
 
     /// Get fingerprints for all connected displays.
+    /// Filters out phantom/virtual displays with empty names.
     func fingerprints() -> [DisplayFingerprint] {
-        sortedScreens.map { DisplayFingerprint.from($0) }
+        sortedScreens.map { DisplayFingerprint.from($0) }.filter(\.isValid)
     }
 
     /// Find the next screen in sorted order (wraps around).

@@ -222,6 +222,7 @@
 "variant.profile" = "显示器配置";
 "variant.configured" = "✓ 已配置";
 "variant.notConfigured" = "○ 未配置";
+"variant.disconnected" = "⊘ 未连接";
 "variant.clearWindows" = "清除窗口";
 
 /* Layout Shortcut Override */

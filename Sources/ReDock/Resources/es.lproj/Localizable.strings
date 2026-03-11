@@ -222,6 +222,7 @@
 "variant.profile" = "Perfil de pantalla";
 "variant.configured" = "✓ Configurado";
 "variant.notConfigured" = "○ No configurado";
+"variant.disconnected" = "⊘ Desconectado";
 "variant.clearWindows" = "Limpiar ventanas";
 
 /* Layout Shortcut Override */

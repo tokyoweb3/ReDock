@@ -334,6 +334,16 @@ struct LayoutEditorView: View {
 
     // MARK: - Variant Selector (Profile-linked Picker)
 
+    /// Currently connected display fingerprints for profile status display.
+    private var currentFingerprints: [DisplayFingerprint] {
+        AppDelegate.services.screenRegistry.fingerprints()
+    }
+
+    /// Only valid profiles (no phantom displays).
+    private var validProfiles: [DisplayProfile] {
+        profiles.filter(\.isValid)
+    }
+
     @ViewBuilder
     private var variantSelector: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -343,7 +353,7 @@ struct LayoutEditorView: View {
                     .foregroundStyle(.secondary)
 
                 Picker("", selection: $selectedProfileID) {
-                    ForEach(profiles) { profile in
+                    ForEach(validProfiles) { profile in
                         HStack(spacing: 4) {
                             let isConfigured = draft.variants.contains {
                                 $0.displayProfileID == profile.id && !$0.windows.isEmpty
@@ -351,14 +361,20 @@ struct LayoutEditorView: View {
                             let hasAutoRestore = draft.variants.contains {
                                 $0.displayProfileID == profile.id && $0.autoRestore
                             }
+                            let connected = profile.isConnected(currentFingerprints: currentFingerprints)
                             if hasAutoRestore {
                                 Image(systemName: "arrow.clockwise")
                             }
                             Text("\(profile.name) (\(profile.fingerprints.count))")
-                            Text(isConfigured
-                                ? L10n.string("variant.configured")
-                                : L10n.string("variant.notConfigured"))
-                                .foregroundStyle(.secondary)
+                            if !connected {
+                                Text(L10n.string("variant.disconnected"))
+                                    .foregroundStyle(.tertiary)
+                            } else {
+                                Text(isConfigured
+                                    ? L10n.string("variant.configured")
+                                    : L10n.string("variant.notConfigured"))
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                         .tag(Optional(profile.id))
                     }

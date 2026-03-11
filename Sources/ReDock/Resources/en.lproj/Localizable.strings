@@ -242,6 +242,7 @@
 "variant.profile" = "Display Profile";
 "variant.configured" = "✓ Configured";
 "variant.notConfigured" = "○ Not configured";
+"variant.disconnected" = "⊘ Disconnected";
 "variant.clearWindows" = "Clear windows";
 
 /* Layout Shortcut Override */

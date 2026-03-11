@@ -27,13 +27,22 @@ struct DisplayFingerprint: Codable, Hashable, Identifiable {
         )
     }
 
+    /// Whether this fingerprint represents a valid physical display.
+    /// Filters out phantom/virtual displays with empty names.
+    var isValid: Bool {
+        guard let name = localizedName else { return false }
+        return !name.isEmpty
+    }
+
     /// Check if this fingerprint approximately matches another
     /// (for cross-session restore where displayID may have changed).
     func approximatelyMatches(_ other: DisplayFingerprint) -> Bool {
         if displayID == other.displayID && displayID != 0 {
             return true
         }
-        if let name = localizedName, let otherName = other.localizedName, name == otherName {
+        // Require non-empty names for name-based matching
+        if let name = localizedName, let otherName = other.localizedName,
+           !name.isEmpty, !otherName.isEmpty, name == otherName {
             let sizeSimilar = abs(bounds.width - other.bounds.width) < 100
                 && abs(bounds.height - other.bounds.height) < 100
             return sizeSimilar

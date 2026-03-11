@@ -510,9 +510,12 @@ struct LayoutsSettingsView: View {
                     .font(.system(size: 13, weight: .medium))
                     .lineLimit(1)
                 HStack(spacing: 4) {
-                    Text(L10n.string("layouts.windowCount", layout.windows.count))
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
+                    if !layout.variants.isEmpty {
+                        Text(variantProfileNames(for: layout))
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
                     Text(L10n.string(layout.mode == .appSpecific ? "layouts.appSpecificBadge" : "layouts.template"))
                         .font(.system(size: 9, weight: .medium))
                         .foregroundStyle(.white)
@@ -542,6 +545,21 @@ struct LayoutsSettingsView: View {
                     .help(L10n.string("tooltip.autoRestore"))
             }
         }
+    }
+
+    private func variantProfileNames(for layout: WindowLayout) -> String {
+        let allProfiles = services.displayProfileStore.loadAll()
+        let names: [String] = layout.variants.compactMap { variant in
+            guard let profileID = variant.displayProfileID,
+                  let profile = allProfiles.first(where: { $0.id == profileID }) else {
+                return nil
+            }
+            return profile.name
+        }
+        if names.isEmpty {
+            return ""
+        }
+        return names.joined(separator: ", ")
     }
 
     // MARK: - Bindings
@@ -750,7 +768,10 @@ struct DisplayProfilesView: View {
             .padding(16)
         }
         .onAppear {
+            // Clean up invalid (phantom) profiles on load
+            services.displayProfileStore.removeInvalidProfiles()
             profiles = services.displayProfileStore.loadAll()
+                .filter(\.isValid)
                 .sorted { ($0.lastSeenAt ?? .distantPast) > ($1.lastSeenAt ?? .distantPast) }
         }
     }
@@ -906,6 +927,7 @@ struct DisplayProfilesView: View {
         }
         services.displayProfileStore.delete(id: profileID)
         profiles = services.displayProfileStore.loadAll()
+            .filter(\.isValid)
             .sorted { ($0.lastSeenAt ?? .distantPast) > ($1.lastSeenAt ?? .distantPast) }
     }
 }

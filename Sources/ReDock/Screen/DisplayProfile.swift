@@ -29,11 +29,21 @@ struct DisplayProfile: Codable, Identifiable, Equatable {
 
     /// Human-readable display names of the monitors in this profile.
     var displayDescription: String {
-        let names = fingerprints.compactMap(\.localizedName)
+        let names = fingerprints.compactMap(\.localizedName).filter { !$0.isEmpty }
         if names.isEmpty {
             return "\(fingerprints.count) display(s)"
         }
         return names.joined(separator: " + ")
+    }
+
+    /// Whether this profile contains only valid (non-phantom) display fingerprints.
+    var isValid: Bool {
+        !fingerprints.isEmpty && fingerprints.allSatisfy(\.isValid)
+    }
+
+    /// Check if this profile matches the currently connected displays.
+    func isConnected(currentFingerprints: [DisplayFingerprint]) -> Bool {
+        matches(currentFingerprints)
     }
 }
 
@@ -85,27 +95,43 @@ final class DisplayProfileStore {
     /// Find or create a profile matching the given fingerprints.
     /// Returns the matching profile, or creates a new one with a default name.
     func findOrCreate(fingerprints: [DisplayFingerprint]) -> DisplayProfile {
+        // Filter out invalid (phantom) fingerprints before creating profiles
+        let validFingerprints = fingerprints.filter(\.isValid)
+        guard !validFingerprints.isEmpty else {
+            // Return a temporary profile without persisting phantom displays
+            return DisplayProfile(name: "Unknown", fingerprints: validFingerprints)
+        }
+
         let existing = loadAll()
-        if var match = existing.first(where: { $0.matches(fingerprints) }) {
+        if var match = existing.first(where: { $0.matches(validFingerprints) }) {
             match.lastSeenAt = Date()
             save(match)
             return match
         }
 
         // Auto-create with default name based on display count and names
-        let names = fingerprints.compactMap(\.localizedName)
+        let names = validFingerprints.compactMap(\.localizedName).filter { !$0.isEmpty }
         let defaultName: String
         if names.count == 1 {
             defaultName = names[0]
         } else if !names.isEmpty {
             defaultName = names.joined(separator: " + ")
         } else {
-            defaultName = "\(fingerprints.count) display(s)"
+            defaultName = "\(validFingerprints.count) display(s)"
         }
 
-        let profile = DisplayProfile(name: defaultName, fingerprints: fingerprints)
+        let profile = DisplayProfile(name: defaultName, fingerprints: validFingerprints)
         save(profile)
         return profile
+    }
+
+    /// Remove invalid profiles (phantom displays with empty names).
+    func removeInvalidProfiles() {
+        let profiles = loadAll()
+        let valid = profiles.filter(\.isValid)
+        if valid.count != profiles.count {
+            writeAll(valid)
+        }
     }
 
     private func writeAll(_ profiles: [DisplayProfile]) {
