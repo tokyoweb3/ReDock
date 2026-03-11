@@ -1,35 +1,86 @@
 #!/usr/bin/env swift
-// Generate ReDock app icon — a 2x2 window grid on a blue rounded-rect background
+// Generate ReDock app icon — graphite rounded background with a dominant left pane and stacked right panes.
 import AppKit
+
+struct AppIconArtwork {
+    let backgroundRect: CGRect
+    let backgroundCornerRadius: CGFloat
+    let panes: [CGRect]
+
+    static func threePane(size: CGFloat) -> AppIconArtwork {
+        let canvas = CGRect(x: 0, y: 0, width: size, height: size)
+        let backgroundInset = max(size * 0.05, size <= 32 ? 1 : 0)
+        let contentInset = max(size * 0.18, size <= 32 ? 2 : 0)
+        let columnGap = max(size * 0.05, size <= 32 ? 2 : 0)
+        let rowGap = max(size * 0.045, size <= 32 ? 2 : 0)
+        let rightInset = max(size * 0.045, size <= 32 ? 1 : 0)
+        let verticalInset = max(size * 0.06, size <= 32 ? 1 : 0)
+
+        let content = canvas.insetBy(dx: contentInset, dy: contentInset)
+        let leftWidth = floor((content.width - columnGap - rightInset) * 0.6)
+        let rightWidth = content.width - columnGap - leftWidth - rightInset
+        let leftHeight = content.height - (verticalInset * 2)
+        let stackHeight = content.height - (verticalInset * 2) - rowGap
+        let topHeight = floor(stackHeight * 0.5)
+        let bottomHeight = stackHeight - topHeight
+
+        let leftPane = CGRect(
+            x: content.minX,
+            y: content.minY + verticalInset,
+            width: leftWidth,
+            height: leftHeight
+        ).integral
+
+        let bottomRightPane = CGRect(
+            x: leftPane.maxX + columnGap,
+            y: content.minY + verticalInset,
+            width: rightWidth,
+            height: bottomHeight
+        ).integral
+
+        let topRightPane = CGRect(
+            x: leftPane.maxX + columnGap,
+            y: bottomRightPane.maxY + rowGap,
+            width: rightWidth,
+            height: topHeight
+        ).integral
+
+        return AppIconArtwork(
+            backgroundRect: canvas.insetBy(dx: backgroundInset, dy: backgroundInset),
+            backgroundCornerRadius: size * 0.18,
+            panes: [leftPane, topRightPane, bottomRightPane]
+        )
+    }
+}
 
 func makeIcon(size: CGFloat) -> NSImage {
     let img = NSImage(size: NSSize(width: size, height: size))
     img.lockFocus()
 
-    // Background: rounded rect
-    let bgRect = NSRect(x: size * 0.05, y: size * 0.05, width: size * 0.9, height: size * 0.9)
-    let bgPath = NSBezierPath(roundedRect: bgRect, xRadius: size * 0.18, yRadius: size * 0.18)
+    let artwork = AppIconArtwork.threePane(size: size)
+    let bgPath = NSBezierPath(
+        roundedRect: artwork.backgroundRect,
+        xRadius: artwork.backgroundCornerRadius,
+        yRadius: artwork.backgroundCornerRadius
+    )
 
-    let color1 = NSColor(red: 0.20, green: 0.35, blue: 0.70, alpha: 1.0)
-    let color2 = NSColor(red: 0.10, green: 0.18, blue: 0.45, alpha: 1.0)
-    let gradient = NSGradient(starting: color1, ending: color2)!
+    let color1 = NSColor(red: 0.33, green: 0.36, blue: 0.42, alpha: 1.0)
+    let color2 = NSColor(red: 0.12, green: 0.14, blue: 0.18, alpha: 1.0)
+    let gradient = NSGradient(colorsAndLocations:
+        (color1, 0.0),
+        (NSColor(red: 0.24, green: 0.27, blue: 0.33, alpha: 1.0), 0.45),
+        (color2, 1.0)
+    )!
     gradient.draw(in: bgPath, angle: 90)
 
-    // Window grid (2x2) — white rounded rects
-    NSColor.white.withAlphaComponent(0.92).set()
-    let margin = size * 0.24
-    let gap = size * 0.06
-    let cellW = (size * 0.9 - 2 * (margin - size * 0.05) - gap) / 2
-    let cellH = (size * 0.9 - 2 * (margin - size * 0.05) - gap) / 2
-
-    for row in 0..<2 {
-        for col in 0..<2 {
-            let x = margin + CGFloat(col) * (cellW + gap)
-            let y = margin + CGFloat(row) * (cellH + gap)
-            let cellRect = NSRect(x: x, y: y, width: cellW, height: cellH)
-            let cellPath = NSBezierPath(roundedRect: cellRect, xRadius: size * 0.03, yRadius: size * 0.03)
-            cellPath.fill()
-        }
+    NSColor.white.withAlphaComponent(0.96).setFill()
+    for pane in artwork.panes {
+        let panePath = NSBezierPath(
+            roundedRect: pane,
+            xRadius: size * 0.04,
+            yRadius: size * 0.04
+        )
+        panePath.fill()
     }
 
     img.unlockFocus()
