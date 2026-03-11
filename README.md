@@ -2,9 +2,13 @@
 
 A lightweight macOS window manager inspired by ShiftIt and Moom Classic. Snap windows to halves, quarters, and more with keyboard shortcuts. Save and restore multi-display layouts with context-aware auto-restore and workspace presets.
 
-| Shortcuts | Layout Editor (2-screen) | Layout Editor (3-screen) |
-|:---------:|:------------------------:|:------------------------:|
-| ![Shortcuts](docs/screenshots/shortcuts.png) | ![Layouts 2-screen](docs/screenshots/layouts-2screen.png) | ![Layouts 3-screen](docs/screenshots/layouts-3screen.png) |
+### Shortcuts
+![Shortcuts](docs/screenshots/shortcuts.png)
+
+### Layout Editor
+| 2-screen setup | 3-screen setup |
+|:--------------:|:--------------:|
+| ![Layouts 2-screen](docs/screenshots/layouts-2screen.png) | ![Layouts 3-screen](docs/screenshots/layouts-3screen.png) |
 
 ## Requirements
 
